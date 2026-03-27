@@ -1,0 +1,5 @@
+{
+  "refreshTokenLifeTime": 5184000,
+  "accessTokenLifeTime": 86400,
+  "secret": "VerySecretPI-231"
+}

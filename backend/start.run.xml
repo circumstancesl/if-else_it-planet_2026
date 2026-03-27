@@ -1,0 +1,22 @@
+<component name="ProjectRunConfigurationManager">
+    <configuration default="false" name="start" type="js.build_tools.npm">
+        <package-json value="$PROJECT_DIR$/package.json" />
+        <command value="run" />
+        <scripts>
+            <script value="start" />
+        </scripts>
+        <node-interpreter value="node" />
+        <package-manager value="npm" />
+        <envs>
+            <env name="DB_HOST" value="localhost" />
+            <env name="DB_PASSWORD" value="123" />
+            <env name="DB_PORT" value="5432" />
+            <env name="DB_SCHEMA" value="itplanet" />
+            <env name="DB_SSL" value="" />
+            <env name="DB_USER" value="postgres" />
+            <env name="is_local" value="true" />
+            <env name="NODE_ENV" value="" />
+        </envs>
+        <method v="2" />
+    </configuration>
+</component>
