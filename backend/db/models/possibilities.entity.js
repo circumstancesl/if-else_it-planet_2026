@@ -51,22 +51,6 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.INTEGER,
       allowNull: true,
     },
-    employmentType: {
-      type: DataTypes.ENUM('full', 'partial', 'project'),
-      allowNull: true,
-    },
-    level: {
-      type: DataTypes.ENUM('junior', 'middle'),
-      allowNull: true,
-    },
-    contactsEmail: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
-    contactPhone: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
     date: {
       type: DataTypes.DATE,
       allowNull: true,

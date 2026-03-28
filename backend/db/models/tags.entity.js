@@ -11,6 +11,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: false,
         unique: true,
       },
+      type: {
+        type: DataTypes.ENUM('level', 'employmentType', 'technology'),
+        allowNull: false,
+        defaultValue: 'technology',
+    },
     },
   );
 

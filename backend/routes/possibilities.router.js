@@ -26,10 +26,6 @@ routerPossibility.post(
       salary_from: Joi.number().optional(),
       salary_to: Joi.number().optional(),
 
-      employment_type: Joi.string().valid('full-time', 'part-time', 'project'),
-
-      level: Joi.string().valid('junior', 'middle', 'senior'),
-
       contacts_email: Joi.string().email().optional(),
       contacts_phone: Joi.string().optional(),
     });

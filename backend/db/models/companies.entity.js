@@ -29,7 +29,7 @@ module.exports = (sequelize, DataTypes) => {
       allowNull: true,
     },
     websiteURL: {
-      type: DataTypes.STRING,
+      type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: true,
     },
     verification_status: {
