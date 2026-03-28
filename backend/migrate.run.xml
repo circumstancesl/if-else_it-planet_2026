@@ -1,21 +1,21 @@
 <component name="ProjectRunConfigurationManager">
-    <configuration default="false" name="migrate" type="js.build_tools.npm">
-        <package-json value="$PROJECT_DIR$/package.json" />
-        <command value="run" />
-        <scripts>
-            <script value="migrate" />
-        </scripts>
-        <node-interpreter value="project" />
-        <package-manager value="npm" />
-        <envs>
-            <env name="DB_HOST" value="localhost" />
-            <env name="DB_PASSWORD" value="123" />
-            <env name="DB_PORT" value="5432" />
-            <env name="DB_SCHEMA" value="itplanet" />
-            <env name="DB_SSL" value="" />
-            <env name="DB_USER" value="postgres" />
-            <env name="is_local" value="true" />
-        </envs>
-        <method v="2" />
-    </configuration>
+  <configuration default="false" name="migrate" type="js.build_tools.npm">
+    <package-json value="$PROJECT_DIR$/backend/package.json" />
+    <command value="run" />
+    <scripts>
+      <script value="migrate" />
+    </scripts>
+    <node-interpreter value="project" />
+    <package-manager value="npm" />
+    <envs>
+      <env name="DB_HOST" value="localhost" />
+      <env name="DB_PASSWORD" value="123" />
+      <env name="DB_PORT" value="5432" />
+      <env name="DB_SCHEMA" value="itplanet" />
+      <env name="DB_SSL" value="" />
+      <env name="DB_USER" value="postgres" />
+      <env name="is_local" value="true" />
+    </envs>
+    <method v="2" />
+  </configuration>
 </component>
