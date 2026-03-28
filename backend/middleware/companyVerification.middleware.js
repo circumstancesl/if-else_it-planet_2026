@@ -10,7 +10,7 @@ async function companyVerificationMiddleware(req, res, next) {
     throw createError(404, 'Компания не найдена');
   }
 
-  if (company.verification_status !== 'accepted') {
+  if (company.verification_status !== 'approved') {
     throw createError(403, 'Только для верифицированных компаний');
   }
   next();

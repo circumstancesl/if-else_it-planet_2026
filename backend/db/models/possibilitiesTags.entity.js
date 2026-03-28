@@ -22,7 +22,17 @@ module.exports = (sequelize, DataTypes) => {
     },
   });
 
-  PossibilitiesTags.associate = function (models) { }
+  PossibilitiesTags.associate = function (models) {
+    PossibilitiesTags.belongsTo(models.Possibilities, {
+      foreignKey: 'possibilityId',
+      onDelete: 'CASCADE',
+    });
+
+    PossibilitiesTags.belongsTo(models.Tags, {
+      foreignKey: 'tagId',
+      onDelete: 'CASCADE',
+    });
+  };
 
   return PossibilitiesTags;
 };

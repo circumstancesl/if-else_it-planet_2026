@@ -2,7 +2,10 @@ const createError = require('http-errors');
 const { Users, CandidateProfiles, Companies } = require('../db/models');
 
 async function getMyProfile(userId) {
-  const user = await Users.findOne({ where: { id: userId } });
+  const user = await Users.findOne({
+    where: { id: userId },
+    attributes: { exclude: ['password'] }
+  });
 
   if (!user) {
     throw createError(404, 'Пользователь не найден');
@@ -20,6 +23,7 @@ async function getMyProfile(userId) {
     return {
       role: 'candidate',
       profile: candidateProfile,
+      email: user.email,
     };
   } else if (user.role === 'employer') {
     const company = await Companies.findOne({
@@ -33,6 +37,7 @@ async function getMyProfile(userId) {
     return {
       role: 'employer',
       profile: company,
+      email: user.email,
     };
   }
 }
@@ -53,8 +58,8 @@ async function getCandidates(limit = 20, offset = 0) {
   const candidates = await CandidateProfiles.findAll({
     where: { profileVisible: true },
     attributes: ['userId', 'fullName', 'jobTitle'],
-    limit: parseInt(limit),
-    offset: parseInt(offset),
+    limit: limit,
+    offset: offset,
   })
 
   return candidates;
@@ -83,6 +88,10 @@ async function updateCandidateProfile(userId, data) {
 
   if (data.about !== undefined) {
     profile.about = data.about;
+  }
+
+  if (data.jobTitle !== undefined) {
+    profile.jobTitle = data.jobTitle;
   }
 
   if (data.resumeURL !== undefined) {

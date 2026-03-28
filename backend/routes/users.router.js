@@ -30,7 +30,7 @@ routerUser.get(
 routerUser.get(
   '/',
   asyncHandler(async (req, res) => {
-    const candidates = await getCandidates();
+    const candidates = await getCandidates(req.query.limit, req.query.offset);
     res.send(candidates);
   }),
 );
@@ -41,6 +41,7 @@ routerUser.patch(
     const schema = Joi.object({
       name: Joi.string().min(2).max(100).optional(),
 
+      jobTitle: Joi.string().min(2).max(100).optional(),
       fullName: Joi.string().min(2).max(150).optional(),
       university: Joi.string().min(2).max(150).optional(),
       graduationYear: Joi.number()
@@ -79,7 +80,6 @@ routerUser.patch(
       description: Joi.string().max(2000).optional(),
       industry: Joi.string().min(2).max(100).optional(),
       websiteURL: Joi.string().uri().optional(),
-      profileVisible: Joi.boolean().optional(),
     }).min(1);
 
     await schema.validateAsync(req.body);
