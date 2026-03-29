@@ -29,6 +29,7 @@ routerTag.get(
   asyncHandler(async (req, res) => {
     const schema = Joi.object({
       type: Joi.string().valid('level', 'employmentType', 'technology'),
+      search: Joi.string().min(1).optional(),
     });
 
     const query = await schema.validateAsync(req.query);
