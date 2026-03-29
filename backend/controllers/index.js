@@ -3,6 +3,7 @@ const token = require('./tokens.controller');
 const user = require('./users.controller');
 const possibility = require('./possibilities.controller');
 const tag = require('./tags.controller');
+const favorite = require('./favorites.controller');
 
 module.exports = {
   login: auth.login,
@@ -23,4 +24,7 @@ module.exports = {
   getMyPossibilities: possibility.getMyPossibilities,
   deletePossibility: possibility.deletePossibility,
   updatePossibility: possibility.updatePossibility,
+  addFavorite: favorite.addFavorite,
+  getFavorites: favorite.getFavorites,
+  removeFavorite: favorite.removeFavorite,
 }
