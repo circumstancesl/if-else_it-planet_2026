@@ -64,7 +64,7 @@ routerPossibility.get(
 routerPossibility.get(
   '/:id',
   asyncHandler(async (req, res) => {
-    const possibility = await getPossibility(req.params.id);
+    const possibility = await getPossibility(req.params.id, req.user?.id);
     res.send(possibility);
   }),
 );
@@ -72,7 +72,7 @@ routerPossibility.get(
 routerPossibility.get(
   '/',
   asyncHandler(async (req, res) => {
-    const possibilities = await getPossibilities(req.query.limit, req.query.offset);
+    const possibilities = await getPossibilities(req.query.limit, req.query.offset, req.user?.id);
     res.send(possibilities);
   }),
 );

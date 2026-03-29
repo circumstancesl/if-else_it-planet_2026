@@ -1,4 +1,4 @@
-const { Companies, Possibilities, Tags, CandidateProfiles, Users} = require('../db/models');
+const { Companies, Possibilities, Tags, Favorites} = require('../db/models');
 const createError = require('http-errors');
 
 async function createPossibility(userId, data) {
@@ -41,26 +41,45 @@ async function createPossibility(userId, data) {
   return result;
 }
 
-async function getPossibilities(limit = 20, offset = 0) {
-  return await Possibilities.findAll({
+async function getPossibilities(limit = 20, offset = 0, userId) {
+  const possibilities = await Possibilities.findAll({
     where: { status: 'published' },
     include: [{
       model: Tags,
       through: { attributes: [] }
     }],
     order: [['createdAt', 'DESC']],
-    limit: limit,
-    offset: offset,
+    limit: +limit,
+    offset: +offset,
   });
+
+  let favoriteIds = [];
+
+  if (userId) {
+    const favorites = await Favorites.findAll({
+      where: {
+        userId,
+        type: 'possibility',
+      },
+      attributes: ['itemId'],
+    });
+
+    favoriteIds = favorites.map(f => f.itemId);
+  }
+
+  return possibilities.map(p => ({
+    ...p.toJSON(),
+    isFavorite: favoriteIds.includes(p.id),
+  }));
 }
 
-async function getPossibility(id) {
+async function getPossibility(id, userId) {
   const possibility = await Possibilities.findOne({
     where: { id },
     include: [
       {
         model: Companies,
-        attributes: ['id', 'name', 'description', 'websiteURL']
+        attributes: ['id', 'name', 'description', 'websiteURL', 'industry']
       },
       {
         model: Tags,
@@ -72,6 +91,20 @@ async function getPossibility(id) {
 
   if (!possibility) {
     throw createError(404, 'Событие не найдено');
+  }
+
+  let isFavorite = false;
+
+  if (userId) {
+    const favorite = await Favorites.findOne({
+      where: {
+        userId,
+        type: 'possibility',
+        itemId: id,
+      },
+    });
+
+    isFavorite = !!favorite;
   }
 
   return {
@@ -87,6 +120,9 @@ async function getPossibility(id) {
     salary: possibility.salary,
     createdAt: possibility.createdAt,
     date: possibility.date,
+
+    isFavorite,
+
     company: possibility.Company ? {
       id: possibility.Company.id,
       name: possibility.Company.name,
@@ -94,6 +130,7 @@ async function getPossibility(id) {
       websiteURL: possibility.Company.websiteURL,
       industry: possibility.Company.industry,
     } : null,
+
     tags: possibility.Tags?.map(tag => ({
       id: tag.id,
       name: tag.name,
