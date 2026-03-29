@@ -79,7 +79,7 @@ routerUser.patch(
       name: Joi.string().min(2).max(100).optional(),
       description: Joi.string().max(2000).optional(),
       industry: Joi.string().min(2).max(100).optional(),
-      websiteURL: Joi.string().uri().optional(),
+      websiteURL: Joi.array().items(Joi.string()).optional(),
     }).min(1);
 
     await schema.validateAsync(req.body);
