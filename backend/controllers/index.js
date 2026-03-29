@@ -4,6 +4,7 @@ const user = require('./users.controller');
 const possibility = require('./possibilities.controller');
 const tag = require('./tags.controller');
 const favorite = require('./favorites.controller');
+const response = require('./responses.controller');
 
 module.exports = {
   login: auth.login,
@@ -27,4 +28,8 @@ module.exports = {
   addFavorite: favorite.addFavorite,
   getFavorites: favorite.getFavorites,
   removeFavorite: favorite.removeFavorite,
+  updateResponseStatus: response.updateResponseStatus,
+  getMyResponses: response.getMyResponses,
+  getCompanyResponses: response.getResponsesForPossibility(),
+  applyToPossibility: response.applyToPossibility,
 }

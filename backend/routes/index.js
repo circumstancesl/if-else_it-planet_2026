@@ -7,6 +7,7 @@ const routerUser = require('./users.router');
 const routerPossibility = require('./possibilities.router');
 const routerTag =  require('./tags.router');
 const routerFavorite =  require('./favorites.router');
+const routerResponse = require('./responses.router');
 
 const authenticationMiddleware = require('../middleware/authentication.middleware');
 
@@ -17,6 +18,7 @@ router.use('/api/users', routerUser);
 router.use('/api/possibility', routerPossibility);
 router.use('/api/tag', routerTag);
 router.use('/api/favorite', routerFavorite);
+router.use('/api/response', routerResponse);
 
 router.use((req, res, next) => {
   next(createError(404, 'Page not Found'));

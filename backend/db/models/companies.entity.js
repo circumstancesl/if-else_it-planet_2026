@@ -40,14 +40,12 @@ module.exports = (sequelize, DataTypes) => {
   });
 
   Companies.associate = function (models) {
-    Companies.associate = function (models) {
-      Companies.belongsTo(models.Users, {
-        foreignKey: 'userId',
-        onDelete: 'CASCADE',
-      });
-    };
+    Companies.belongsTo(models.Users, {
+      foreignKey: 'userId',
+      onDelete: 'CASCADE',
+    });
 
-    Companies.hasOne(models.Possibilities, {
+    Companies.hasMany(models.Possibilities, {
       foreignKey: 'companyId',
       sourceKey: 'id',
     });
