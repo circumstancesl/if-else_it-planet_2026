@@ -1,5 +1,6 @@
 const { Companies, Possibilities, Tags, Favorites} = require('../db/models');
 const createError = require('http-errors');
+const { Op } = require('sequelize');
 
 async function createPossibility(userId, data) {
   const {
@@ -41,16 +42,78 @@ async function createPossibility(userId, data) {
   return result;
 }
 
-async function getPossibilities(limit = 20, offset = 0, userId) {
+async function getPossibilities(query, userId) {
+  const {
+    limit,
+    offset,
+    type,
+    format,
+    city,
+    salaryFrom,
+    salaryTo,
+    tags,
+    search,
+  } = query;
+
+  const where = {
+    status: 'published',
+  };
+
+  if (type) {
+    where.type = type;
+  }
+
+  if (format) {
+    where.format = format;
+  }
+
+  if (city) {
+    where.city = {
+      [Op.iLike]: `%${city}%`,
+    };
+  }
+
+  if (salaryFrom || salaryTo) {
+    where.salary = {};
+
+    if (salaryFrom) {
+      where.salary[Op.gte] = salaryFrom;
+    }
+
+    if (salaryTo) {
+      where.salary[Op.lte] = salaryTo;
+    }
+  }
+
+  if (search) {
+    where[Op.or] = [
+      { title: { [Op.iLike]: `%${search}%` } },
+      { description: { [Op.iLike]: `%${search}%` } },
+    ];
+  }
+
+  const include = [{
+    model: Tags,
+    through: { attributes: [] },
+  }];
+
+  if (tags) {
+    const tagIds = tags.split(',');
+
+    include[0].where = {
+      id: {
+        [Op.in]: tagIds,
+      },
+    };
+  }
+
   const possibilities = await Possibilities.findAll({
-    where: { status: 'published' },
-    include: [{
-      model: Tags,
-      through: { attributes: [] }
-    }],
+    where,
+    include,
     order: [['createdAt', 'DESC']],
     limit: +limit,
     offset: +offset,
+    distinct: true,
   });
 
   let favoriteIds = [];
