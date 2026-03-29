@@ -8,6 +8,8 @@ const routerPossibility = require('./possibilities.router');
 const routerTag =  require('./tags.router');
 const routerFavorite =  require('./favorites.router');
 const routerResponse = require('./responses.router');
+const routerAdmin =  require('./admin.router');
+const routerCurator =  require('./curator.router');
 
 const authenticationMiddleware = require('../middleware/authentication.middleware');
 
@@ -19,6 +21,8 @@ router.use('/api/possibility', routerPossibility);
 router.use('/api/tag', routerTag);
 router.use('/api/favorite', routerFavorite);
 router.use('/api/response', routerResponse);
+router.use('/api/admin', routerAdmin);
+router.use('/api/curator', routerCurator);
 
 router.use((req, res, next) => {
   next(createError(404, 'Page not Found'));

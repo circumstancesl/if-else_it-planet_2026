@@ -5,6 +5,8 @@ const possibility = require('./possibilities.controller');
 const tag = require('./tags.controller');
 const favorite = require('./favorites.controller');
 const response = require('./responses.controller');
+const admin = require('./admin.controller');
+const curator = require('./curator.controller');
 
 module.exports = {
   login: auth.login,
@@ -32,4 +34,9 @@ module.exports = {
   getMyResponses: response.getMyResponses,
   getCompanyResponses: response.getResponsesForPossibility(),
   applyToPossibility: response.applyToPossibility,
+  createCurator: admin.createCurator,
+  deleteCurator: admin.deleteCurator,
+  getCurators: admin.getCurators,
+  getCompanies: curator.getCompanies,
+  updateCompanyStatus: curator.updateCompanyStatus,
 }

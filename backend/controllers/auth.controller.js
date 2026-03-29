@@ -40,6 +40,10 @@ async function registerCandidate(email, password, name) {
 }
 
 async function registerEmployer(email, password, name) {
+  if (!isCorporateEmail(email)) {
+    throw createError(400, 'Только корпоративные почты разрешены');
+  }
+
   const existingUser = await Users.findOne({ where: { email } });
   if (existingUser) {
     throw createError(400, 'Пользователь уже существует');
@@ -58,5 +62,36 @@ async function registerEmployer(email, password, name) {
 
   return createTokensAndSession(user);
 }
+
+function isCorporateEmail(email) {
+  const domain = email.split('@')[1].toLowerCase();
+  return !blockedDomains.includes(domain);
+}
+
+const blockedDomains = [
+  'gmail.com',
+  'yahoo.com',
+  'yandex.ru',
+  'hotmail.com',
+  'outlook.com',
+  'mail.ru',
+  'aol.com',
+  'icloud.com',
+  'protonmail.com',
+  'zoho.com',
+  'gmx.com',
+  'yahoo.co.uk',
+  'yahoo.com.au',
+  'yahoo.ca',
+  'live.com',
+  'msn.com',
+  'inbox.com',
+  'fastmail.com',
+  'tutanota.com',
+  'hushmail.com',
+  'bk.ru',
+  'list.ru',
+  'rambler.ru'
+];
 
 module.exports = { login, registerCandidate, registerEmployer };
