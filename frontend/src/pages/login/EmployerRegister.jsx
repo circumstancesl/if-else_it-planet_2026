@@ -18,7 +18,6 @@ export default function EmployerRegister() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Валидация
         if (!email || !name || !password || !confirmPassword) {
             setLocalError("Заполните все поля");
             return;
@@ -42,7 +41,6 @@ export default function EmployerRegister() {
         setLocalError("");
 
         try {
-            // Регистрируем работодателя
             await registerEmployer({
                 email,
                 password,

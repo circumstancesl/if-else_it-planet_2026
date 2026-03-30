@@ -18,7 +18,6 @@ export default function EmployerProfile() {
     const [loading, setLoading] = useState(true);
     const [initialLoad, setInitialLoad] = useState(true);
 
-    // Загрузка событий
     const loadData = useCallback(async () => {
         if (!initialLoad) return;
 
@@ -28,7 +27,6 @@ export default function EmployerProfile() {
             const eventsData = data || [];
             setEvents(eventsData);
 
-            // Загружаем количество откликов для каждого события
             const counts = {};
             const allResponses = [];
 
@@ -38,7 +36,6 @@ export default function EmployerProfile() {
                     const responsesArray = Array.isArray(responses) ? responses : [];
                     counts[event.id] = responsesArray.length;
 
-                    // Собираем последние отклики
                     if (responsesArray.length > 0) {
                         responsesArray.forEach(response => {
                             allResponses.push({
@@ -55,7 +52,6 @@ export default function EmployerProfile() {
             }
             setResponsesCount(counts);
 
-            // Берем 2 самых последних отклика
             const sortedResponses = allResponses.sort((a, b) =>
                 new Date(b.createdAt) - new Date(a.createdAt)
             );
@@ -88,7 +84,6 @@ export default function EmployerProfile() {
         return () => window.removeEventListener("resize", calculateVisible);
     }, []);
 
-    // Нормализация
     const normalizedEvents = useMemo(() => {
         return events.map((e) => ({
             id: e.id,
@@ -104,7 +99,6 @@ export default function EmployerProfile() {
         }));
     }, [events, responsesCount]);
 
-    // Преобразование откликов в формат для CandidateCard
     const formattedResponses = useMemo(() => {
         return latestResponses.map(response => ({
             id: response.User?.id || response.candidateId,

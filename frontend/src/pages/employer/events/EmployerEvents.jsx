@@ -19,7 +19,6 @@ export default function EmployerEvents() {
         navigate(`/employer/event/${event.id}`);
     };
 
-    // 🔥 загрузка
     useEffect(() => {
         const load = async () => {
             try {
@@ -33,7 +32,6 @@ export default function EmployerEvents() {
         load();
     }, [getMyPossibilities]);
 
-    // 🧠 маппинг статусов
     const mapStatus = (status) => {
         switch (status) {
             case "published":
@@ -47,7 +45,6 @@ export default function EmployerEvents() {
         }
     };
 
-    // 🔄 нормализация данных под UI
     const normalizedEvents = useMemo(() => {
         return events.map((e) => ({
             id: e.id,
@@ -68,7 +65,6 @@ export default function EmployerEvents() {
         }));
     }, [events]);
 
-    // 🔍 фильтрация
     const filteredEvents = useMemo(() => {
         return normalizedEvents.filter((e) => {
             const matchSearch = e.title

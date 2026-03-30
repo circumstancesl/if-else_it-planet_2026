@@ -20,18 +20,15 @@ export default function EmployerResponses() {
 
     const navigate = useNavigate();
 
-    // Загрузка событий и количества откликов
     const loadEvents = useCallback(async () => {
         if (!initialLoad) return;
 
         try {
             setLoading(true);
-            // Загружаем активные события
             const data = await getMyPossibilities("published");
             const eventsData = data || [];
             setEvents(eventsData);
 
-            // Загружаем количество откликов для каждого события
             const counts = {};
             for (const event of eventsData) {
                 try {
@@ -52,12 +49,10 @@ export default function EmployerResponses() {
         }
     }, [getMyPossibilities, getResponsesForPossibility, initialLoad]);
 
-    // Загружаем только один раз при монтировании
     useEffect(() => {
         loadEvents();
     }, [loadEvents]);
 
-    // Нормализация
     const normalizedEvents = useMemo(() => {
         return events.map((e) => ({
             id: e.id,
@@ -73,7 +68,6 @@ export default function EmployerResponses() {
         }));
     }, [events, responsesCount]);
 
-    // Фильтрация
     const filteredEvents = useMemo(() => {
         return normalizedEvents.filter((e) =>
             e.title.toLowerCase().includes(submittedSearch.toLowerCase())

@@ -23,7 +23,6 @@ export default function EmployerLogin() {
         setLocalError("");
 
         try {
-            // Передаем rememberMe в login
             await login(email, password, rememberMe); // ← добавили rememberMe
             navigate("/profile");
         } catch (err) {

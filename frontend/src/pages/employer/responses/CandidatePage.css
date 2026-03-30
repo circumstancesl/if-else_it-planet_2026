@@ -1,11 +1,8 @@
-/* кнопка назад */
-
 .candidate-page {
     padding-top: 20px;
 }
 
 .back-btn {
-    /*margin-bottom: 20px;*/
     background: none;
     border: none;
     color: #1e73e8;
@@ -21,7 +18,6 @@
     color: #1557b0;
 }
 
-/* layout - правая колонка уже */
 .candidate-layout {
     display: grid;
     grid-template-columns: 1fr 340px;
@@ -29,7 +25,6 @@
     align-items: start;
 }
 
-/* ===== ЛЕВАЯ ЧАСТЬ ===== */
 .main {
     display: grid;
     grid-template-columns: 180px 1fr;
@@ -39,7 +34,6 @@
     padding-top: 20px;
 }
 
-/* левая колонка внутри main */
 .avatar-section {
     display: flex;
     flex-direction: column;
@@ -47,7 +41,6 @@
     align-items: flex-start;
 }
 
-/* аватар увеличен */
 .avatar.big {
     width: 180px;
     height: 180px;
@@ -61,7 +54,6 @@
     object-fit: cover;
 }
 
-/* кнопка связаться - уменьшена в ширину */
 .contact-btn {
     width: auto;
     min-width: 120px;
@@ -79,7 +71,6 @@
     background: #1557b0;
 }
 
-/* иконки связи */
 .contact-icons {
     display: flex;
     justify-content: flex-start;
@@ -97,7 +88,6 @@
     color: #1e73e8;
 }
 
-/* портфолио текст */
 .portfolio-text {
     font-size: 14px;
     font-weight: 500;
@@ -105,7 +95,6 @@
     margin-top: 8px;
 }
 
-/* иконки портфолио */
 .portfolio-icons {
     display: flex;
     justify-content: flex-start;
@@ -127,7 +116,6 @@
     background: #e5e7eb;
 }
 
-/* ===== ЦЕНТРАЛЬНАЯ ЧАСТЬ ===== */
 .info-section {
     display: flex;
     flex-direction: column;
@@ -146,7 +134,6 @@
     margin: 0;
 }
 
-/* теги навыков */
 .skills-tags {
     display: flex;
     flex-wrap: wrap;
@@ -161,7 +148,6 @@
     color: #475569;
 }
 
-/* кнопки действий */
 .action-buttons {
     display: flex;
     gap: 12px;
@@ -216,7 +202,6 @@
     background: #fee2e2;
 }
 
-/* сообщение о статусе */
 .status-message {
     text-align: center;
     padding: 12px;
@@ -244,7 +229,6 @@
     border: 1px solid #ef4444;
 }
 
-/* секции */
 .inner-profile-section {
     margin-top: 8px;
 }
@@ -290,7 +274,6 @@
     font-size: 14px;
 }
 
-/* карточки в сайдбаре */
 .candidate-page-sidebar .candidate-card {
     margin-bottom: 16px;
     padding: 16px;
@@ -303,7 +286,6 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
-/* Адаптивность */
 @media (max-width: 1024px) {
     .candidate-layout {
         grid-template-columns: 1fr;

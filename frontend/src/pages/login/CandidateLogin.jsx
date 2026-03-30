@@ -24,7 +24,6 @@ export default function candidateLogin() {
         setLocalError("");
 
         try {
-            // Передаем rememberMe в login
             await login(email, password, rememberMe); // ← добавили rememberMe
             navigate("/profile");
         } catch (err) {
@@ -45,7 +44,6 @@ export default function candidateLogin() {
                     </div>
                 </div>
 
-                {/* Показываем ошибки */}
                 {(localError || error) && (
                     <div className="error-message" style={{ color: 'red', marginBottom: '10px', textAlign: 'center' }}>
                         {localError || error}

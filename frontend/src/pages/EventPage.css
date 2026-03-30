@@ -2,14 +2,12 @@
     padding-top: 24px;
 }
 
-/* Layout */
 .event-layout {
     display: grid;
     grid-template-columns: 1fr 380px;
     gap: 40px;
 }
 
-/* ===================== ЛЕВАЯ ЧАСТЬ ===================== */
 .event-header {
     background: white;
     border: 1px solid #e5e7eb;

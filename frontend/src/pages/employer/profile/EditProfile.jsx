@@ -81,7 +81,6 @@ export default function EditProfile() {
             case "sphere":
                 return { industry: form.sphere };
             case "website":
-                // Бэкенд ожидает МАССИВ
                 return { websiteURL: [form.website] };
             case "description":
                 return { description: form.description };

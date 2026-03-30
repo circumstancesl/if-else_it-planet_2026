@@ -7,7 +7,6 @@ export default function CandidateRegister() {
     const navigate = useNavigate();
     const { registerCandidate, loading, error } = useAuth();
 
-    // Состояния для полей формы
     const [email, setEmail] = useState("");
     const [name, setName] = useState("");
     const [password, setPassword] = useState("");
@@ -19,7 +18,6 @@ export default function CandidateRegister() {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Валидация
         if (!email || !name || !password || !confirmPassword) {
             setLocalError("Заполните все поля");
             return;
@@ -43,13 +41,11 @@ export default function CandidateRegister() {
         setLocalError("");
 
         try {
-            // Регистрируем соискателя
             await registerCandidate({
                 email,
                 password,
                 name,
             });
-            // После успешной регистрации автоматически входим и перенаправляем
             navigate("/profile");
         } catch (err) {
             setLocalError(err.message || "Ошибка регистрации");

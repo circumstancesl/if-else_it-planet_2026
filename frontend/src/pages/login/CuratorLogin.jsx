@@ -23,8 +23,7 @@ export default function CuratorLogin() {
         setLocalError("");
 
         try {
-            // Передаем rememberMe в login
-            await login(email, password, rememberMe); // ← добавили rememberMe
+            await login(email, password, rememberMe);
             navigate("/profile");
         } catch (err) {
             setLocalError(err.message || "Ошибка входа");

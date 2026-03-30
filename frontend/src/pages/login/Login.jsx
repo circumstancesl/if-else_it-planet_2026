@@ -7,12 +7,10 @@ export default function Login() {
     const [role, setRole] = useState("jobseeker");
     const navigate = useNavigate();
 
-    // Возврат на предыдущую страницу
     const handleBack = () => {
-        navigate("/"); // возврат на один шаг назад
+        navigate("/");
     };
 
-    // Обработчик для кнопки "Вход"
     const handleLogin = () => {
         switch(role) {
             case "jobseeker":
@@ -29,7 +27,6 @@ export default function Login() {
         }
     };
 
-    // Обработчик для кнопки "Регистрация" (только для соискателя и работодателя)
     const handleRegister = () => {
         switch(role) {
             case "jobseeker":

@@ -4,7 +4,6 @@ import Header from "../../../components/Header/Header.jsx";
 import CandidateCard from "../../../components/CandidateCard";
 import "./CandidatePage.css";
 
-// Мок-данные кандидатов
 const mockCandidates = [
     {
         id: 1,
@@ -55,7 +54,6 @@ export default function CandidatePage() {
             if (found) {
                 setCandidate(found);
                 setOtherCandidates(mockCandidates.filter(c => c.id !== parseInt(candidateId)));
-                // Проверяем, был ли уже выбран статус из localStorage
                 const savedStatus = localStorage.getItem(`candidate_${candidateId}_status`);
                 if (savedStatus) {
                     setActionStatus(savedStatus);

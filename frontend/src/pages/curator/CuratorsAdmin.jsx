@@ -13,7 +13,6 @@ export default function CuratorsAdmin() {
 
     const { getCurators, createCurator, deleteCurator, loading: apiLoading } = useAdmin();
 
-    // Загрузка списка кураторов
     useEffect(() => {
         loadCurators();
     }, []);
@@ -40,7 +39,7 @@ export default function CuratorsAdmin() {
         if (window.confirm("Удалить куратора?")) {
             try {
                 await deleteCurator(id);
-                await loadCurators(); // Обновляем список
+                await loadCurators();
                 alert("Куратор удален");
             } catch (err) {
                 alert("Ошибка при удалении: " + err.message);
@@ -54,9 +53,8 @@ export default function CuratorsAdmin() {
 
     const handleCreateCurator = async (newCurator) => {
         try {
-            // Используем email из формы
             await createCurator(
-                newCurator.email,      // 👈 email из формы
+                newCurator.email,
                 newCurator.password,
                 newCurator.fullName
             );

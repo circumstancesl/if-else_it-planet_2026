@@ -15,7 +15,6 @@ export default function CuratorUsers() {
 
     const { getCompanies, updateCompanyStatus, loading: apiLoading } = useCurator();
 
-    // Загрузка компаний
     useEffect(() => {
         loadCompanies();
     }, [activeTab]);

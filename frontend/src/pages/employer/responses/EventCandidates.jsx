@@ -22,22 +22,18 @@ export default function EventCandidates() {
     const { getResponsesForPossibility, updateResponseStatus } = useResponses();
     const { getPossibilityById } = usePossibilities();
 
-    // Загрузка события и кандидатов
     const loadData = useCallback(async () => {
         if (!initialLoad) return;
 
         try {
             setLoading(true);
 
-            // Загружаем информацию о событии
             const eventData = await getPossibilityById(eventId);
             setEvent(eventData || null);
 
-            // Загружаем отклики на это событие
             const responses = await getResponsesForPossibility(eventId);
             const responsesArray = Array.isArray(responses) ? responses : [];
 
-            // Преобразуем отклики в формат кандидатов
             const candidatesData = responsesArray.map(response => ({
                 id: response.User?.id || response.candidateId,
                 responseId: response.id,
