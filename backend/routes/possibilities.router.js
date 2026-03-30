@@ -27,6 +27,8 @@ routerPossibility.post(
       city: Joi.string().optional(),
       address: Joi.string().optional(),
 
+      latitude: Joi.number().optional(),
+      longitude: Joi.number().optional(),
       salary: Joi.number().optional(),
 
       date: Joi.date().optional(),
