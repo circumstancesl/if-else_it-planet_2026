@@ -63,6 +63,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       onDelete: 'CASCADE',
     });
+
+    Users.belongsToMany(models.Chats, {
+      through: 'ChatParticipants',
+      foreignKey: 'userId',
+    });
   }
 
   return Users;

@@ -23,7 +23,8 @@
     "jsonwebtoken": "^9.0.3",
     "pg": "^8.20.0",
     "rand-token": "^1.0.1",
-    "sequelize": "^6.37.8"
+    "sequelize": "^6.37.8",
+    "socket.io": "^4.8.3"
   },
   "devDependencies": {
     "@types/express": "^5.0.6"
