@@ -1,0 +1,222 @@
+/* Все стили обернуты в .create-event-page */
+.create-event-page {
+    /* Пустой класс-родитель */
+}
+
+/* сетка */
+.create-event-page .form-grid {
+    display: grid;
+    grid-template-columns: 2fr 1.5fr 1fr;
+    gap: 32px;
+}
+
+/* колонки */
+.create-event-page .left,
+.create-event-page .middle,
+.create-event-page .right {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* заголовки */
+.create-event-page h3 {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    display: inline-block;
+}
+
+/* поля */
+.create-event-page label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    margin: 12px 0 6px;
+}
+
+.create-event-page label:first-of-type {
+    margin-top: 0;
+}
+
+.create-event-page textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* подсказка */
+.create-event-page .hint {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-top: 4px;
+}
+
+/* ===== ТЕГИ ===== */
+.create-event-page .tag-block {
+    margin-bottom: 24px;
+    background: #f8fafc;
+    padding: 16px;
+    border-radius: 16px;
+}
+
+.create-event-page .tag-block p {
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: #1e293b;
+}
+
+.create-event-page .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.create-event-page .tag {
+    background: #eef2ff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+    color: #1e73e8;
+}
+
+.create-event-page .tag:hover {
+    background: #e0e7ff;
+}
+
+.create-event-page .tag-remove {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.create-event-page .tag-remove:hover {
+    color: #ef4444;
+}
+
+.create-event-page .tag-input-wrapper {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 20px;
+    padding: 4px 8px;
+}
+
+.create-event-page .tag-input {
+    border: none;
+    padding: 4px 8px;
+    font-size: 13px;
+    width: 100px;
+    background: transparent;
+}
+
+.create-event-page .tag-input:focus {
+    box-shadow: none;
+    border: none;
+    outline: none;
+}
+
+.create-event-page .add-tag {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    color: #1e73e8;
+    padding: 0 4px;
+    display: flex;
+    align-items: center;
+}
+
+.create-event-page .add-tag:hover {
+    color: #1557b0;
+}
+
+/* ===== ПРАВАЯ КОЛОНКА ===== */
+.create-event-page .right input {
+    margin-bottom: 8px;
+}
+
+.create-event-page .right h3 {
+    margin-bottom: 20px;
+}
+
+.create-event-page .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+/* кнопки */
+.create-event-page .btn-primary {
+    background: #1e73e8;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 15px;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.create-event-page .btn-primary:hover {
+    background: #1557b0;
+}
+
+.create-event-page .btn-outline {
+    border: 2px solid #1e73e8;
+    background: transparent;
+    color: #1e73e8;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s;
+}
+
+.create-event-page .btn-outline:hover {
+    background: #1e73e8;
+    color: white;
+}
+
+.create-event-page .btn-secondary {
+    background: transparent;
+    border: 1px solid #e5e7eb;
+    color: #64748b;
+    padding: 12px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+}
+
+.create-event-page .btn-secondary:hover {
+    border-color: #ef4444;
+    color: #ef4444;
+}
+
+
+.coordinates-info {
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: #f0f9ff;
+    border-radius: 8px;
+    font-size: 12px;
+    color: #1e73e8;
+}
+
+.coordinates-info span {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}

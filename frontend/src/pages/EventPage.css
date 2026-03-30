@@ -1,0 +1,185 @@
+.event-page {
+    padding-top: 24px;
+}
+
+/* Layout */
+.event-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+}
+
+/* ===================== ЛЕВАЯ ЧАСТЬ ===================== */
+.event-header {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 24px;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.event-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.salary {
+    font-size: 20px;
+    color: #1e73e8;
+    font-weight: 600;
+    margin: 0 0 24px 0;
+}
+
+.meta-info p {
+    margin: 10px 0;
+    font-size: 15px;
+    color: #334155;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.meta-info strong {
+    color: #1e293b;
+    display: inline-block;
+    min-width: 100px;
+}
+
+.verified {
+    color: #1e73e8;
+    font-weight: bold;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 28px;
+}
+
+/* ===================== MARKDOWN ===================== */
+.markdown-content {
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    word-wrap: break-word;
+    word-break: break-word;
+}
+
+.markdown-content h1,
+.markdown-content h2,
+.markdown-content h3,
+.markdown-content h4 {
+    text-align: left !important;
+    margin-top: 28px;
+    margin-bottom: 16px;
+    color: #1e293b;
+    word-break: break-word;
+}
+
+.markdown-content h2 {
+    font-size: 22px;
+}
+
+.markdown-content h3 {
+    font-size: 18px;
+}
+
+.markdown-content p {
+    line-height: 1.7;
+    margin-bottom: 18px;
+    color: #475569;
+    word-break: break-word;
+}
+
+.markdown-content ul,
+.markdown-content ol {
+    padding-left: 24px;
+    margin: 16px 0;
+}
+
+/* ===================== ПРАВАЯ КОЛОНКА ===================== */
+.sidebar {
+    overflow: hidden;
+    word-wrap: break-word;
+}
+
+.sidebar h3 {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #1e293b;
+}
+
+.candidate-card-sidebar {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    word-wrap: break-word;
+}
+
+.candidate-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.candidate-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.candidate-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    word-break: break-word;
+}
+
+.role {
+    margin: 4px 0 0;
+    font-size: 14px;
+    color: #64748b;
+    word-break: break-word;
+}
+
+.candidate-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 18px;
+}
+
+.action-buttons .secondary.favorite-active {
+    background: #1e73e8;
+    color: white;
+    border: 2px solid #1e73e8;
+}
+
+.action-buttons .secondary.favorite-active:hover {
+    background: white;
+    color: #1e73e8;
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .event-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .event-header,
+    .markdown-content {
+        padding: 24px;
+    }
+}

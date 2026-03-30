@@ -1,0 +1,12 @@
+.candidate-page-sidebar .possible-friends-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.candidate-page-sidebar .friend-card-suggest {
+    margin-bottom: 0;
+}
+
+.candidate-page-sidebar .friend-card-suggest:not(:last-child) {
+    margin-bottom: 0;
+}

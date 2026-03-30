@@ -1,0 +1,265 @@
+/* 🔥 ЕДИНЫЙ КОНТЕЙНЕР */
+.container {
+    max-width: none; /* Убираем ограничение */
+    width: 100%;
+    padding: 0 32px 32px;
+}
+
+/* Основные кнопки */
+.primary,
+.secondary {
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    height: 42px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.primary {
+    background: #1e73e8;
+    color: white;
+    border: 1px solid #1e73e8;
+    transition: all 0.2s;
+}
+
+.primary:hover {
+    background: white;
+    border: 2px solid #1e73e8;
+    color: #1e73e8;
+}
+
+.secondary {
+    background: white;
+    border: 2px solid #1e73e8;
+    color: #1e73e8;
+}
+
+.secondary:hover {
+    background: #1e73e8;
+    color: white;
+}
+
+/* Маленькие кнопки */
+.primary-small,
+.secondary-small {
+    width: auto;
+    font-size: 14px;
+    font-weight: 600;
+    height: 34px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.primary-small {
+    background: #1e73e8;
+    color: white;
+    border: none;
+}
+
+.primary-small:hover {
+    background: white;
+    border: 2px solid #1e73e8;
+    color: #1e73e8;
+}
+
+.secondary-small {
+    background: white;
+    border: 2px solid #1e73e8;
+    color: #1e73e8;
+}
+
+.secondary-small:hover {
+    background: #1e73e8;
+    color: white;
+}
+
+/* Кнопка reject */
+.reject {
+    width: 100%;
+    font-size: 16px;
+    font-weight: 600;
+    height: 42px;
+    padding: 0 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    cursor: pointer;
+    background: white;
+    border: 2px solid #dc2626;
+    color: #dc2626;
+    transition: all 0.2s;
+}
+
+.reject:hover {
+    background: #dc2626;
+    color: white;
+}
+
+.reject-small {
+    width: auto;
+    font-size: 14px;
+    font-weight: 600;
+    height: 34px;
+    padding: 0 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    cursor: pointer;
+    background: white;
+    border: 2px solid #dc2626;
+    color: #dc2626;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.reject-small:hover {
+    background: #dc2626;
+    color: white;
+}
+
+/* Базовые стили для полей ввода */
+input,
+textarea,
+select {
+    width: 100%;
+    height: 40px;
+    padding: 0 16px;
+    font-size: 15px;
+    font-family: inherit;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    outline: none;
+    transition: all 0.2s;
+    box-sizing: border-box;
+}
+
+/* Фокус */
+:not(.search-wrapper) input:focus,
+:not(.search-wrapper) textarea:focus,
+:not(.search-wrapper) select:focus {
+    border-color: #1e73e8;
+    box-shadow: 0 0 0 3px rgba(30, 115, 232, 0.1);
+}
+
+/* Плейсхолдер */
+input::placeholder,
+textarea::placeholder {
+    color: #94a3b8;
+}
+
+/* Textarea */
+textarea {
+    height: auto;
+    min-height: 100px;
+    padding: 12px 16px;
+    resize: vertical;
+}
+
+/* Select */
+select {
+    cursor: pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    appearance: none;
+}
+
+/* Checkbox */
+.checkbox input {
+    width: 18px;
+    height: 18px;
+    margin: 0;
+    cursor: pointer;
+    accent-color: #1e73e8;
+}
+
+/* ===== ТАБЫ ===== */
+.tabs {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 24px;
+}
+
+.tabs span {
+    padding: 8px 16px;
+    border-radius: 20px;
+    background: #eef2ff;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e73e8;
+    transition: all 0.2s;
+}
+
+.tabs span:hover {
+    background: #e0e7ff;
+    color: #1e73e8;
+}
+
+.tabs span.active {
+    background: #1e73e8;
+    color: white;
+}
+
+/* ===== ТЕГИ ===== */
+.tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.tag {
+    background: #F2F4FA;
+    color: #475569;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.tag:hover {
+    background: #e5e9f2;
+    transform: translateY(-1px);
+}
+
+/* Размеры тегов в разных контекстах */
+.event-header .tags {
+    margin: 16px 0;
+}
+
+.event-header .tag {
+    padding: 8px 14px;
+    font-size: 13px;
+}
+
+.candidate-tags {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+.candidate-tags .tag {
+    padding: 4px 10px;
+    font-size: 11px;
+}

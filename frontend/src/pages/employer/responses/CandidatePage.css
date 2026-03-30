@@ -1,0 +1,348 @@
+/* кнопка назад */
+
+.candidate-page {
+    padding-top: 20px;
+}
+
+.back-btn {
+    /*margin-bottom: 20px;*/
+    background: none;
+    border: none;
+    color: #1e73e8;
+    font-size: 14px;
+    cursor: pointer;
+    padding: 8px 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.back-btn:hover {
+    color: #1557b0;
+}
+
+/* layout - правая колонка уже */
+.candidate-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 32px;
+    align-items: start;
+}
+
+/* ===== ЛЕВАЯ ЧАСТЬ ===== */
+.main {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    gap: 32px;
+    background: white;
+    border-radius: 20px;
+    padding-top: 20px;
+}
+
+/* левая колонка внутри main */
+.avatar-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: flex-start;
+}
+
+/* аватар увеличен */
+.avatar.big {
+    width: 180px;
+    height: 180px;
+    margin: 0;
+}
+
+.avatar.big img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+/* кнопка связаться - уменьшена в ширину */
+.contact-btn {
+    width: auto;
+    min-width: 120px;
+    padding: 10px 20px;
+    background: #1e73e8;
+    color: white;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.contact-btn:hover {
+    background: #1557b0;
+}
+
+/* иконки связи */
+.contact-icons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 16px;
+}
+
+.icon-link {
+    font-size: 20px;
+    text-decoration: none;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.icon-link:hover {
+    color: #1e73e8;
+}
+
+/* портфолио текст */
+.portfolio-text {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+    margin-top: 8px;
+}
+
+/* иконки портфолио */
+.portfolio-icons {
+    display: flex;
+    justify-content: flex-start;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.portfolio-link {
+    padding: 4px 12px;
+    background: #f1f3f6;
+    border-radius: 20px;
+    font-size: 12px;
+    text-decoration: none;
+    color: #1e73e8;
+    transition: background 0.2s;
+}
+
+.portfolio-link:hover {
+    background: #e5e7eb;
+}
+
+/* ===== ЦЕНТРАЛЬНАЯ ЧАСТЬ ===== */
+.info-section {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.info-section h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.info-section .role {
+    font-size: 16px;
+    color: #64748b;
+    margin: 0;
+}
+
+/* теги навыков */
+.skills-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.skill-tag {
+    background: #f1f3f6;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #475569;
+}
+
+/* кнопки действий */
+.action-buttons {
+    display: flex;
+    gap: 12px;
+    margin: 8px 0;
+}
+
+.btn-accept {
+    flex: 1;
+    background: #1e73e8;
+    color: white;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-accept:hover {
+    background: #1557b0;
+}
+
+.btn-reserve {
+    flex: 1;
+    background: #f1f3f6;
+    color: #1e293b;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-reserve:hover {
+    background: #e5e7eb;
+}
+
+.btn-reject {
+    flex: 1;
+    background: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.btn-reject:hover {
+    background: #fee2e2;
+}
+
+/* сообщение о статусе */
+.status-message {
+    text-align: center;
+    padding: 12px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 8px 0;
+}
+
+.status-message.accepted {
+    background: #dcfce7;
+    color: #10b981;
+    border: 1px solid #10b981;
+}
+
+.status-message.reserved {
+    background: #fef9c3;
+    color: #eab308;
+    border: 1px solid #eab308;
+}
+
+.status-message.rejected {
+    background: #fee2e2;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+/* секции */
+.inner-profile-section {
+    margin-top: 8px;
+}
+
+.inner-profile-section h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #1e293b;
+}
+
+.inner-profile-section p {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #475569;
+}
+
+.skills-full {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+/* ===== ПРАВАЯ ЧАСТЬ ===== */
+.candidate-page-sidebar {
+    background: white;
+    border-radius: 20px;
+    padding: 20px;
+    gap: 20px;
+}
+
+.candidate-page-sidebar h3 {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #1e293b;
+}
+
+.empty-other {
+    text-align: center;
+    color: #94a3b8;
+    padding: 20px;
+    font-size: 14px;
+}
+
+/* карточки в сайдбаре */
+.candidate-page-sidebar .candidate-card {
+    margin-bottom: 16px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.candidate-page-sidebar .candidate-card:hover {
+    transform: translateX(4px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+/* Адаптивность */
+@media (max-width: 1024px) {
+    .candidate-layout {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .main {
+        grid-template-columns: 1fr;
+        gap: 24px;
+    }
+
+    .avatar-section {
+        align-items: center;
+    }
+
+    .avatar.big {
+        width: 140px;
+        height: 140px;
+    }
+
+    .contact-btn {
+        width: auto;
+        min-width: 140px;
+    }
+
+    .contact-icons {
+        justify-content: center;
+    }
+
+    .portfolio-icons {
+        justify-content: center;
+    }
+
+    .portfolio-text {
+        text-align: center;
+    }
+
+    .action-buttons {
+        flex-direction: column;
+    }
+}

@@ -1,0 +1,27 @@
+.role-option {
+    display: flex;
+    gap: 12px;
+    padding: 12px;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    cursor: pointer;
+    background: #f9f9f9;
+}
+
+.role-option.selected {
+    border: 2px solid #1e73e8;
+    background: #eef5ff;
+}
+
+.icon img{
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+}
+
+.subtitle {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 4px;
+    line-height: 1.4;
+}

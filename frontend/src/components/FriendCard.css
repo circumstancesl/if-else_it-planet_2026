@@ -1,0 +1,313 @@
+/* FriendCard.css */
+
+/* ===================== ОБЩИЕ СТИЛИ ===================== */
+.friend-card-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.friend-avatar-small {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.online-dot {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    background-color: #10b981;
+    border: 2px solid white;
+    border-radius: 50%;
+}
+
+.friend-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.friend-role {
+    font-size: 13px;
+    color: #64748b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ===================== ОБЫЧНЫЙ ДРУГ ===================== */
+.friend-card {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.friend-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #d1d5db;
+}
+
+.message-btn {
+    flex-shrink: 0;
+}
+
+/* ===================== ВОЗМОЖНЫЙ ДРУГ (ПРЕДЛОЖЕНИЕ) ===================== */
+.friend-card-suggest {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.friend-card-suggest:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #d1d5db;
+}
+
+.friend-card-top {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+
+.friend-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.friend-card-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.friend-card-info .friend-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+    margin-bottom: 4px;
+}
+
+.friend-card-info .friend-role {
+    font-size: 13px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.mutual-friends {
+    font-size: 12px;
+    color: #8b5cf6;
+    background: #f5f3ff;
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+.friend-skills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.friend-skills span {
+    background: #f1f3f6;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.add-friend-btn {
+    width: 100%;
+}
+
+/* ===================== ЗАЯВКА В ДРУЗЬЯ ===================== */
+.friend-card-request {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.friend-card-request:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    border-color: #d1d5db;
+}
+
+.request-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.accept-btn {
+    background: #10b981;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.accept-btn:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.reject-btn {
+    background: #ef4444;
+    color: white;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+}
+
+.reject-btn:hover {
+    background: #dc2626;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+.accept-btn:active,
+.reject-btn:active {
+    transform: translateY(0);
+}
+
+/* ===================== ПУСТЫЕ СОСТОЯНИЯ ===================== */
+.empty-state {
+    text-align: center;
+    padding: 48px;
+    background: white;
+    border-radius: 16px;
+    border: 1px solid #e5e7eb;
+    color: #8a99b0;
+}
+
+.empty-state p {
+    margin-bottom: 16px;
+    font-size: 14px;
+}
+
+.empty-state-small {
+    text-align: center;
+    padding: 32px;
+    background: white;
+    border-radius: 12px;
+    border: 1px solid #e5e7eb;
+    color: #8a99b0;
+    font-size: 14px;
+}
+
+.empty-state-small p {
+    margin: 0;
+}
+
+/* ===================== АДАПТИВНОСТЬ ===================== */
+@media (max-width: 768px) {
+    .friend-card {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .friend-card-left {
+        width: 100%;
+    }
+
+    .message-btn {
+        width: 100%;
+    }
+
+    .friend-card-suggest {
+        padding: 12px;
+    }
+
+    .friend-card-top {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .friend-card-info {
+        text-align: center;
+    }
+
+    .friend-card-request {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .request-actions {
+        width: 100%;
+    }
+
+    .accept-btn,
+    .reject-btn {
+        flex: 1;
+        text-align: center;
+    }
+}
+
+.friend-actions {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.friend-actions .add-friend-btn {
+    flex: 1;
+}
+
+.friend-actions .message-btn {
+    flex: 1;
+}

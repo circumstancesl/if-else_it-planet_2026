@@ -1,0 +1,33 @@
+.map {
+    height: 500px;
+    background: #eaeaea;
+    border-radius: 16px;
+    position: relative;
+}
+
+.marker {
+    position: absolute;
+    cursor: pointer;
+    font-size: 24px;
+}
+
+.left .ymaps-2-1-79-map {
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.map-container {
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.map-container:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+}
+
+.map-container .ymaps-2-1-79-map {
+    border-radius: 20px;
+    overflow: hidden;
+}

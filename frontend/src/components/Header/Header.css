@@ -1,0 +1,147 @@
+.header {
+    height: 72px;
+    background: #F2F4FA;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    width: 100%;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header .logo {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.header .logo img {
+    height: 32px;
+}
+
+.header .nav {
+    display: flex;
+    gap: 32px;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.header .nav-item {
+    cursor: pointer;
+    color: #444;
+    font-size: 16px;
+    transition: color 0.2s;
+    padding: 8px 0;
+    white-space: nowrap;
+}
+
+.header .nav-item:hover {
+    color: #1e73e8;
+}
+
+.header .nav-item.active {
+    color: #1e73e8;
+    font-weight: 500;
+    position: relative;
+}
+
+.header .nav-item.active::after {
+    content: '';
+    position: absolute;
+    bottom: -4px;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: #1e73e8;
+    border-radius: 2px;
+}
+
+.header .actions {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+.header .actions button,
+.header .actions span {
+    font-size: 16px;
+}
+
+.header .user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+}
+
+.header .user-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.header .avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.header .register {
+    color: #1e73e8;
+    cursor: pointer;
+    background: none;
+    border: none;
+    padding: 8px 0;
+    min-width: 150px;
+}
+
+.header .register:hover {
+    background: rgba(30, 115, 232, 0.1);
+    border-radius: 8px;
+    /*padding: 8px 16px;*/
+    /*margin: -8px -16px;*/
+}
+
+.header .login {
+    border: 2px solid #1e73e8;
+    background: transparent;
+    padding: 8px 24px;
+    border-radius: 12px;
+    color: #1e73e8;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 150px;
+}
+
+.header .login:hover {
+    background: #1e73e8;
+    color: white;
+}
+
+.header .logout {
+    background: transparent;
+    border: 1px solid #e5e7eb;
+    padding: 8px 18px;
+    border-radius: 12px;
+    color: #ef4444;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 150px;
+}
+
+.header .logout:hover {
+    background: #ef4444;
+    color: white;
+    border-color: #ef4444;
+}
+
+.header .nav-placeholder {
+    flex: 1;
+}
+

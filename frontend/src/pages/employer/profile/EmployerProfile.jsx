@@ -1,0 +1,241 @@
+import { useNavigate } from "react-router-dom";
+import { useEffect, useState, useMemo, useCallback } from "react";
+import Header from "../../../components/Header/Header.jsx";
+import EventCard from "../../../components/EventCard";
+import CandidateCard from "../../../components/CandidateCard";
+import { usePossibilities } from "../../../api/usePossibilities";
+import { useResponses } from "../../../api/useResponses";
+import "./EmployerProfile.css";
+
+export default function EmployerProfile() {
+    const navigate = useNavigate();
+    const { getMyPossibilities, loading: eventsLoading } = usePossibilities();
+    const { getResponsesForPossibility } = useResponses();
+    const [visibleCount, setVisibleCount] = useState(3);
+    const [events, setEvents] = useState([]);
+    const [responsesCount, setResponsesCount] = useState({});
+    const [latestResponses, setLatestResponses] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [initialLoad, setInitialLoad] = useState(true);
+
+    // Загрузка событий
+    const loadData = useCallback(async () => {
+        if (!initialLoad) return;
+
+        try {
+            setLoading(true);
+            const data = await getMyPossibilities("published");
+            const eventsData = data || [];
+            setEvents(eventsData);
+
+            // Загружаем количество откликов для каждого события
+            const counts = {};
+            const allResponses = [];
+
+            for (const event of eventsData) {
+                try {
+                    const responses = await getResponsesForPossibility(event.id);
+                    const responsesArray = Array.isArray(responses) ? responses : [];
+                    counts[event.id] = responsesArray.length;
+
+                    // Собираем последние отклики
+                    if (responsesArray.length > 0) {
+                        responsesArray.forEach(response => {
+                            allResponses.push({
+                                ...response,
+                                eventTitle: event.title,
+                                eventId: event.id
+                            });
+                        });
+                    }
+                } catch (err) {
+                    console.error(`Error loading responses for event ${event.id}:`, err);
+                    counts[event.id] = 0;
+                }
+            }
+            setResponsesCount(counts);
+
+            // Берем 2 самых последних отклика
+            const sortedResponses = allResponses.sort((a, b) =>
+                new Date(b.createdAt) - new Date(a.createdAt)
+            );
+            setLatestResponses(sortedResponses.slice(0, 2));
+
+            setInitialLoad(false);
+        } catch (err) {
+            console.error(err);
+            setEvents([]);
+        } finally {
+            setLoading(false);
+        }
+    }, [getMyPossibilities, getResponsesForPossibility, initialLoad]);
+
+    useEffect(() => {
+        loadData();
+    }, [loadData]);
+
+    useEffect(() => {
+        const calculateVisible = () => {
+            const width = window.innerWidth;
+            if (width >= 1400) setVisibleCount(4);
+            else if (width >= 1100) setVisibleCount(3);
+            else if (width >= 768) setVisibleCount(2);
+            else setVisibleCount(1);
+        };
+
+        calculateVisible();
+        window.addEventListener("resize", calculateVisible);
+        return () => window.removeEventListener("resize", calculateVisible);
+    }, []);
+
+    // Нормализация
+    const normalizedEvents = useMemo(() => {
+        return events.map((e) => ({
+            id: e.id,
+            title: e.title,
+            description: e.description || "",
+            company: "Моя компания",
+            address: e.city || "Не указано",
+            type: e.type,
+            format: e.format,
+            salary: e.salary,
+            tags: e.Tags || [],
+            responses: responsesCount[e.id] || 0,
+        }));
+    }, [events, responsesCount]);
+
+    // Преобразование откликов в формат для CandidateCard
+    const formattedResponses = useMemo(() => {
+        return latestResponses.map(response => ({
+            id: response.User?.id || response.candidateId,
+            responseId: response.id,
+            name: response.User?.name || "Неизвестно",
+            role: response.User?.role || "Соискатель",
+            skills: response.User?.skills || [],
+            status: response.status || "pending",
+            eventTitle: response.eventTitle,
+            eventId: response.eventId
+        }));
+    }, [latestResponses]);
+
+    const visibleEvents = normalizedEvents.slice(0, visibleCount);
+
+    const handleCreateEvent = () => {
+        navigate("/employer/profile/create-event");
+    };
+
+    const handleViewAnalytics = () => {
+        navigate("/employer/profile/analytics");
+    };
+
+    const handleEditProfile = () => {
+        navigate("/employer/profile/edit");
+    };
+
+    const handleViewResponses = (event) => {
+        navigate(`/employer/responses/${event.id}`);
+    };
+
+    const handleViewCandidate = (candidate) => {
+        navigate(`/employer/responses/candidate/${candidate.id}`, {
+            state: { responseId: candidate.responseId, status: candidate.status }
+        });
+    };
+
+    if (loading || eventsLoading) {
+        return (
+            <div className="page">
+                <Header />
+                <div className="container">
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                        Загрузка...
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="page">
+            <Header />
+
+            <div className="container">
+                <div className="profile-header">
+                    <div className="company-info">
+                        <div className="company-avatar">
+                            <span className="icon">🏢</span>
+                        </div>
+                        <div className="company-details">
+                            <h2>ТехноСофт</h2>
+                            <span className="verified">Верифицировано ✔</span>
+                        </div>
+                    </div>
+
+                    <div className="actions">
+                        <button className="primary" onClick={handleCreateEvent}>
+                            + Создать событие
+                        </button>
+                        <button className="secondary" onClick={handleViewAnalytics}>
+                            Смотреть аналитику
+                        </button>
+                        <button className="secondary" onClick={handleEditProfile}>
+                            Редактировать профиль
+                        </button>
+                    </div>
+                </div>
+
+                <div className="section">
+                    <div className="section-header">
+                        <h3>Активные события</h3>
+                        <span className="badge">{normalizedEvents.length}</span>
+                    </div>
+
+                    <div className="grid">
+                        {visibleEvents.map((event) => (
+                            <EventCard
+                                key={event.id}
+                                event={event}
+                                variant="employer"
+                                responsesCount={event.responses}
+                                onViewResponses={() => handleViewResponses(event)}
+                                onClick={() => navigate(`/employer/event/${event.id}`)}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        className="link-btn"
+                        onClick={() => navigate("/employer/events")}
+                    >
+                        Смотреть все события →
+                    </button>
+                </div>
+
+                <div className="section">
+                    <div className="section-header">
+                        <h3>Последние отклики</h3>
+                        <span className="badge">{formattedResponses.length}</span>
+                    </div>
+
+                    <div className="grid candidates-grid">
+                        {formattedResponses.map((candidate) => (
+                            <CandidateCard
+                                key={candidate.id}
+                                candidate={candidate}
+                                status={candidate.status}
+                                onClick={() => handleViewCandidate(candidate)}
+                            />
+                        ))}
+                    </div>
+
+                    <button
+                        className="link-btn"
+                        onClick={() => navigate("/employer/responses")}
+                    >
+                        Смотреть все отклики →
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

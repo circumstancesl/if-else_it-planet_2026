@@ -1,0 +1,207 @@
+/* CandidateProfile.css */
+
+
+
+.candidate-profile-container {
+    padding-top: 32px; /* добавляем отступ сверху */
+}
+
+.profile-layout {
+    display: grid;
+    grid-template-columns: 220px 420px 1fr;
+    gap: 32px;
+    align-items: start;
+}
+
+/* колонки */
+.col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.col-middle {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.col-middle h2 {
+    font-size: 20px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #1e293b;
+}
+
+.col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.col-right h2,
+.col-right h3 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-top: 8px;
+    color: #1e293b;
+}
+
+.col-right h3 {
+    font-size: 16px;
+    margin-top: 16px;
+}
+
+/* аватар */
+.avatar-block {
+    width: 200px;
+    height: 200px;
+    border-radius: 50%;
+    overflow: hidden;
+    background: #f1f3f6;
+}
+
+.avatar-block img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ===== TOGGLE SWITCH (синий) ===== */
+.privacy {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.privacy span {
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.privacy p {
+    font-size: 12px;
+    color: #64748b;
+    margin-top: 4px;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 52px;
+    height: 28px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #cbd5e1;
+    transition: 0.3s;
+    border-radius: 28px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 22px;
+    width: 22px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #1e73e8;
+}
+
+input:checked + .slider:before {
+    transform: translateX(24px);
+}
+
+/* строки */
+.row {
+    display: flex;
+    gap: 8px;
+}
+
+/* кнопка + */
+.add-btn {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background: #1e73e8;
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.add-btn:hover {
+    background: #1557b0;
+}
+
+/* ===== ТЕГИ ===== */
+.profile-layout .tag-group {
+    margin-top: 8px;
+}
+
+.profile-layout .tag-label {
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.profile-layout .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.profile-layout .tag {
+    background: #eef2ff;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #1e73e8;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.profile-layout .tag:hover {
+    background: #e0e7ff;
+}
+
+.profile-layout .add-tag {
+    background: #f1f3f6;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #1e73e8;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.add-tag:hover {
+    background: #e5e7eb;
+}
+
+/* ===== КНОПКИ ===== */
+

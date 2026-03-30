@@ -1,0 +1,18 @@
+.event-title {
+    margin: 16px 0;
+    color: #1e73e8;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+}
+
+.empty-state {
+    text-align: center;
+    margin-top: 40px;
+    color: #777;
+}

@@ -1,0 +1,305 @@
+.cardEvent {
+    background: white;
+    padding: 20px;
+    border-radius: 20px;
+    border: 1px solid #e5e7eb;
+    transition: 0.2s;
+    width: 100%;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    max-height: 300px;
+    overflow: hidden;
+}
+
+.cardEvent:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+    border-color: #dbeafe;
+}
+
+.cardEvent-titleBlock {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    flex: 1;
+    min-width: 0;
+}
+
+.cardEvent-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cardEvent-desc {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    word-break: break-word;
+}
+
+/* отступы между блоками */
+.cardEvent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
+    gap: 12px;
+    min-width: 0;
+}
+
+/* блок компания + адрес */
+.cardEvent-companyBlock {
+    display: flex;
+    flex-direction: column;
+    margin-top: 12px;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+/* компания */
+.company {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.company span {
+    flex-shrink: 0;
+}
+
+/* адрес */
+.event-card-address {
+    font-size: 13px;
+    color: #777;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* сердечко */
+.heart {
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+}
+
+.heart.active {
+    color: red;
+}
+
+.heart img {
+    width: 20px;
+    height: 20px;
+}
+
+.cardEvent-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+    align-items: center;
+}
+
+/* кнопка */
+.cardEvent .primary-small {
+    width: 100%;
+    margin-top: 16px;
+    flex-shrink: 0;
+}
+
+/* переопределение глобальных тегов для карточки */
+.cardEvent .tags {
+    margin: 14px 0;
+    gap: 8px;
+    overflow: hidden;
+    flex-wrap: nowrap;
+    min-height: 32px;
+    position: relative;
+}
+
+.cardEvent .tag {
+    background: #F2F4FA;
+    color: #475569;
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 12px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+/* Выделенная карточка */
+.cardEvent.highlighted {
+    border: 2px solid #1e73e8;
+    box-shadow: 0 4px 12px rgba(30, 115, 232, 0.2);
+    transform: translateY(-2px);
+}
+
+/* ===================== СЕКЦИЯ ОТКЛИКОВ ===================== */
+.responses-section {
+    width: 100%;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.responses-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.eye-icon {
+    font-size: 16px;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+}
+
+.responses-count {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.responses-section .primary-small {
+    flex: 1;
+    margin-top: 0;
+}
+
+/* ===================== СЕКЦИЯ ЧАТА ===================== */
+.chat-section {
+    width: 100%;
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.messages-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f1f5f9;
+    padding: 6px 12px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.messages-badge span:first-child {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.messages-badge span:last-child {
+    font-size: 14px;
+    font-weight: 500;
+    color: #1e293b;
+}
+
+.chat-section .primary-small {
+    flex: 1;
+    margin-top: 0;
+}
+
+/* ===================== КАРТОЧКА ДЛЯ КАНДИДАТА ===================== */
+.cardEvent.candidate .primary-small {
+    background: #1e73e8;
+    color: white;
+    border: none;
+}
+
+.cardEvent.candidate .primary-small:hover {
+    background: white;
+    border: 2px solid #1e73e8;
+    color: #1e73e8;
+}
+
+/* ===================== КАРТОЧКА ДЛЯ РАБОТОДАТЕЛЯ ===================== */
+.cardEvent.employer .edit-icon {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+}
+
+.cardEvent.employer .edit-icon img {
+    width: 18px;
+    height: 18px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.cardEvent.employer .edit-icon:hover img {
+    opacity: 1;
+}
+
+/* ===================== ЗАКРЫТАЯ КАРТОЧКА ===================== */
+.cardEvent.closed {
+    opacity: 0.7;
+    background: #f8fafc;
+}
+
+.cardEvent.closed .primary-small {
+    background: #94a3b8;
+    cursor: not-allowed;
+}
+
+.cardEvent.closed .primary-small:hover {
+    background: #94a3b8;
+    border: none;
+    color: white;
+}
+
+/* ===================== АДАПТИВНОСТЬ ===================== */
+@media (max-width: 768px) {
+    .cardEvent {
+        padding: 16px;
+        max-height: none;
+    }
+
+    .cardEvent-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .cardEvent-actions {
+        align-self: flex-end;
+        margin-top: -30px;
+    }
+
+    .responses-section,
+    .chat-section {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .responses-badge,
+    .messages-badge {
+        justify-content: center;
+    }
+
+    .responses-section .primary-small,
+    .chat-section .primary-small {
+        width: 100%;
+    }
+}
