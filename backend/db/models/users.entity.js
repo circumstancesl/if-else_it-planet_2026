@@ -45,11 +45,13 @@ module.exports = (sequelize, DataTypes) => {
     });
 
     Users.hasMany(models.Connections, {
+      as: 'RequestedConnections',
       foreignKey: 'requesterId',
       onDelete: 'CASCADE',
     });
 
     Users.hasMany(models.Connections, {
+      as: 'ReceivedConnections',
       foreignKey: 'receiverId',
       onDelete: 'CASCADE',
     });

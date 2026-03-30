@@ -7,6 +7,7 @@ const favorite = require('./favorites.controller');
 const response = require('./responses.controller');
 const admin = require('./admin.controller');
 const curator = require('./curator.controller');
+const connection = require('./connections.controller');
 
 module.exports = {
   login: auth.login,
@@ -39,4 +40,9 @@ module.exports = {
   getCurators: admin.getCurators,
   getCompanies: curator.getCompanies,
   updateCompanyStatus: curator.updateCompanyStatus,
+  getRequests: connection.getRequests,
+  getFriends: connection.getFriends,
+  rejectRequest: connection.rejectRequest,
+  acceptRequest: connection.acceptRequest,
+  sendRequest: connection.sendRequest,
 }

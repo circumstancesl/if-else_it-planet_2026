@@ -12,6 +12,7 @@ const routerAdmin =  require('./admin.router');
 const routerCurator =  require('./curator.router');
 const routerChat =  require('./chat.router');
 const routerGuest =  require('./guest.router');
+const routerConnection =  require('./connections.router');
 
 const authenticationMiddleware = require('../middleware/authentication.middleware');
 
@@ -27,6 +28,7 @@ router.use('/api/admin', routerAdmin);
 router.use('/api/curator', routerCurator);
 router.use('/api/chat', routerChat);
 router.use('/guest', routerGuest);
+router.use('/api/connection', routerConnection);
 
 router.use((req, res, next) => {
   next(createError(404, 'Page not Found'));

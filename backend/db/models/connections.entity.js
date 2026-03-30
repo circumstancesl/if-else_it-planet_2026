@@ -31,10 +31,12 @@ module.exports = (sequelize, DataTypes) => {
 
   Connections.associate = function (models) {
     Connections.belongsTo(models.Users, {
+      as: 'Requester',
       foreignKey: 'requesterId',
     });
 
     Connections.belongsTo(models.Users, {
+      as: 'Receiver',
       foreignKey: 'receiverId',
     });
   };
