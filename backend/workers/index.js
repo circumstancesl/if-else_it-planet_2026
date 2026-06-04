@@ -6,6 +6,7 @@ const db = require('../db/models');
 const initSocket = require('../socketIo');
 
 const rootRouter = require('../routes');
+const { join } = require("node:path");
 
 module.exports = (() => {
   const app = express();
@@ -17,7 +18,7 @@ module.exports = (() => {
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json({ limit: '200mb' }));
   app.use(cookieParser());
-
+  app.use('/uploads', express.static(join(__dirname, 'uploads')));
   app.use(rootRouter);
 
   db.connect().catch((e) => {

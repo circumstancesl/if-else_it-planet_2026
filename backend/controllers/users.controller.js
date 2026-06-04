@@ -161,6 +161,10 @@ async function updateCompanyProfile(userId, data) {
     company.websiteURL = data.websiteURL;
   }
 
+  if (data.logoUrl !== undefined) {
+    company.logoUrl = data.logoUrl;
+  }
+
   if (data.inn !== undefined) {
     const cleanInn = String(data.inn).replace(/\D/g, '');
 

@@ -10,6 +10,7 @@ const {
   getSuggestedFriends
 } = require('../controllers/users.controller');
 
+const upload = require('../middleware/upload.middleware');
 const Joi = require('joi');
 
 routerUser.get(
@@ -91,7 +92,7 @@ routerUser.get(
 );
 
 routerUser.patch(
-  '/company',
+  '/company', upload.single('logoUrl'),
   asyncHandler(async (req, res) => {
     const schema = Joi.object({
       name: Joi.string().min(2).max(100).optional(),
@@ -99,11 +100,22 @@ routerUser.patch(
       industry: Joi.string().min(2).max(100).optional(),
       inn: Joi.string().optional(),
       websiteURL: Joi.array().items(Joi.string()).optional(),
-    }).min(1);
+    });
 
     await schema.validateAsync(req.body);
 
-    const updatedCompany = await updateCompanyProfile(req.user.id, req.body);
+    let logoUrl = undefined;
+    if (req.file) {
+      // req.protocol = 'http' или 'https', req.get('host') = 'localhost:3000'
+      logoUrl = `${req.protocol}://${req.get('host')}/uploads/companies/${req.file.filename}`;
+    }
+
+    const updateData = {
+      ...req.body,
+      ...(logoUrl && { logoUrl }),
+    };
+
+    const updatedCompany = await updateCompanyProfile(req.user.id, updateData);
     res.send(updatedCompany);
   }),
 );

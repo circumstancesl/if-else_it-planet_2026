@@ -36,6 +36,11 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: true,
     },
+    logoUrl: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      defaultValue: null,
+    },
     verification_status: {
       type: DataTypes.ENUM('pending', 'approved', 'rejected'),
       allowNull: true,
