@@ -1,0 +1,204 @@
+.auth-page {
+    height: 100vh;
+    background: url("/public/img/background-login.png") center/cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+
+.auth-card {
+    position: relative;
+    z-index: 2;
+    width: 340px;
+    background: white;
+    border-radius: 20px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: #ccc;
+    border-radius: 50%;
+    margin: 0 auto;
+}
+
+
+.checkbox {
+    font-size: 12px;
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.checkboxes-wrapper {
+    display: flex;
+    flex-direction: column;
+    /*margin: 4px 0;*/
+}
+
+
+.bottom-text {
+    text-align: center;
+    font-size: 14px;
+}
+
+.bottom-text span {
+    color: #1e73e8;
+    cursor: pointer;
+}
+
+.auth-top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.auth-top-bar .back {
+    position: absolute;
+    left: 0;
+    cursor: pointer;
+    font-size: 24px;
+    color: #666;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-top-bar .back:hover {
+    color: #1e73e8;
+}
+
+.avatar-title-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.avatar-center {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    color: white;
+}
+
+.avatar-title-block h2 {
+    margin: 0;
+    font-size: 24px;
+}
+
+/*FROM LOGIN*/
+
+.login-page {
+    height: 100vh;
+    background: url("/public/img/background-login.png") center/cover no-repeat;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+}
+
+.overlay {
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(6px);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.login-card {
+    position: relative;
+    z-index: 2;
+    max-width: 380px;
+    background: white;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+h2 {
+    text-align: center;
+}
+
+
+
+.login-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    position: relative;
+}
+
+.login-card-header h2 {
+    margin: 0;
+    text-align: center;
+    flex: 1;
+}
+
+.back {
+    cursor: pointer;
+    font-size: 24px;
+    color: #666;
+    transition: color 0.2s;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.back:hover {
+    color: #1e73e8;
+}
+
+.placeholder {
+    width: 32px;
+}
+
+/* Уменьшаем отступ между кнопками */
+.login-card .secondary {
+    margin-top: 4px; /* было 12px, стало 4px */
+}
+
+.buttons-container {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+/* Кнопка входа всегда на одном месте */
+.buttons-container .primary {
+    width: 100%;
+}
+
+/* Контейнер для кнопки регистрации (резервирует место) */
+.register-wrapper {
+    min-height: 46px; /* 👈 высота кнопки */
+}
+
+.login-card input {
+    margin-bottom: 12px;
+}
+
+.login-card input:last-of-type {
+    margin-bottom: 0;
+}

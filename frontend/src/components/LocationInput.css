@@ -1,0 +1,68 @@
+.location-input-container {
+    position: relative;
+    width: 100%;
+}
+
+.location-input {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    font-size: 15px;
+    transition: all 0.2s;
+}
+
+.location-input:focus {
+    outline: none;
+    border-color: #1e73e8;
+    box-shadow: 0 0 0 3px rgba(30, 115, 232, 0.1);
+}
+
+.location-loading {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #94a3b8;
+}
+
+.location-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    margin-top: 4px;
+    max-height: 300px;
+    overflow-y: auto;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.location-suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.location-suggestion-item:hover {
+    background: #f3f4f6;
+}
+
+.location-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.location-address {
+    font-size: 14px;
+    color: #1f2937;
+    flex: 1;
+    word-break: break-word;
+}

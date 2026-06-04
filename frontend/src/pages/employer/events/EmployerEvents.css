@@ -1,0 +1,46 @@
+
+/* 🔝 верхняя панель */
+.top-bar {
+    display: flex;
+    gap: 12px;
+    margin: 20px 0;
+}
+
+.add-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    background: #1e73e8;
+    color: white;
+    border: none;
+    font-size: 20px;
+}
+
+.search {
+    flex: 1;
+    height: 44px;
+    border-radius: 12px;
+    border: 1px solid #ddd;
+    padding: 0 12px;
+}
+
+.filter-btn {
+    width: 44px;
+    border-radius: 10px;
+}
+
+.find-btn {
+    width: 140px;
+    border-radius: 12px;
+    background: #dcdcdc;
+}
+
+/* 🧭 табы */
+
+/* 🎴 сетка */
+.grid {
+    margin-top: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 20px;
+}

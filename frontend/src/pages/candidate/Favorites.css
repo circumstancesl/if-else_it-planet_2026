@@ -1,0 +1,28 @@
+/* Favorites.css */
+.empty-favorites {
+    text-align: center;
+    padding: 60px 20px;
+    background: #f8fafc;
+    border-radius: 20px;
+    margin-top: 40px;
+}
+
+.empty-favorites p {
+    color: #94a3b8;
+    font-size: 16px;
+    margin-bottom: 20px;
+}
+
+.empty-favorites button {
+    background: #1e73e8;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.empty-favorites button:hover {
+    background: #1557b0;
+}
