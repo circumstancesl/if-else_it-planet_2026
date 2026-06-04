@@ -93,6 +93,7 @@ routerPossibility.patch(
       salary: Joi.number().optional(),
       date: Joi.date().optional(),
       tagIds: Joi.array().items(Joi.string().uuid()).optional(),
+      status: Joi.string().optional(),
     });
 
     await schema.validateAsync(req.body);
