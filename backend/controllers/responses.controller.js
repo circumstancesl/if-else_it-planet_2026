@@ -56,7 +56,7 @@ async function getMyResponses(userId, status) {
           },
           {
             model: Companies,
-            attributes: ['id', 'name'],
+            attributes: ['id', 'name', 'userId'],
           },
         ],
       },
@@ -78,6 +78,7 @@ async function getMyResponses(userId, status) {
       tags: possibility.Tags,
       companyId: possibility.companyId,
       companyName: possibility.Company.name,
+      companyUserId: possibility.Company.userId,
     };
   });
 }
