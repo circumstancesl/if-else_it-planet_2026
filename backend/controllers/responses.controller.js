@@ -30,7 +30,7 @@ async function applyToPossibility(userId, possibilityId) {
   });
 }
 
-async function getMyResponses(userId, status) {
+async function getMyResponses(userId, status, completed) {
   const responses = await Responses.findAll({
     where: {
       candidateId: userId,
@@ -46,7 +46,9 @@ async function getMyResponses(userId, status) {
           'salary',
           'address',
           'city',
-          'companyId'
+          'companyId',
+          'date',
+          'status',
         ],
         include: [
           {
@@ -64,8 +66,15 @@ async function getMyResponses(userId, status) {
     order: [['createdAt', 'DESC']],
   });
 
-  return responses.map(r => {
+  const today = new Date();
+
+  let result = responses.map(r => {
     const possibility = r.Possibility;
+
+    const isArchived = possibility.status === 'archived';
+    const isDatePassed = possibility.date ? new Date(possibility.date) < today : false;
+    const isCompleted = isArchived || isDatePassed;
+
     return {
       responseId: r.id,
       status: r.status,
@@ -75,12 +84,20 @@ async function getMyResponses(userId, status) {
       salary: possibility.salary,
       address: possibility.address,
       city: possibility.city,
+      date: possibility.date,
+      isCompleted,
       tags: possibility.Tags,
       companyId: possibility.companyId,
       companyName: possibility.Company.name,
       companyUserId: possibility.Company.userId,
     };
   });
+
+  if (completed !== undefined) {
+    result = result.filter(item => item.isCompleted === completed);
+  }
+
+  return result;
 }
 
 async function getResponsesForPossibility(userId, possibilityId) {

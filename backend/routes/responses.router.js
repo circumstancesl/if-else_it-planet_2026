@@ -35,9 +35,18 @@ routerResponse.get(
   '/my',
   candidateMiddleware,
   asyncHandler(async (req, res) => {
-    const { status } = req.query;
+    const schema = Joi.object({
+      status: Joi.string().valid('pending', 'accepted', 'rejected', 'reserve').optional(),
+      completed: Joi.boolean().optional(),
+    });
 
-    const result = await getMyResponses(req.user.id, status);
+    const query = await schema.validateAsync(req.query);
+
+    const result = await getMyResponses(
+      req.user.id,
+      query.status,
+      query.completed
+    );
 
     res.send(result);
   }),
