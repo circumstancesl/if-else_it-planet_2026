@@ -10,7 +10,7 @@ const {
   getSuggestedFriends
 } = require('../controllers/users.controller');
 
-const upload = require('../middleware/upload.middleware');
+const { uploadCompany, uploadCandidate } = require('../middleware/upload.middleware');
 const Joi = require('joi');
 
 routerUser.get(
@@ -38,7 +38,7 @@ routerUser.get(
 );
 
 routerUser.patch(
-  '/candidate',
+  '/candidate', uploadCandidate.single('logoUrl'),
   asyncHandler(async (req, res) => {
     const schema = Joi.object({
       jobTitle: Joi.string().min(2).max(100).optional(),
@@ -54,12 +54,22 @@ routerUser.patch(
       profileVisible: Joi.boolean().optional(),
       applicationsVisible: Joi.boolean().optional(),
       tagIds: Joi.array().items(Joi.string().uuid()).optional(),
-    }).min(1);
+    });
 
     await schema.validateAsync(req.body);
 
-    const updatedUser = await updateCandidateProfile(req.user.id, req.body);
-    res.send(updatedUser);
+    let newLogoUrl = undefined;
+    if (req.file) {
+      newLogoUrl = `/uploads/candidates/${req.file.filename}`;
+    }
+
+    const updateData = {
+      ...req.body,
+      ...(newLogoUrl && { logoUrl: newLogoUrl }),
+    };
+
+    const updatedProfile = await updateCandidateProfile(req.user.id, updateData);
+    res.send(updatedProfile);
   }),
 );
 
@@ -92,7 +102,7 @@ routerUser.get(
 );
 
 routerUser.patch(
-  '/company', upload.single('logoUrl'),
+  '/company', uploadCompany.single('logoUrl'),
   asyncHandler(async (req, res) => {
     const schema = Joi.object({
       name: Joi.string().min(2).max(100).optional(),

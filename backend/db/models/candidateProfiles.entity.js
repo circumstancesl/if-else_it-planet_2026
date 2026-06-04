@@ -45,6 +45,11 @@ module.exports = (sequelize, DataTypes) => {
         allowNull: true,
         defaultValue: true,
       },
+      logoUrl: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        defaultValue: null,
+      },
       applicationsVisible: {
         type: DataTypes.BOOLEAN,
         allowNull: true,
