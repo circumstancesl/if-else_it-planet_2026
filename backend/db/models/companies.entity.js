@@ -28,6 +28,10 @@ module.exports = (sequelize, DataTypes) => {
       type: DataTypes.STRING,
       allowNull: true,
     },
+    inn: {
+      type: DataTypes.STRING,
+      allowNull: true,
+    },
     websiteURL: {
       type: DataTypes.ARRAY(DataTypes.TEXT),
       allowNull: true,

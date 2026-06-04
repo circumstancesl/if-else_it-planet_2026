@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const { Users, CandidateProfiles, Companies } = require('../db/models');
+const isValidInn = require('../utils/validate.js');
 
 async function getMyProfile(userId) {
   const user = await Users.findOne({
@@ -147,6 +148,21 @@ async function updateCompanyProfile(userId, data) {
   if (data.websiteURL !== undefined) {
     company.websiteURL = data.websiteURL;
   }
+
+  if (data.inn !== undefined) {
+    const cleanInn = String(data.inn).replace(/\D/g, '');
+
+    if (cleanInn.length !== 10 && cleanInn.length !== 12) {
+      throw createError(400, 'ИНН должен содержать ровно 10 или 12 цифр');
+    }
+
+    if (!isValidInn(cleanInn)) {
+      throw createError(400, 'Неверный ИНН: ошибка в контрольной сумме');
+    }
+
+    company.inn = cleanInn;
+  }
+
 
   await company.save();
 
