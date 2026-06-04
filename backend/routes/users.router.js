@@ -7,6 +7,7 @@ const {
   getMyProfile,
   getCompanyProfile,
   updateCompanyProfile,
+  getSuggestedFriends
 } = require('../controllers/users.controller');
 
 const Joi = require('joi');
@@ -61,6 +62,26 @@ routerUser.patch(
 
     const updatedUser = await updateCandidateProfile(req.user.id, req.body);
     res.send(updatedUser);
+  }),
+);
+
+routerUser.get(
+  '/candidate/suggested',
+  asyncHandler(async (req, res) => {
+    const schema = Joi.object({
+      limit: Joi.number().integer().min(1).max(100).default(20),
+      offset: Joi.number().integer().min(0).default(0),
+    });
+
+    const query = schema.validate(req.query).value;
+
+    const result = await getSuggestedFriends(
+      req.user.id,
+      query.limit,
+      query.offset
+    );
+
+    res.send(result);
   }),
 );
 

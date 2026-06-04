@@ -1,6 +1,7 @@
 const createError = require('http-errors');
-const { Users, CandidateProfiles, Companies } = require('../db/models');
+const { Users, CandidateProfiles, Companies, Connections } = require('../db/models');
 const isValidInn = require('../utils/validate.js');
+const { literal, Op} = require("sequelize");
 
 async function getMyProfile(userId) {
   const user = await Users.findOne({
@@ -169,6 +170,74 @@ async function updateCompanyProfile(userId, data) {
   return company;
 }
 
+async function getSuggestedFriends(currentUserId, limit = 20, offset = 0) {
+  if (!currentUserId) {
+    throw createError(401, 'Требуется авторизация');
+  }
+
+  const connections = await Connections.findAll({
+    where: {
+      [Op.or]: [
+        { requesterId: currentUserId },
+        { receiverId: currentUserId }
+      ],
+      status: { [Op.in]: ['pending', 'accepted'] }
+    },
+    attributes: ['requesterId', 'receiverId'],
+    raw: true
+  });
+
+  const excludedIds = new Set([currentUserId]);
+
+  connections.forEach(conn => {
+    excludedIds.add(conn.requesterId);
+    excludedIds.add(conn.receiverId);
+  });
+
+  const candidates = await CandidateProfiles.findAll({
+    where: {
+      profileVisible: true,
+      userId: { [Op.notIn]: Array.from(excludedIds) }
+    },
+    attributes: [
+      'userId',
+      'fullName',
+      'jobTitle',
+      [literal(`(
+        SELECT COUNT(*)
+        FROM (
+          SELECT CASE
+            WHEN "requesterId" = '${currentUserId}' THEN "receiverId"
+            ELSE "requesterId"
+          END AS "friendId"
+          FROM "Connections"
+          WHERE "status" = 'accepted'
+            AND ("requesterId" = '${currentUserId}' OR "receiverId" = '${currentUserId}')
+        ) AS "myFriends"
+        JOIN "Connections" AS "targetConn" ON
+          "targetConn"."status" = 'accepted'
+          AND (
+            ("targetConn"."requesterId" = "myFriends"."friendId" AND "targetConn"."receiverId" = "CandidateProfiles"."userId")
+            OR
+            ("targetConn"."receiverId" = "myFriends"."friendId" AND "targetConn"."requesterId" = "CandidateProfiles"."userId")
+          )
+      )`), 'mutualFriendsCount']
+    ],
+    order: [
+      [literal('"mutualFriendsCount"'), 'DESC'],
+      ['userId', 'ASC']
+    ],
+    limit: parseInt(limit, 10),
+    offset: parseInt(offset, 10),
+  });
+
+  return candidates.map(c => {
+    const plain = c.toJSON();
+    plain.mutualFriendsCount = parseInt(plain.mutualFriendsCount, 10) || 0;
+    return plain;
+  });
+}
+
 module.exports = {
   getUserProfile,
   updateCandidateProfile,
@@ -176,4 +245,5 @@ module.exports = {
   getMyProfile,
   getCompanyProfile,
   updateCompanyProfile,
+  getSuggestedFriends
 };

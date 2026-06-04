@@ -45,4 +45,5 @@ module.exports = {
   rejectRequest: connection.rejectRequest,
   acceptRequest: connection.acceptRequest,
   sendRequest: connection.sendRequest,
+  getSuggestedFriends: user.getSuggestedFriends,
 }
