@@ -11,6 +11,7 @@ const {
   getMyPossibilities,
   deletePossibility,
   updatePossibility,
+  getCompanyPossibilities
 } = require('../controllers/possibilities.controller');
 
 routerPossibility.post(
@@ -100,6 +101,14 @@ routerPossibility.patch(
 
     const result = await updatePossibility(req.user.id, req.params.id, req.body);
     res.send(result);
+  }),
+);
+
+routerPossibility.get(
+  '/company/:id',
+  asyncHandler(async (req, res) => {
+    const possibility = await getCompanyPossibilities(req.params.id);
+    res.send(possibility);
   }),
 );
 

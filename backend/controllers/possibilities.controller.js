@@ -294,6 +294,25 @@ async function deletePossibility(userId, possibilityId) {
   return { message: 'Удалено успешно' };
 }
 
+async function getCompanyPossibilities(companyId) {
+  const possibilities = await Possibilities.findAll({
+    where: {
+      companyId,
+      status: 'published',
+    },
+    include: [
+      {
+        model: Tags,
+        through: { attributes: [] },
+        attributes: ['id', 'name', 'type'],
+      },
+    ],
+    order: [['createdAt', 'DESC']],
+  });
+
+  return possibilities.map(p => p.toJSON());
+}
+
 module.exports = {
   createPossibility,
   getPossibilities,
@@ -301,4 +320,5 @@ module.exports = {
   getMyPossibilities,
   deletePossibility,
   updatePossibility,
+  getCompanyPossibilities
 }
