@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const { Responses, Possibilities, Companies, Users, Tags } = require('../db/models');
+const { Responses, Possibilities, Companies, Users, Tags, CandidateProfiles } = require('../db/models');
 
 async function applyToPossibility(userId, possibilityId) {
   const possibility = await Possibilities.findByPk(possibilityId);
@@ -107,13 +107,30 @@ async function getResponsesForPossibility(userId, possibilityId) {
     include: [
       {
         model: Users,
-        attributes: ['id', 'name', 'email'],
+        attributes: ['id', 'email'],
+        include: [
+          {
+            model: CandidateProfiles,
+            attributes: ['fullName'],
+          }
+        ]
       },
     ],
     order: [['createdAt', 'DESC']],
   });
 
-  return responses;
+  return responses.map((response) => {
+    const plainResponse = response.get({
+      plain: true
+    });
+
+    if (plainResponse.User && plainResponse.User.CandidateProfile) {
+      plainResponse.User.fullName = plainResponse.User.CandidateProfile.fullName;
+      delete plainResponse.User.CandidateProfile;
+    }
+
+    return plainResponse;
+  });
 }
 
 async function updateResponseStatus(userId, responseId, status) {
