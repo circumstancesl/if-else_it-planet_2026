@@ -58,6 +58,11 @@ module.exports = (sequelize, DataTypes) => {
       foreignKey: 'userId',
       onDelete: 'CASCADE',
     });
+    CandidateProfiles.belongsToMany(models.Tags, {
+      through: 'CandidateProfilesTags',
+      foreignKey: 'candidateProfileId',
+      otherKey: 'tagId',
+    });
   };
 
   return CandidateProfiles;

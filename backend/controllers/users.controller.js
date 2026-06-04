@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const { Users, CandidateProfiles, Companies, Connections } = require('../db/models');
+const { Users, CandidateProfiles, Companies, Connections, Tags } = require('../db/models');
 const isValidInn = require('../utils/validate.js');
 const { literal, Op} = require("sequelize");
 
@@ -16,6 +16,13 @@ async function getMyProfile(userId) {
   if (user.role === 'candidate') {
     const candidateProfile = await CandidateProfiles.findOne({
       where: { userId },
+      include: [
+        {
+          model: Tags,
+          through: { attributes: [] },
+          attributes: ['id', 'name', 'type'],
+        }
+      ]
     });
 
     if (!candidateProfile) {
@@ -47,13 +54,20 @@ async function getMyProfile(userId) {
 async function getUserProfile(userId) {
   const candidateProfile = await CandidateProfiles.findOne({
     where: { userId, profileVisible: true },
+    include: [
+      {
+        model: Tags,
+        through: { attributes: [] },
+        attributes: ['id', 'name', 'type'],
+      }
+    ]
   });
 
   if (!candidateProfile) {
     throw createError(404, 'Профиль кандидата не найден');
   }
 
-  return candidateProfile
+  return candidateProfile;
 }
 
 async function getCandidates(limit = 20, offset = 0) {
@@ -76,41 +90,38 @@ async function updateCandidateProfile(userId, data) {
     throw createError(404, 'Профиль кандидата не найден');
   }
 
-  if (data.fullName !== undefined) {
-    profile.fullName = data.fullName;
+  const { tagIds, ...updateData } = data;
+
+  if (Object.keys(updateData).length > 0) {
+    await profile.update(updateData);
   }
 
-  if (data.university !== undefined) {
-    profile.university = data.university;
+  if (tagIds !== undefined) {
+    if (!Array.isArray(tagIds) || tagIds.length === 0) {
+      await profile.setTags([]);
+    } else {
+      const tags = await Tags.findAll({
+        where: { id: { [Op.in]: tagIds } },
+      });
+
+      if (tags.length !== tagIds.length) {
+        throw createError(400, 'Некоторые теги не существуют');
+      }
+
+      await profile.setTags(tags);
+    }
   }
 
-  if (data.graduationYear !== undefined) {
-    profile.graduationYear = data.graduationYear;
-  }
-
-  if (data.about !== undefined) {
-    profile.about = data.about;
-  }
-
-  if (data.jobTitle !== undefined) {
-    profile.jobTitle = data.jobTitle;
-  }
-
-  if (data.resumeURL !== undefined) {
-    profile.resumeURL = data.resumeURL;
-  }
-
-  if (data.profileVisible !== undefined) {
-    profile.profileVisible = data.profileVisible;
-  }
-
-  if (data.applicationsVisible !== undefined) {
-    profile.applicationsVisible = data.applicationsVisible;
-  }
-
-  await profile.save();
-
-  return profile;
+  return await CandidateProfiles.findOne({
+    where: { userId },
+    include: [
+      {
+        model: Tags,
+        through: { attributes: [] },
+        attributes: ['id', 'name', 'type'],
+      }
+    ]
+  });
 }
 
 async function getCompanyProfile(id) {

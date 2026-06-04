@@ -40,8 +40,6 @@ routerUser.patch(
   '/candidate',
   asyncHandler(async (req, res) => {
     const schema = Joi.object({
-      name: Joi.string().min(2).max(100).optional(),
-
       jobTitle: Joi.string().min(2).max(100).optional(),
       fullName: Joi.string().min(2).max(150).optional(),
       university: Joi.string().min(2).max(150).optional(),
@@ -50,12 +48,11 @@ routerUser.patch(
         .min(1900)
         .max(new Date().getFullYear() + 10)
         .optional(),
-
       about: Joi.string().max(1000).optional(),
       resumeURL: Joi.string().uri().optional(),
-
       profileVisible: Joi.boolean().optional(),
       applicationsVisible: Joi.boolean().optional(),
+      tagIds: Joi.array().items(Joi.string().uuid()).optional(),
     }).min(1);
 
     await schema.validateAsync(req.body);
