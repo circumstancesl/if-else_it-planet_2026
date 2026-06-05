@@ -44,6 +44,7 @@ export default function EmployerResponses() {
         } catch (err) {
             console.error(err);
             setEvents([]);
+            setInitialLoad(false); // ← ВАЖНО: сбрасываем initialLoad даже при ошибке
         } finally {
             setLoading(false);
         }
