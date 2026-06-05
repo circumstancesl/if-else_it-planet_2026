@@ -311,3 +311,9 @@
 .friend-actions .message-btn {
     flex: 1;
 }
+.friend-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}

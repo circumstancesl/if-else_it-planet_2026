@@ -40,6 +40,9 @@ routerUser.get(
 routerUser.patch(
   '/candidate', uploadCandidate.single('logoUrl'),
   asyncHandler(async (req, res) => {
+      console.log('FILE:', req.file);
+
+      console.log('BODY:', req.body);
     const schema = Joi.object({
       jobTitle: Joi.string().min(2).max(100).optional(),
       fullName: Joi.string().min(2).max(150).optional(),

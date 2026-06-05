@@ -34,18 +34,40 @@
     margin: 0 0 24px 0;
 }
 
-.meta-info p {
-    margin: 10px 0;
+/* Мета-информация в виде таблицы */
+.meta-info {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin: 24px 0;
+}
+
+.meta-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+}
+
+.meta-label {
+    min-width: 125px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    flex-shrink: 0;
+}
+
+.meta-value {
     font-size: 15px;
     color: #334155;
     word-break: break-word;
     overflow-wrap: break-word;
+    flex: 1;
 }
 
-.meta-info strong {
-    color: #1e293b;
-    display: inline-block;
-    min-width: 100px;
+.verified {
+    color: #1e73e8;
+    font-weight: bold;
+    margin-left: 4px;
 }
 
 .verified {
@@ -181,3 +203,15 @@
         padding: 24px;
     }
 }
+
+.similar-events-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.similar-events-list .cardEvent {
+    margin: 0;
+    min-width: auto;
+}
+

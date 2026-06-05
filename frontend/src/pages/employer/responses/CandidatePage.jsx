@@ -1,94 +1,137 @@
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Header from "../../../components/Header/Header.jsx";
-import CandidateCard from "../../../components/CandidateCard";
+import { useResponses } from "../../../api/useResponses";
+import { useUsers } from "../../../api/useUsers";
+import { useChat } from "../../../api/useChat";
 import "./CandidatePage.css";
-
-const mockCandidates = [
-    {
-        id: 1,
-        name: "Иванов Иван Иванович",
-        role: "Графический дизайнер",
-        skills: ["Figma", "Photoshop", "Canva", "Illustrator", "After Effects"],
-        about: "Опыт работы 3 года. Занимался дизайном баннеров для крупных компаний. Создавал визуальные концепции для рекламных кампаний. Работал с такими брендами как ВТБ, Сбер, Яндекс.",
-        status: "new",
-        contacts: {
-            phone: "+7 (999) 123-45-67",
-            telegram: "@ivanov",
-            email: "ivan@example.com"
-        },
-        portfolio: [
-            { name: "Behance", url: "https://behance.net/ivanov" },
-            { name: "Portfolio", url: "https://ivanov.ru" }
-        ]
-    },
-    {
-        id: 2,
-        name: "Иванов Калина Петрович",
-        role: "UI/UX дизайнер",
-        skills: ["Figma", "Illustrator", "Sketch"],
-        about: "Специализируюсь на мобильных приложениях. Разрабатывал интерфейсы для банковских приложений.",
-        status: "new",
-        contacts: {
-            phone: "+7 (999) 234-56-78",
-            telegram: "@petrov",
-            email: "petr@example.com"
-        },
-        portfolio: [
-            { name: "Behance", url: "https://behance.net/petrov" }
-        ]
-    },
-];
 
 export default function CandidatePage() {
     const { candidateId } = useParams();
     const navigate = useNavigate();
+    const location = useLocation();
+
+    // Данные из state (только для статуса и responseId)
+    const responseIdFromState = location.state?.responseId;
+    const statusFromState = location.state?.status;
+
+    const { updateResponseStatus } = useResponses();
+    const { getCandidateProfile, loading: usersLoading } = useUsers();
+    const { createOrGetChat } = useChat();
+
     const [candidate, setCandidate] = useState(null);
+    const [actionStatus, setActionStatus] = useState(null);
+    const [updating, setUpdating] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [otherCandidates, setOtherCandidates] = useState([]);
-    const [actionStatus, setActionStatus] = useState(null); // 'accepted', 'reserved', 'rejected'
 
     useEffect(() => {
-        const fetchCandidate = async () => {
-            const found = mockCandidates.find(c => c.id === parseInt(candidateId));
-            if (found) {
-                setCandidate(found);
-                setOtherCandidates(mockCandidates.filter(c => c.id !== parseInt(candidateId)));
-                const savedStatus = localStorage.getItem(`candidate_${candidateId}_status`);
-                if (savedStatus) {
-                    setActionStatus(savedStatus);
-                } else {
-                    setActionStatus(null);
+        const fetchCandidateProfile = async () => {
+            try {
+                setLoading(true);
+
+                console.log("Fetching candidate profile from API:", candidateId);
+                const data = await getCandidateProfile(candidateId);
+                console.log("Candidate data from API:", data);
+
+                if (data) {
+                    setCandidate({
+                        id: data.userId || data.id,
+                        responseId: responseIdFromState,
+                        name: data.fullName || data.name || "Пользователь",
+                        role: data.jobTitle || data.role || "Соискатель",
+                        skills: data.skills || [],
+                        tags: data.Tags || [],
+                        about: data.about || "Нет информации",
+                        email: data.email || "",
+                        phone: data.phone || "",
+                        telegram: data.telegram || "",
+                        status: statusFromState || "pending",
+                        avatar: data.avatar || "/img/default-avatar.jpg",
+                        portfolio: data.portfolio || [],
+                        university: data.university || "",
+                        graduationYear: data.graduationYear || ""
+                    });
+                    setActionStatus(statusFromState || "pending");
                 }
+            } catch (err) {
+                console.error("Error fetching candidate profile:", err);
+            } finally {
+                setLoading(false);
             }
-            setLoading(false);
         };
-        fetchCandidate();
-    }, [candidateId]);
 
-    const handleAccept = () => {
-        setActionStatus("accepted");
-        localStorage.setItem(`candidate_${candidateId}_status`, "accepted");
-        console.log("Принять кандидата:", candidate.name);
+        fetchCandidateProfile();
+    }, [candidateId, responseIdFromState, statusFromState, getCandidateProfile]);
+
+    const handleStatusChange = async (newStatus) => {
+        const currentResponseId = responseIdFromState || candidate?.responseId;
+
+        if (!currentResponseId) {
+            console.error("No responseId");
+            alert("Не удалось определить ID отклика");
+            return;
+        }
+
+        try {
+            setUpdating(true);
+            await updateResponseStatus(currentResponseId, newStatus);
+            setActionStatus(newStatus);
+
+            setCandidate(prev => prev ? { ...prev, status: newStatus } : prev);
+
+            const statusMessages = {
+                accepted: "Принят",
+                reserve: "В резерве",
+                rejected: "Отклонен",
+                pending: "На рассмотрении"
+            };
+            alert(`Статус кандидата изменен на ${statusMessages[newStatus] || newStatus}`);
+        } catch (err) {
+            console.error("Error updating status:", err);
+            alert("Ошибка при изменении статуса: " + (err.message || "Неизвестная ошибка"));
+        } finally {
+            setUpdating(false);
+        }
     };
 
-    const handleReserve = () => {
-        setActionStatus("reserved");
-        localStorage.setItem(`candidate_${candidateId}_status`, "reserved");
-        console.log("В резерв:", candidate.name);
+    const handleAccept = () => handleStatusChange('accepted');
+    const handleReserve = () => handleStatusChange('reserve');
+    const handleReject = () => handleStatusChange('rejected');
+    const handlePending = () => handleStatusChange('pending');
+
+    const handleMessage = async () => {
+        try {
+            const chat = await createOrGetChat(candidateId);
+            navigate(`/candidate/chat/${chat.id}`);
+        } catch (err) {
+            console.error("Error opening chat:", err);
+            alert("Не удалось открыть чат: " + (err.message || "Неизвестная ошибка"));
+        }
     };
 
-    const handleReject = () => {
-        setActionStatus("rejected");
-        localStorage.setItem(`candidate_${candidateId}_status`, "rejected");
-        console.log("Отклонить:", candidate.name);
+    const getStatusText = () => {
+        switch(actionStatus) {
+            case 'accepted': return '✓ Принят';
+            case 'reserve': return '⏳ В резерве';
+            case 'rejected': return '✗ Отклонён';
+            case 'pending': return '⏺ На рассмотрении';
+            default: return '⏺ На рассмотрении';
+        }
     };
 
-    if (loading) {
+    // Получаем теги по типам
+    const technologyTags = candidate?.tags?.filter(tag => tag.type === 'technology') || [];
+    const levelTags = candidate?.tags?.filter(tag => tag.type === 'level') || [];
+
+    if (loading || usersLoading) {
         return (
             <div className="page">
                 <Header />
-                <div className="container">Загрузка...</div>
+                <div className="container">
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                        Загрузка...
+                    </div>
+                </div>
             </div>
         );
     }
@@ -98,8 +141,10 @@ export default function CandidatePage() {
             <div className="page">
                 <Header />
                 <div className="container">
-                    <p>Кандидат не найден</p>
-                    <button onClick={() => navigate(-1)}>Назад</button>
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                        <p>Кандидат не найден</p>
+                        <button className="back-btn" onClick={() => navigate(-1)}>Назад</button>
+                    </div>
                 </div>
             </div>
         );
@@ -115,93 +160,137 @@ export default function CandidatePage() {
                 </button>
 
                 <div className="candidate-layout">
-                    {/* ЛЕВЫЙ БЛОК */}
                     <div className="main">
-                        {/* Левая колонка */}
                         <div className="avatar-section">
                             <div className="avatar big">
-                                <img src="/img/candidate-page-avatar.jpg" alt="avatar" />
+                                <img
+                                    src={candidate.avatar}
+                                    alt="avatar"
+                                    onError={(e) => { e.target.src = "/img/default-avatar.jpg"; }}
+                                />
                             </div>
 
                             <div className="portfolio-text">Связаться:</div>
 
                             <div className="contact-icons">
-                                <a href={`tel:${candidate.contacts.phone}`} className="icon-link">📞</a>
-                                <a href={`https://t.me/${candidate.contacts.telegram}`} className="icon-link">💬</a>
-                                <a href={`mailto:${candidate.contacts.email}`} className="icon-link">📧</a>
+                                {candidate.phone && (
+                                    <a href={`tel:${candidate.phone}`} className="icon-link">📞</a>
+                                )}
+                                {candidate.telegram && (
+                                    <a href={`https://t.me/${candidate.telegram.replace('@', '')}`} className="icon-link">💬</a>
+                                )}
+                                {candidate.email && (
+                                    <a href={`mailto:${candidate.email}`} className="icon-link">📧</a>
+                                )}
                             </div>
 
-                            <div className="portfolio-text">Портфолио:</div>
-
-                            <div className="portfolio-icons">
-                                {candidate.portfolio.map((item, idx) => (
-                                    <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                                        {item.name}
-                                    </a>
-                                ))}
-                            </div>
+                            {candidate.portfolio && candidate.portfolio.length > 0 && (
+                                <>
+                                    <div className="portfolio-text">Портфолио:</div>
+                                    <div className="portfolio-icons">
+                                        {candidate.portfolio.map((item, idx) => (
+                                            <a key={idx} href={item.url} target="_blank" rel="noopener noreferrer" className="portfolio-link">
+                                                {item.name}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </>
+                            )}
                         </div>
 
-                        {/* Центральная колонка */}
                         <div className="info-section">
                             <h1>{candidate.name}</h1>
                             <p className="role">{candidate.role}</p>
 
+                            {/* Уровень - в том же стиле, что и технологии снизу */}
                             <div className="skills-tags">
-                                {candidate.skills.map((skill) => (
-                                    <span key={skill} className="skill-tag">{skill}</span>
+                                {levelTags.map((tag) => (
+                                    <span key={tag.id} className="skill-tag">{tag.name}</span>
                                 ))}
                             </div>
 
-                            {/* Кнопки действий или статус */}
-                            {!actionStatus ? (
-                                <div className="action-buttons">
-                                    <button className="primary" onClick={handleAccept}>Принять</button>
-                                    <button className="secondary" onClick={handleReserve}>В резерв</button>
-                                    <button className="reject" onClick={handleReject}>Отклонить</button>
-                                </div>
-                            ) : (
-                                <div className={`status-message ${actionStatus}`}>
-                                    {actionStatus === "accepted" && "✓ Принят"}
-                                    {actionStatus === "reserved" && "⏳ В резерве"}
-                                    {actionStatus === "rejected" && "✗ Отклонён"}
+                            {/* Кнопка "Написать сообщение" */}
+                            <div className="action-buttons">
+                                <button className="btn-accept" onClick={handleMessage}>
+                                    💬 Написать сообщение
+                                </button>
+                            </div>
+
+                            {/* Текущий статус */}
+                            <div className="candidate-page-current-status">
+                                <span className="candidate-page-status-label">Текущий статус:</span>
+                                <span className={`candidate-page-status-badge ${actionStatus}`}>
+                                    {getStatusText()}
+                                </span>
+                            </div>
+
+                            {/* Кнопки изменения статуса */}
+                            <div className="candidate-page-action-buttons">
+                                <button
+                                    className="primary"
+                                    onClick={handleAccept}
+                                    disabled={updating || actionStatus === 'accepted'}
+                                >
+                                    {updating ? "Сохранение..." : "Принять"}
+                                </button>
+                                <button
+                                    className="secondary"
+                                    onClick={handleReserve}
+                                    disabled={updating || actionStatus === 'reserve'}
+                                >
+                                    {updating ? "Сохранение..." : "В резерв"}
+                                </button>
+                                <button
+                                    className="reject"
+                                    onClick={handleReject}
+                                    disabled={updating || actionStatus === 'rejected'}
+                                >
+                                    {updating ? "Сохранение..." : "Отклонить"}
+                                </button>
+                                <button
+                                    className="secondary"
+                                    onClick={handlePending}
+                                    disabled={updating || actionStatus === 'pending'}
+                                >
+                                    {updating ? "Сохранение..." : "На рассмотрение"}
+                                </button>
+                            </div>
+
+                            <div className="inner-profile-section">
+                                <h3>О себе</h3>
+                                <p>{candidate.about || "Нет информации"}</p>
+                            </div>
+
+                            {(candidate.university || candidate.graduationYear) && (
+                                <div className="inner-profile-section">
+                                    <h3>Образование</h3>
+                                    <p>
+                                        {candidate.university}
+                                        {candidate.graduationYear && `, ${candidate.graduationYear}`}
+                                    </p>
                                 </div>
                             )}
 
                             <div className="inner-profile-section">
-                                <h3>О себе</h3>
-                                <p>{candidate.about}</p>
-                            </div>
-                            <div className="inner-profile-section">
-                                <h3>Образование</h3>
-                                <p>{candidate.about}</p>
-                            </div>
-
-                            <div className="inner-profile-section">
                                 <h3>Навыки</h3>
                                 <div className="skills-full">
-                                    {candidate.skills.map((skill) => (
-                                        <span key={skill} className="skill-tag">{skill}</span>
-                                    ))}
+                                    {technologyTags.length > 0 ? (
+                                        technologyTags.map(tag => (
+                                            <span key={tag.id} className="skill-tag">{tag.name}</span>
+                                        ))
+                                    ) : (
+                                        candidate.skills?.map((skill, idx) => (
+                                            <span key={idx} className="skill-tag">{skill}</span>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    {/* ПРАВЫЙ БЛОК — ДРУГИЕ КАНДИДАТЫ */}
                     <div className="candidate-page-sidebar">
-                        <h3>Другие соискатели по этой вакансии</h3>
-                        {otherCandidates.length === 0 ? (
-                            <p className="empty-other">Нет других кандидатов</p>
-                        ) : (
-                            otherCandidates.map((other) => (
-                                <CandidateCard
-                                    key={other.id}
-                                    candidate={other}
-                                    onClick={() => navigate(`/employer/responses/candidate/${other.id}`)}
-                                />
-                            ))
-                        )}
+                        <h3>Другие соискатели</h3>
+                        <p className="empty-other">Нет других кандидатов</p>
                     </div>
                 </div>
             </div>

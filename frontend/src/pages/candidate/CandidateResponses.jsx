@@ -4,6 +4,7 @@ import EventCard from "../../components/EventCard";
 import HomeSearchBar from "../../components/SearchBar/HomeSearchBar";
 import { useNavigate } from "react-router-dom";
 import { useResponses } from "../../api/useResponses";
+import { useChat } from "../../api/useChat";
 import "./CandidateResponses.css";
 
 export default function CandidateResponses() {
@@ -16,13 +17,7 @@ export default function CandidateResponses() {
     const navigate = useNavigate();
 
     const { getMyResponses } = useResponses();
-
-    const statusMap = {
-        pending: "Активные",
-        accepted: "Принятые",
-        rejected: "Отклоненные",
-        reserve: "Резерв"
-    };
+    const { createOrGetChat } = useChat();
 
     useEffect(() => {
         loadResponses();
@@ -32,6 +27,7 @@ export default function CandidateResponses() {
         try {
             setLoading(true);
             const data = await getMyResponses();
+            console.log("Responses data:", data);
             setResponses(data || []);
         } catch (err) {
             console.error("Error loading responses:", err);
@@ -41,13 +37,28 @@ export default function CandidateResponses() {
     };
 
     const filteredResponses = useMemo(() => {
-        return responses.filter((item) => {
-            const matchStatus = activeTab === "all" ? true : item.status === activeTab;
-            const matchSearch = item.title
+        let filtered = responses;
+
+        // Фильтрация по вкладке
+        if (activeTab === "history") {
+            filtered = filtered.filter((item) => item.isCompleted === true);
+        } else if (activeTab === "pending") {
+            filtered = filtered.filter((item) => item.status === "pending" && !item.isCompleted);
+        } else if (activeTab === "accepted") {
+            filtered = filtered.filter((item) => item.status === "accepted" && !item.isCompleted);
+        } else if (activeTab === "reserve") {
+            filtered = filtered.filter((item) => item.status === "reserve" && !item.isCompleted);
+        } else if (activeTab === "rejected") {
+            filtered = filtered.filter((item) => item.status === "rejected" && !item.isCompleted);
+        }
+
+        // Поиск
+        return filtered.filter((item) => {
+            const matchSearch = (item.title || "")
                     .toLowerCase()
                     .includes(submittedSearch.toLowerCase()) ||
-                item.companyName?.toLowerCase().includes(submittedSearch.toLowerCase());
-            return matchStatus && matchSearch;
+                (item.companyName || "").toLowerCase().includes(submittedSearch.toLowerCase());
+            return matchSearch;
         });
     }, [responses, submittedSearch, activeTab]);
 
@@ -55,16 +66,33 @@ export default function CandidateResponses() {
         setSubmittedSearch(search);
     };
 
-    const handleOpenChat = (event) => {
-        console.log("Открыть чат с:", event.title);
-        navigate(`/candidate/chat/${event.id}`);
+    const handleOpenChat = async (event) => {
+        try {
+            const employerUserId = event.companyUserId;
+
+            if (!employerUserId) {
+                console.error("No employerUserId found");
+                alert("Не удалось определить работодателя для чата");
+                return;
+            }
+
+            console.log("Открыть чат с работодателем (userId):", employerUserId);
+            const chat = await createOrGetChat(employerUserId);
+            navigate(`/candidate/chat/${chat.id}`);
+        } catch (err) {
+            console.error("Error opening chat:", err);
+            alert("Не удалось открыть чат: " + (err.message || "Неизвестная ошибка"));
+        }
     };
 
-    const getEventCardVariant = (status) => {
-        if (status === 'pending') return 'Chat';
-        if (status === 'accepted') return 'candidate';
-        if (status === 'rejected') return 'closed';
-        if (status === 'reserve') return 'candidate';
+    const getEventCardVariant = (item) => {
+        // Для завершенных событий
+        if (item.isCompleted) return 'closed';
+        // Для активных
+        if (item.status === 'pending') return 'Chat';
+        if (item.status === 'accepted') return 'Chat';
+        if (item.status === 'reserve') return 'candidate';
+        if (item.status === 'rejected') return 'closed';
         return 'candidate';
     };
 
@@ -80,6 +108,13 @@ export default function CandidateResponses() {
             </div>
         );
     }
+
+    // Подсчет количества для вкладок
+    const pendingCount = responses.filter(r => r.status === "pending" && !r.isCompleted).length;
+    const acceptedCount = responses.filter(r => r.status === "accepted" && !r.isCompleted).length;
+    const reserveCount = responses.filter(r => r.status === "reserve" && !r.isCompleted).length;
+    const rejectedCount = responses.filter(r => r.status === "rejected" && !r.isCompleted).length;
+    const historyCount = responses.filter(r => r.isCompleted === true).length;
 
     return (
         <div className="page">
@@ -98,25 +133,31 @@ export default function CandidateResponses() {
                         className={activeTab === "pending" ? "active" : ""}
                         onClick={() => setActiveTab("pending")}
                     >
-                        На рассмотрении
+                        На рассмотрении ({pendingCount})
                     </span>
                     <span
                         className={activeTab === "accepted" ? "active" : ""}
                         onClick={() => setActiveTab("accepted")}
                     >
-                        Принятые
+                        Принятые ({acceptedCount})
                     </span>
                     <span
                         className={activeTab === "reserve" ? "active" : ""}
                         onClick={() => setActiveTab("reserve")}
                     >
-                        Резерв
+                        Резерв ({reserveCount})
                     </span>
                     <span
                         className={activeTab === "rejected" ? "active" : ""}
                         onClick={() => setActiveTab("rejected")}
                     >
-                        Отклоненные
+                        Отклоненные ({rejectedCount})
+                    </span>
+                    <span
+                        className={activeTab === "history" ? "active" : ""}
+                        onClick={() => setActiveTab("history")}
+                    >
+                        История ({historyCount})
                     </span>
                 </div>
 
@@ -127,8 +168,11 @@ export default function CandidateResponses() {
                             title: item.title,
                             description: item.description,
                             company: item.companyName,
+                            companyId: item.companyId,
+                            companyUserId: item.companyUserId,
                             address: item.city || item.address,
                             salary: item.salary,
+                            date: item.date,
                             tags: item.tags || []
                         };
 
@@ -136,10 +180,10 @@ export default function CandidateResponses() {
                             <EventCard
                                 key={item.responseId}
                                 event={eventForCard}
-                                variant={getEventCardVariant(item.status)}
+                                variant={getEventCardVariant(item)}
                                 messagesCount={0}
-                                onOpenChat={handleOpenChat}
-                                isClosed={item.status === "rejected"}
+                                onOpenChat={() => handleOpenChat(eventForCard)}
+                                isClosed={item.isCompleted || item.status === "rejected"}
                                 onClick={() => navigate(`/candidate/event/${item.possibilityId}`)}
                             />
                         );
@@ -148,13 +192,19 @@ export default function CandidateResponses() {
 
                 {filteredResponses.length === 0 && (
                     <div className="empty-state">
-                        <p>У вас пока нет откликов</p>
-                        <button
-                            className="primary"
-                            onClick={() => navigate("/")}
-                        >
-                            Перейти к событиям
-                        </button>
+                        <p>
+                            {activeTab === "history"
+                                ? "У вас пока нет завершенных мероприятий"
+                                : "У вас пока нет откликов"}
+                        </p>
+                        {activeTab !== "history" && (
+                            <button
+                                className="primary"
+                                onClick={() => navigate("/")}
+                            >
+                                Перейти к событиям
+                            </button>
+                        )}
                     </div>
                 )}
             </div>

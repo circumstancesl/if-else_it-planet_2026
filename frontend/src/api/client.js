@@ -24,10 +24,19 @@ class ApiClient {
         const token = this.getToken();
         console.log(`Request: ${options.method || 'GET'} ${endpoint}`);
 
+        // Определяем, является ли тело FormData
+        const isFormData = options.body instanceof FormData;
+
         const headers = {
-            'Content-Type': 'application/json',
             ...options.headers
         };
+
+        // Устанавливаем Content-Type только если это не FormData
+        if (!isFormData) {
+            headers['Content-Type'] = 'application/json';
+        }
+        // Если isFormData === true, НЕ устанавливаем Content-Type
+        // Браузер сам добавит нужный boundary
 
         if (token) {
             headers['Authorization'] = `Bearer ${token}`;
@@ -84,23 +93,42 @@ class ApiClient {
     }
 
     post(endpoint, data) {
-        return this.request(endpoint, {
-            method: 'POST',
-            body: JSON.stringify(data)
-        });
+        // Если data - FormData, не преобразуем в JSON
+        const isFormData = data instanceof FormData;
+        const options = { method: 'POST' };
+
+        if (isFormData) {
+            options.body = data;
+        } else {
+            options.body = JSON.stringify(data);
+        }
+
+        return this.request(endpoint, options);
     }
 
     patch(endpoint, data) {
-        return this.request(endpoint, {
-            method: 'PATCH',
-            body: JSON.stringify(data)
-        });
+        // Если data - FormData, не преобразуем в JSON
+        const isFormData = data instanceof FormData;
+        const options = { method: 'PATCH' };
+
+        if (isFormData) {
+            options.body = data;
+        } else {
+            options.body = JSON.stringify(data);
+        }
+
+        return this.request(endpoint, options);
     }
 
     delete(endpoint, data) {
         const options = { method: 'DELETE' };
         if (data) {
-            options.body = JSON.stringify(data);
+            const isFormData = data instanceof FormData;
+            if (isFormData) {
+                options.body = data;
+            } else {
+                options.body = JSON.stringify(data);
+            }
         }
         return this.request(endpoint, options);
     }

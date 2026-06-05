@@ -56,11 +56,30 @@ export function useUsers() {
         }
     }, []);
 
+    // 🔥 НОВАЯ ФУНКЦИЯ
+    const getSuggestedFriends = useCallback(async (limit = 20, offset = 0) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const result = await apiClient.get(`/api/users/candidate/suggested?limit=${limit}&offset=${offset}`);
+
+            return result || [];
+        } catch (err) {
+            setError(err.message);
+            console.error("Error fetching suggested friends:", err);
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     return {
         loading,
         error,
         getCandidates,
         getCandidateProfile,
-        getMyProfile
+        getMyProfile,
+        getSuggestedFriends, // 🔥 ДОБАВЛЕНО
     };
 }

@@ -63,6 +63,24 @@ export function useResponses() {
         }
     }, []);
 
+    // Получить отклик по ID
+    const getResponseById = useCallback(async (responseId) => {
+        try {
+            setLoading(true);
+            setError(null);
+
+            const result = await apiClient.get(`/api/response/${responseId}`);
+
+            return result;
+        } catch (err) {
+            setError(err.message);
+            console.error("Error fetching response by id:", err);
+            throw err;
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
     // Изменить статус отклика (для работодателя)
     const updateResponseStatus = useCallback(async (responseId, status) => {
         try {
@@ -87,6 +105,7 @@ export function useResponses() {
         applyToPossibility,
         getMyResponses,
         getResponsesForPossibility,
+        getResponseById,  // ← добавить
         updateResponseStatus
     };
 }

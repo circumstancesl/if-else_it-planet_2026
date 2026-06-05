@@ -10,3 +10,6 @@
 .candidate-page-sidebar .friend-card-suggest:not(:last-child) {
     margin-bottom: 0;
 }
+.friends-sidebar .possible-friends-header {
+    margin-bottom: 32px;
+}

@@ -33,7 +33,21 @@ export const users = {
         apiClient.get(`/api/users/company/${id}`),
 
     updateCompany: (data) =>
-        apiClient.patch('/api/users/company', data)
+        apiClient.patch('/api/users/company', data),
+
+    getSuggestedFriends: (limit = 20, offset = 0) =>
+        apiClient.get(`/api/users/candidate/suggested?limit=${limit}&offset=${offset}`),
+    uploadAvatar: (formData) => {
+        // formData - это объект FormData
+        return apiClient.patch('/api/users/candidate', formData);
+        // apiClient сам определит, что это FormData и не будет
+        // устанавливать Content-Type
+    },
+
+    uploadCompanyLogo: (formData) => {
+        return apiClient.patch('/api/users/company', formData);
+    }
+
 };
 
 export const tags = {
@@ -63,7 +77,10 @@ export const possibilities = {
         apiClient.patch(`/api/possibility/${id}`, data),
 
     delete: (id) =>
-        apiClient.delete(`/api/possibility/${id}`)
+        apiClient.delete(`/api/possibility/${id}`),
+
+    getByCompanyId: (companyId, limit = 10, offset = 0) =>
+        apiClient.get(`/api/possibility/company/${companyId}?limit=${limit}&offset=${offset}`),
 };
 
 export const favorites = {
@@ -88,7 +105,10 @@ export const responses = {
         apiClient.get(`/api/response/${possibilityId}`),
 
     updateStatus: (responseId, status) =>
-        apiClient.patch(`/api/response/${responseId}`, { status })
+        apiClient.patch(`/api/response/${responseId}`, { status }),
+
+    getById: (responseId) =>
+        apiClient.get(`/api/response/${responseId}`)
 };
 
 export const connections = {

@@ -1,7 +1,7 @@
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import Header from "../../../components/Header/Header.jsx";
-import FriendCard from "../../../components/FriendCard.jsx";
+import CandidateCard from "../../../components/CandidateCard.jsx";
 import { useUsers } from "../../../api/useUsers";
 import { useConnections } from "../../../api/useConnections";
 import { useChat } from "../../../api/useChat";
@@ -10,7 +10,7 @@ import "./FriendProfilePage.css";
 export default function FriendProfilePage() {
     const { friendId } = useParams();
     const navigate = useNavigate();
-    const { getCandidateProfile, getCandidates, loading: usersLoading } = useUsers();
+    const { getCandidateProfile, getCandidates, getSuggestedFriends, loading: usersLoading } = useUsers();
     const {
         sendRequest,
         acceptRequest,
@@ -39,6 +39,7 @@ export default function FriendProfilePage() {
                         name: data.fullName || "Пользователь",
                         role: data.jobTitle || "Соискатель",
                         skills: data.skills || [],
+                        tags: data.Tags || [],
                         about: data.about || "Нет информации",
                         education: data.university ? `${data.university}${data.graduationYear ? `, ${data.graduationYear}` : ""}` : null,
                         contacts: {
@@ -70,21 +71,81 @@ export default function FriendProfilePage() {
                     }
                 }
 
-                const candidates = await getCandidates(0, 5);
-                const friendIds = new Set(friendsList.map(f => f.id));
-                const requestUserIds = new Set(requestsList.map(r => r.Requester?.id).filter(Boolean));
-                const formattedCandidates = candidates
-                    .filter(c => !friendIds.has(c.userId) && !requestUserIds.has(c.userId) && c.userId !== friendId)
-                    .map(candidate => ({
-                        id: candidate.userId,
-                        userId: candidate.userId,
-                        name: candidate.fullName || "Пользователь",
-                        role: candidate.jobTitle || "Соискатель",
-                        mutualFriends: 0,
-                        skills: [],
-                        avatar: "/images/avatar.png"
-                    }));
-                setPossibleFriends(formattedCandidates);
+                // Загружаем рекомендованных друзей через новый эндпоинт с полными профилями
+                try {
+                    const suggested = await getSuggestedFriends(5, 0);
+                    const friendIds = new Set(friendsList.map(f => f.id));
+                    const requestUserIds = new Set(requestsList.map(r => r.Requester?.id).filter(Boolean));
+
+                    const formattedSuggested = [];
+                    for (const candidate of suggested) {
+                        if (!friendIds.has(candidate.userId) && !requestUserIds.has(candidate.userId) && candidate.userId !== friendId) {
+                            try {
+                                const fullProfile = await getCandidateProfile(candidate.userId);
+                                formattedSuggested.push({
+                                    id: candidate.userId,
+                                    userId: candidate.userId,
+                                    name: fullProfile?.fullName || candidate.fullName || "Пользователь",
+                                    role: fullProfile?.jobTitle || candidate.jobTitle || "Соискатель",
+                                    mutualFriends: candidate.mutualFriendsCount || 0,
+                                    skills: fullProfile?.skills || [],
+                                    tags: fullProfile?.Tags || [],
+                                    avatar: fullProfile?.avatar || "/images/avatar.png"
+                                });
+                            } catch (err) {
+                                console.error(`Error fetching profile for ${candidate.userId}:`, err);
+                                formattedSuggested.push({
+                                    id: candidate.userId,
+                                    userId: candidate.userId,
+                                    name: candidate.fullName || "Пользователь",
+                                    role: candidate.jobTitle || "Соискатель",
+                                    mutualFriends: candidate.mutualFriendsCount || 0,
+                                    skills: [],
+                                    tags: [],
+                                    avatar: "/images/avatar.png"
+                                });
+                            }
+                        }
+                    }
+                    setPossibleFriends(formattedSuggested);
+                } catch (err) {
+                    console.error("Error loading suggested friends:", err);
+                    // Fallback: используем старый метод
+                    const candidates = await getCandidates(0, 5);
+                    const friendIds = new Set(friendsList.map(f => f.id));
+                    const requestUserIds = new Set(requestsList.map(r => r.Requester?.id).filter(Boolean));
+
+                    const formattedCandidates = [];
+                    for (const candidate of candidates) {
+                        if (!friendIds.has(candidate.userId) && !requestUserIds.has(candidate.userId) && candidate.userId !== friendId) {
+                            try {
+                                const fullProfile = await getCandidateProfile(candidate.userId);
+                                formattedCandidates.push({
+                                    id: candidate.userId,
+                                    userId: candidate.userId,
+                                    name: fullProfile?.fullName || candidate.fullName || "Пользователь",
+                                    role: fullProfile?.jobTitle || candidate.jobTitle || "Соискатель",
+                                    mutualFriends: 0,
+                                    skills: fullProfile?.skills || [],
+                                    tags: fullProfile?.Tags || [],
+                                    avatar: fullProfile?.avatar || "/images/avatar.png"
+                                });
+                            } catch (err) {
+                                formattedCandidates.push({
+                                    id: candidate.userId,
+                                    userId: candidate.userId,
+                                    name: candidate.fullName || "Пользователь",
+                                    role: candidate.jobTitle || "Соискатель",
+                                    mutualFriends: 0,
+                                    skills: [],
+                                    tags: [],
+                                    avatar: "/images/avatar.png"
+                                });
+                            }
+                        }
+                    }
+                    setPossibleFriends(formattedCandidates);
+                }
             } catch (err) {
                 console.error("Error fetching profile:", err);
             } finally {
@@ -92,7 +153,7 @@ export default function FriendProfilePage() {
             }
         };
         fetchProfile();
-    }, [friendId, getCandidateProfile, getCandidates, getFriends, getRequests]);
+    }, [friendId, getCandidateProfile, getCandidates, getSuggestedFriends, getFriends, getRequests]);
 
     const handleAddFriend = async () => {
         try {
@@ -142,6 +203,26 @@ export default function FriendProfilePage() {
             alert("Не удалось открыть чат");
         }
     };
+
+    const handleAddPossibleFriend = async (friend) => {
+        try {
+            await sendRequest(friend.id);
+            setPossibleFriends(prev => prev.filter(f => f.id !== friend.id));
+            alert("Заявка отправлена!");
+        } catch (err) {
+            if (err.message === "Заявка уже отправлена") {
+                alert("Заявка уже отправлена");
+            } else if (err.message === "Нельзя добавить себя") {
+                alert("Нельзя добавить себя в друзья");
+            } else {
+                alert("Ошибка при отправке заявки");
+            }
+        }
+    };
+
+    // Получаем технологические теги и уровень
+    const technologyTags = friend?.tags?.filter(tag => tag.type === 'technology') || [];
+    const levelTags = friend?.tags?.filter(tag => tag.type === 'level') || [];
 
     if (profileLoading || usersLoading) {
         return (
@@ -218,9 +299,10 @@ export default function FriendProfilePage() {
                             <h1>{friend.name}</h1>
                             <p className="role">{friend.role}</p>
 
+                            {/* Уровень - в том же стиле, что и технологии */}
                             <div className="skills-tags">
-                                {friend.skills?.map((skill, idx) => (
-                                    <span key={idx} className="skill-tag">{skill}</span>
+                                {levelTags.map((tag) => (
+                                    <span key={tag.id} className="skill-tag">{tag.name}</span>
                                 ))}
                             </div>
 
@@ -274,30 +356,42 @@ export default function FriendProfilePage() {
                             <div className="inner-profile-section">
                                 <h3>Навыки</h3>
                                 <div className="skills-full">
-                                    {friend.skills?.map((skill, idx) => (
-                                        <span key={idx} className="skill-tag">{skill}</span>
-                                    ))}
+                                    {technologyTags.length > 0 ? (
+                                        technologyTags.map(tag => (
+                                            <span key={tag.id} className="skill-tag">{tag.name}</span>
+                                        ))
+                                    ) : (
+                                        friend.skills?.map((skill, idx) => (
+                                            <span key={idx} className="skill-tag">{skill}</span>
+                                        ))
+                                    )}
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <div className="candidate-page-sidebar">
-                        <h3>Возможные друзья</h3>
-                        {possibleFriends.length === 0 ? (
-                            <p className="empty-other">Нет предложений</p>
-                        ) : (
+                    <div className="friends-sidebar">
+                        <div className="possible-friends-header">
+                            <h3>Возможные друзья</h3>
+                        </div>
+
+                        {possibleFriends.length > 0 ? (
                             <div className="possible-friends-list">
                                 {possibleFriends.map((possible) => (
-                                    <FriendCard
+                                    <CandidateCard
                                         key={possible.id}
-                                        friend={possible}
-                                        variant="suggest"
-                                        onAddFriend={() => sendRequest(possible.userId)}
-                                        onMessage={() => handleMessage(possible)}
-                                        onClick={() => navigate(`/candidate/friend/${possible.userId}`)}
+                                        candidate={possible}
+                                        buttonText="+ Добавить в друзья"
+                                        onButtonClick={() => handleAddPossibleFriend(possible)}
+                                        onClick={() =>
+                                            navigate(`/candidate/friend/${possible.userId}`)
+                                        }
                                     />
                                 ))}
+                            </div>
+                        ) : (
+                            <div className="empty-state-small">
+                                <p>Нет предложений</p>
                             </div>
                         )}
                     </div>

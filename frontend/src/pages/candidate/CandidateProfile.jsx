@@ -2,8 +2,12 @@ import Header from "../../components/Header/Header.jsx";
 import "./CandidateProfile.css";
 import { useEffect, useState } from "react";
 import { users } from "../../api/endpoints";
+import { useTags } from "../../api/useTags";
 
 export default function CandidateProfile() {
+    const { tags, fetchTags, loading: tagsLoading } = useTags();
+
+    const [profile, setProfile] = useState(null);
     const [form, setForm] = useState({
         fullName: "",
         jobTitle: "",
@@ -14,10 +18,50 @@ export default function CandidateProfile() {
         email: "",
     });
 
-    const [skills, setSkills] = useState([]);
-    const [level, setLevel] = useState([]);
-    const [socials, setSocials] = useState([""]);
+    // Храним ID тегов для отправки
+    const [skillTagIds, setSkillTagIds] = useState([]);
+    const [levelTagIds, setLevelTagIds] = useState([]);
+
+    // Храним названия тегов для отображения
+    const [skillTags, setSkillTags] = useState([]);
+    const [levelTags, setLevelTags] = useState([]);
+
     const [isPrivate, setIsPrivate] = useState(false);
+    const [loading, setLoading] = useState(true);
+    const [avatarPreview, setAvatarPreview] = useState(null);
+    const [uploadingAvatar, setUploadingAvatar] = useState(false);
+
+    // Доступные теги из базы
+    const [availableSkillTags, setAvailableSkillTags] = useState([]);
+    const [availableLevelTags, setAvailableLevelTags] = useState([]);
+    const [showSkillDropdown, setShowSkillDropdown] = useState(false);
+    const [showLevelDropdown, setShowLevelDropdown] = useState(false);
+    const [skillSearch, setSkillSearch] = useState("");
+    const [levelSearch, setLevelSearch] = useState("");
+
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return null;
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
+
+    // Загружаем теги при монтировании
+    useEffect(() => {
+        fetchTags({});
+    }, []);
+
+    // Обновляем доступные теги из базы
+    useEffect(() => {
+        if (tags && tags.length > 0) {
+            setAvailableSkillTags(tags.filter(t => t.type === 'technology'));
+            setAvailableLevelTags(tags.filter(t => t.type === 'level'));
+        }
+    }, [tags]);
 
     useEffect(() => {
         const loadProfile = async () => {
@@ -25,31 +69,49 @@ export default function CandidateProfile() {
                 const data = await users.getMyProfile();
                 console.log("PROFILE FROM BACK:", data);
 
-                const profile = data.profile; // 💥 ВОТ ГЛАВНОЕ
+                setProfile(data);
+
+                const profileData = data.profile;
 
                 setForm({
-                    fullName: profile.fullName || "",
-                    jobTitle: profile.jobTitle || "",
-                    university: profile.university || "",
-                    graduationYear: profile.graduationYear || "",
-                    about: profile.about || "",
-                    resumeURL: profile.resumeURL || "",
+                    fullName: profileData.fullName || "",
+                    jobTitle: profileData.jobTitle || "",
+                    university: profileData.university || "",
+                    graduationYear: profileData.graduationYear || "",
+                    about: profileData.about || "",
+                    resumeURL: profileData.resumeURL || "",
                     email: data.email || "",
                 });
 
-                setIsPrivate(!profile.profileVisible);
+                setIsPrivate(!profileData.profileVisible);
 
-                // мок
-                setSkills(["React", "JavaScript"]);
-                setLevel(["Junior"]);
-                setSocials([""]);
+                // Устанавливаем превью аватарки с полным URL
+                if (profileData.logoUrl) {
+                    setAvatarPreview(getFullImageUrl(profileData.logoUrl));
+                }
+
+                // Загружаем теги кандидата из профиля
+                if (profileData.Tags && profileData.Tags.length > 0) {
+                    const skillsFromProfile = profileData.Tags.filter(tag => tag.type === 'technology');
+                    const levelsFromProfile = profileData.Tags.filter(tag => tag.type === 'level');
+
+                    setSkillTags(skillsFromProfile.map(t => t.name));
+                    setSkillTagIds(skillsFromProfile.map(t => t.id));
+                    setLevelTags(levelsFromProfile.map(t => t.name));
+                    setLevelTagIds(levelsFromProfile.map(t => t.id));
+                }
+
             } catch (err) {
                 console.error("Ошибка загрузки профиля", err);
+            } finally {
+                setLoading(false);
             }
         };
 
-        loadProfile();
-    }, []);
+        if (!tagsLoading) {
+            loadProfile();
+        }
+    }, [tagsLoading]);
 
     // ===== CHANGE =====
     const handleChange = (field, value) => {
@@ -58,6 +120,101 @@ export default function CandidateProfile() {
             [field]: value
         }));
     };
+
+    // ===== ЗАГРУЗКА АВАТАРКИ =====
+    const handleAvatarChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // Проверка типа файла
+        if (!file.type.startsWith('image/')) {
+            alert("Пожалуйста, выберите изображение");
+            return;
+        }
+
+        // Проверка размера (до 5MB)
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Размер файла не должен превышать 5MB");
+            return;
+        }
+
+        // Превью
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setAvatarPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
+
+        // Загрузка на сервер
+        try {
+            setUploadingAvatar(true);
+            const formData = new FormData();
+            formData.append('logoUrl', file);
+
+            await users.uploadAvatar(formData);
+            alert("Аватар успешно обновлен!");
+
+            // Обновляем профиль
+            const updated = await users.getMyProfile();
+            setProfile(updated);
+
+            // Используем функцию для преобразования URL
+            if (updated.profile.logoUrl) {
+                setAvatarPreview(getFullImageUrl(updated.profile.logoUrl));
+            }
+        } catch (err) {
+            console.error("Error uploading avatar:", err);
+            alert("Ошибка загрузки аватара: " + (err.message || "Неизвестная ошибка"));
+        } finally {
+            setUploadingAvatar(false);
+        }
+    };
+
+    // ===== ДОБАВЛЕНИЕ ТЕГА ИЗ СПИСКА =====
+    const handleAddSkillTag = (tag) => {
+        if (!skillTags.includes(tag.name)) {
+            setSkillTags([...skillTags, tag.name]);
+            setSkillTagIds([...skillTagIds, tag.id]);
+        }
+        setShowSkillDropdown(false);
+        setSkillSearch("");
+    };
+
+    const handleAddLevelTag = (tag) => {
+        if (!levelTags.includes(tag.name)) {
+            setLevelTags([...levelTags, tag.name]);
+            setLevelTagIds([...levelTagIds, tag.id]);
+        }
+        setShowLevelDropdown(false);
+        setLevelSearch("");
+    };
+
+    const handleRemoveSkillTag = (tagToRemove) => {
+        const index = skillTags.indexOf(tagToRemove);
+        if (index !== -1) {
+            setSkillTags(skillTags.filter(t => t !== tagToRemove));
+            setSkillTagIds(skillTagIds.filter((_, i) => i !== index));
+        }
+    };
+
+    const handleRemoveLevelTag = (tagToRemove) => {
+        const index = levelTags.indexOf(tagToRemove);
+        if (index !== -1) {
+            setLevelTags(levelTags.filter(t => t !== tagToRemove));
+            setLevelTagIds(levelTagIds.filter((_, i) => i !== index));
+        }
+    };
+
+    // Фильтрация тегов по поиску
+    const filteredSkillTags = availableSkillTags.filter(tag =>
+        tag.name.toLowerCase().includes(skillSearch.toLowerCase()) &&
+        !skillTags.includes(tag.name)
+    );
+
+    const filteredLevelTags = availableLevelTags.filter(tag =>
+        tag.name.toLowerCase().includes(levelSearch.toLowerCase()) &&
+        !levelTags.includes(tag.name)
+    );
 
     // ===== СОХРАНЕНИЕ =====
     const handleSave = async () => {
@@ -71,13 +228,15 @@ export default function CandidateProfile() {
                 graduationYear: form.graduationYear,
                 about: form.about,
                 resumeURL: form.resumeURL,
-                profileVisible: !isPrivate
+                profileVisible: !isPrivate,
+                tagIds: [...skillTagIds, ...levelTagIds]
             };
 
             // убираем пустые поля
             const payload = {};
             Object.entries(rawPayload).forEach(([key, value]) => {
-                if (value !== "" && value !== null && value !== undefined) {
+                if (value !== "" && value !== null && value !== undefined &&
+                    (!Array.isArray(value) || value.length > 0)) {
                     payload[key] = value;
                 }
             });
@@ -90,9 +249,23 @@ export default function CandidateProfile() {
             alert("Профиль обновлен");
         } catch (err) {
             console.error(err);
-            alert("Ошибка сохранения");
+            alert("Ошибка сохранения: " + (err.message || "Неизвестная ошибка"));
         }
     };
+
+    if (loading || tagsLoading) {
+        return (
+            <div className="page">
+                <Header />
+                <div className="container" style={{textAlign: "center", padding: "50px"}}>
+                    Загрузка...
+                </div>
+            </div>
+        );
+    }
+
+    // Получаем URL для отображения аватарки
+    const displayAvatar = avatarPreview || getFullImageUrl(profile?.profile?.logoUrl) || "/img/candidate-page-avatar.jpg";
 
     // ===== UI =====
     return (
@@ -104,13 +277,28 @@ export default function CandidateProfile() {
 
                     {/* LEFT */}
                     <div className="col-left">
-                        <div className="avatar-block">
-                            <img src="/img/candidate-page-avatar.jpg" alt="avatar" />
+                        <div className="avatar-section">
+                            <div className="avatar-block">
+                                <img
+                                    src={displayAvatar}
+                                    alt="avatar"
+                                />
+                            </div>
+                            <label className="avatar-upload-btn">
+                                Изменить фото
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    onChange={handleAvatarChange}
+                                    disabled={uploadingAvatar}
+                                    style={{ display: 'none' }}
+                                />
+                            </label>
+                            {uploadingAvatar && <div className="avatar-uploading-text">Загрузка...</div>}
                         </div>
 
                         <div className="privacy">
                             <span>Настройка приватности</span>
-
                             <label className="switch">
                                 <input
                                     type="checkbox"
@@ -119,7 +307,6 @@ export default function CandidateProfile() {
                                 />
                                 <span className="slider"></span>
                             </label>
-
                             <p>
                                 Сейчас ваш профиль {isPrivate ? "скрыт" : "виден всем"}
                             </p>
@@ -190,25 +377,112 @@ export default function CandidateProfile() {
                     <div className="col-right">
                         <h2>Контакты</h2>
 
+                        <label>Имя профиля</label>
+                        <input
+                            value={profile?.email?.split('@')[0] || form.email?.split('@')[0] || "Пользователь"}
+                            disabled
+                            style={{ backgroundColor: "#f5f5f5" }}
+                        />
+
                         <label>Email</label>
-                        <input value={form.email} disabled />
+                        <input value={form.email} disabled style={{ backgroundColor: "#f5f5f5" }} />
 
                         <h3>Навыки</h3>
                         <div className="tags">
-                            {skills.map((skill) => (
-                                <span key={skill} className="tag">
-                                    {skill}
+                            {skillTags.map((skill) => (
+                                <span
+                                    key={skill}
+                                    className="tag"
+                                    onClick={() => handleRemoveSkillTag(skill)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {skill} ✕
                                 </span>
                             ))}
+                            <div className="add-tag-dropdown">
+                                <button
+                                    className="add-tag"
+                                    onClick={() => setShowSkillDropdown(!showSkillDropdown)}
+                                >
+                                    + Добавить
+                                </button>
+                                {showSkillDropdown && (
+                                    <div className="dropdown-menu">
+                                        <input
+                                            type="text"
+                                            placeholder="Поиск навыка..."
+                                            value={skillSearch}
+                                            onChange={(e) => setSkillSearch(e.target.value)}
+                                            className="dropdown-search"
+                                            autoFocus
+                                        />
+                                        <div className="dropdown-list">
+                                            {filteredSkillTags.length > 0 ? (
+                                                filteredSkillTags.map(tag => (
+                                                    <div
+                                                        key={tag.id}
+                                                        className="dropdown-item"
+                                                        onClick={() => handleAddSkillTag(tag)}
+                                                    >
+                                                        {tag.name}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="dropdown-empty">Навыки не найдены</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <h3>Уровень</h3>
                         <div className="tags">
-                            {level.map((lvl) => (
-                                <span key={lvl} className="tag">
-                                    {lvl}
+                            {levelTags.map((lvl) => (
+                                <span
+                                    key={lvl}
+                                    className="tag"
+                                    onClick={() => handleRemoveLevelTag(lvl)}
+                                    style={{ cursor: 'pointer' }}
+                                >
+                                    {lvl} ✕
                                 </span>
                             ))}
+                            <div className="add-tag-dropdown">
+                                <button
+                                    className="add-tag"
+                                    onClick={() => setShowLevelDropdown(!showLevelDropdown)}
+                                >
+                                    + Добавить
+                                </button>
+                                {showLevelDropdown && (
+                                    <div className="dropdown-menu">
+                                        <input
+                                            type="text"
+                                            placeholder="Поиск уровня..."
+                                            value={levelSearch}
+                                            onChange={(e) => setLevelSearch(e.target.value)}
+                                            className="dropdown-search"
+                                            autoFocus
+                                        />
+                                        <div className="dropdown-list">
+                                            {filteredLevelTags.length > 0 ? (
+                                                filteredLevelTags.map(tag => (
+                                                    <div
+                                                        key={tag.id}
+                                                        className="dropdown-item"
+                                                        onClick={() => handleAddLevelTag(tag)}
+                                                    >
+                                                        {tag.name}
+                                                    </div>
+                                                ))
+                                            ) : (
+                                                <div className="dropdown-empty">Уровни не найдены</div>
+                                            )}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
                         <div className="actions">
