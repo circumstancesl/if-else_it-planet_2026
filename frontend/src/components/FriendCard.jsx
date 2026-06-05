@@ -158,7 +158,7 @@ export default function FriendCard({
                     onMessage?.(friend);
                 }}
             >
-                💬 Сообщение
+                Сообщение
             </button>
         </div>
     );

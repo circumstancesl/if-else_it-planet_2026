@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Header from "../../../components/Header/Header.jsx";
 import EventCard from "../../../components/EventCard.jsx";
 import HomeSearchBar from "../../../components/SearchBar/HomeSearchBar.jsx";
@@ -16,14 +16,12 @@ export default function EmployerResponses() {
     const [search, setSearch] = useState("");
     const [submittedSearch, setSubmittedSearch] = useState("");
     const [loading, setLoading] = useState(true);
-    const hasLoadedRef = useRef(false); // ← используем ref вместо state
+    const [initialLoad, setInitialLoad] = useState(true);
 
     const navigate = useNavigate();
 
     const loadEvents = useCallback(async () => {
-        if (hasLoadedRef.current) return; // ← если уже загружали, не делаем повторно
-
-        hasLoadedRef.current = true;
+        if (!initialLoad) return;
 
         try {
             setLoading(true);
@@ -42,13 +40,14 @@ export default function EmployerResponses() {
                 }
             }
             setResponsesCount(counts);
+            setInitialLoad(false);
         } catch (err) {
             console.error(err);
             setEvents([]);
         } finally {
             setLoading(false);
         }
-    }, [getMyPossibilities, getResponsesForPossibility]);
+    }, [getMyPossibilities, getResponsesForPossibility, initialLoad]);
 
     useEffect(() => {
         loadEvents();
