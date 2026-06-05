@@ -1,5 +1,7 @@
 const createError = require('http-errors');
 const { Responses, Possibilities, Companies, Users, Tags, CandidateProfiles } = require('../db/models');
+require('dotenv').config();
+const axios = require('axios');
 
 async function applyToPossibility(userId, possibilityId) {
   const possibility = await Possibilities.findByPk(possibilityId);
@@ -174,9 +176,86 @@ async function updateResponseStatus(userId, responseId, status) {
   return response;
 }
 
+async function getSummaryCandidate(userId) {
+  try {
+    const profile = await CandidateProfiles.findOne({
+      where: { userId },
+      attributes: ['university', 'graduationYear', 'about', 'resumeURL', 'jobTitle'],
+      include: [
+        {
+          model: Tags,
+          through: { attributes: [] },
+          attributes: ['name', 'type'],
+        }
+      ]
+    });
+
+    if (!profile) {
+      return { message: 'Профиль кандидата не найден', status: 'error' };
+    }
+
+    const tagsString = profile.Tags && profile.Tags.length > 0
+      ? profile.Tags.map(t => `${t.name} (${t.type})`).join(', ')
+      : 'Не указаны';
+
+    const prompt = `Ты — опытный HR-рекрутер и технический специалист. Проанализируй профиль кандидата и составь краткое, профессиональное резюме (2-3 предложения) о его потенциале и соответствии рынку.
+
+анные кандидата:
+- Должность: ${profile.jobTitle || 'Не указана'}
+- Университет: ${profile.university || 'Не указан'}
+- Год выпуска: ${profile.graduationYear || 'Не указан'}
+- О себе (опыт, проекты): ${profile.about || 'Не указано'}
+- Ссылка на резюме: ${profile.resumeURL || 'Не предоставлена'}
+- Навыки и теги: ${tagsString}
+
+ПРАВИЛА ОЦЕНКИ (строго следуй им):
+1. Если у кандидата указаны только 1-3 тега, но при этом ОТСУТСТВУЕТ описание опыта ("О себе"), нет ссылки на резюме и нет данных об образовании — это НЕПОЛНЫЙ и НЕКАЧЕСТВЕННЫЙ профиль. Теги без описания опыта не являются доказательством квалификации.
+2. "Хороший кандидат" — это тот, кто предоставил развернутое описание своего опыта/проектов ИЛИ приложил резюме, а его теги подкреплены этим описанием.
+3. Напиши краткий, жесткий и объективный вердикт (2-3 предложения), указывая на конкретные пробелы в профиле.
+
+СТРОГОЕ ТРЕБОВАНИЕ К ФОРМАТУ ОТВЕТА:
+1. Напиши краткое описание.
+2. В самом конце ответа, с новой строки, ты ОБЯЗАТЕЛЬНО должен написать ровно одну из двух фраз (без кавычек, без точек и дополнительных слов):
+хороший кандидат
+ИЛИ
+плохой кандидат`;
+
+    const response = await axios.post(
+      process.env.URL,
+      {
+        model: 'gemma4:e4b',
+        messages: [{ role: 'user', content: prompt }],
+        stream: false,
+        options: {
+          temperature: 0.3
+        }
+      },
+      {
+        headers: { 'Content-Type': 'application/json' },
+        timeout: 30000
+      }
+    );
+
+    const message = response.data.message?.content
+      || response.data.choices?.[0]?.message?.content
+      || 'Не удалось получить ответ от модели';
+
+    return { message, status: 'success' };
+
+  } catch (error) {
+    console.error('Ошибка при генерации саммари кандидата:', error.message);
+
+    return {
+      message: error.response?.data?.error?.message || error.message || 'Ошибка сервера при обращении к LLM',
+      status: 'error'
+    };
+  }
+}
+
 module.exports = {
   applyToPossibility,
   updateResponseStatus,
   getMyResponses,
   getResponsesForPossibility,
+  getSummaryCandidate,
 }

@@ -10,6 +10,7 @@ const {
   getMyResponses,
   getResponsesForPossibility,
   updateResponseStatus,
+  getSummaryCandidate,
 } = require('../controllers/responses.controller');
 
 routerResponse.post(
@@ -87,6 +88,25 @@ routerResponse.patch(
 
     res.send(result);
   }),
+);
+
+routerResponse.get(
+  '/summary/:id',
+  employerMiddleware,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const result = await getSummaryCandidate(id);
+
+    if (result.status === 'error') {
+      return res.status(400).json({ message: result.message });
+    }
+
+    res.json({
+      summary: result.message,
+      status: 'success'
+    });
+  })
 );
 
 module.exports = routerResponse;
