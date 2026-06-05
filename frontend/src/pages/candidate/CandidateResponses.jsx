@@ -190,21 +190,38 @@ export default function CandidateResponses() {
                     })}
                 </div>
 
+                {/* Замените блок с empty-state */}
                 {filteredResponses.length === 0 && (
-                    <div className="empty-state">
-                        <p>
-                            {activeTab === "history"
-                                ? "У вас пока нет завершенных мероприятий"
-                                : "У вас пока нет откликов"}
-                        </p>
-                        {activeTab !== "history" && (
-                            <button
-                                className="primary"
-                                onClick={() => navigate("/")}
-                            >
-                                Перейти к событиям
-                            </button>
-                        )}
+                    <div className="empty-state-wrapper">
+                        <div className="empty-state-card">
+                            <div className="empty-icon">
+                                {activeTab === "history" ? "📋" : "📝"}
+                            </div>
+                            <h3>
+                                {activeTab === "history"
+                                    ? "Нет завершенных мероприятий"
+                                    : activeTab === "accepted"
+                                        ? "Нет принятых откликов"
+                                        : activeTab === "reserve"
+                                            ? "Нет откликов в резерве"
+                                            : activeTab === "rejected"
+                                                ? "Нет отклоненных откликов"
+                                                : "Нет откликов на рассмотрении"}
+                            </h3>
+                            <p>
+                                {activeTab === "history"
+                                    ? "Здесь будут отображаться завершенные мероприятия"
+                                    : "Откликайтесь на события, чтобы они появились здесь"}
+                            </p>
+                            {activeTab !== "history" && (
+                                <button
+                                    className="primary"
+                                    onClick={() => navigate("/")}
+                                >
+                                    Перейти к событиям
+                                </button>
+                            )}
+                        </div>
                     </div>
                 )}
             </div>

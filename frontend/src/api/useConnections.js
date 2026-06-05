@@ -86,6 +86,15 @@ export function useConnections() {
             setLoading(false);
         }
     }, []);
+    const removeFriend = async (friendId) => {
+        // eslint-disable-next-line no-useless-catch
+        try {
+            const response = await apiClient.delete(`/api/connection/${friendId}`);
+            return response;
+        } catch (err) {
+            throw err;
+        }
+    };
 
     return {
         loading,
@@ -94,6 +103,7 @@ export function useConnections() {
         acceptRequest,
         rejectRequest,
         getFriends,
-        getRequests
+        getRequests,
+        removeFriend
     };
 }

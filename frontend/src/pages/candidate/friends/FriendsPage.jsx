@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header.jsx";
-import CandidateCard from "../../../components/CandidateCard.jsx";
+import FriendCard from "../../../components/FriendCard.jsx";
 import GlobalSearchBar from "../../../components/SearchBar/GlobalSearchBar.jsx";
 import { useUsers } from "../../../api/useUsers";
 import { useConnections } from "../../../api/useConnections";
@@ -31,16 +31,42 @@ export default function FriendsPage() {
     const [searchLoading, setSearchLoading] = useState(false);
     const [loading, setLoading] = useState(true);
 
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return "/images/avatar.png";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
+
     useEffect(() => {
         const loadData = async () => {
             try {
                 setLoading(true);
 
                 const friendsData = await getFriends();
-                setFriends(friendsData);
+                // Форматируем друзей с правильными аватарками
+                const formattedFriends = friendsData.map(friend => ({
+                    ...friend,
+                    avatar: getFullImageUrl(friend.avatar || friend.logoUrl),
+                    role: friend.jobTitle || friend.role || "Соискатель"
+                }));
+                setFriends(formattedFriends);
 
                 const requestsData = await getRequests();
-                setFriendRequests(requestsData);
+                // Форматируем заявки с правильными аватарками
+                const formattedRequests = requestsData.map(request => ({
+                    ...request,
+                    Requester: {
+                        ...request.Requester,
+                        avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl),
+                        role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель"
+                    }
+                }));
+                setFriendRequests(formattedRequests);
 
                 const allCandidates = await getCandidates(0, 100);
                 setAllUsers(allCandidates);
@@ -56,12 +82,14 @@ export default function FriendsPage() {
                                 id: candidate.userId,
                                 userId: candidate.userId,
                                 name: fullProfile?.fullName || candidate.fullName || "Пользователь",
-                                role: fullProfile?.jobTitle || candidate.jobTitle || "Соискатель",
+                                role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
+                                    ? fullProfile.jobTitle
+                                    : "Должность пуста",
                                 mutualFriends: candidate.mutualFriendsCount || 0,
                                 skills: fullProfile?.skills || [],
                                 tags: fullProfile?.Tags || [],
                                 online: false,
-                                avatar: fullProfile?.avatar || "/images/avatar.png"
+                                avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
                             });
                         } catch (err) {
                             console.error(`Error fetching full profile for ${candidate.userId}:`, err);
@@ -69,7 +97,9 @@ export default function FriendsPage() {
                                 id: candidate.userId,
                                 userId: candidate.userId,
                                 name: candidate.fullName || "Пользователь",
-                                role: candidate.jobTitle || "Соискатель",
+                                role: candidate.jobTitle && candidate.jobTitle.trim() !== ""
+                                    ? candidate.jobTitle
+                                    : "Должность пуста",
                                 mutualFriends: candidate.mutualFriendsCount || 0,
                                 skills: [],
                                 tags: [],
@@ -90,7 +120,9 @@ export default function FriendsPage() {
                             id: candidate.userId,
                             userId: candidate.userId,
                             name: candidate.fullName || "Пользователь",
-                            role: candidate.jobTitle || "Соискатель",
+                            role: candidate.jobTitle && candidate.jobTitle.trim() !== ""
+                                ? candidate.jobTitle
+                                : "Должность пуста",
                             mutualFriends: 0,
                             skills: candidate.skills || [],
                             tags: candidate.Tags || [],
@@ -132,11 +164,13 @@ export default function FriendsPage() {
                             id: user.userId,
                             userId: user.userId,
                             name: fullProfile?.fullName || user.fullName || "Пользователь",
-                            role: fullProfile?.jobTitle || user.jobTitle || "Соискатель",
+                            role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
+                                ? fullProfile.jobTitle
+                                : "Должность пуста",
                             skills: fullProfile?.skills || [],
                             tags: fullProfile?.Tags || [],
                             online: false,
-                            avatar: fullProfile?.avatar || "/images/avatar.png"
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
                         });
                     } catch (err) {
                         console.error(`Error fetching profile for ${user.userId}:`, err);
@@ -144,7 +178,9 @@ export default function FriendsPage() {
                             id: user.userId,
                             userId: user.userId,
                             name: user.fullName || "Пользователь",
-                            role: user.jobTitle || "Соискатель",
+                            role: user.jobTitle && user.jobTitle.trim() !== ""
+                                ? user.jobTitle
+                                : "Должность пуста",
                             skills: [],
                             tags: [],
                             online: false,
@@ -212,9 +248,22 @@ export default function FriendsPage() {
         try {
             await acceptRequest(connectionId);
             const updatedFriends = await getFriends();
-            setFriends(updatedFriends);
+            const formattedUpdatedFriends = updatedFriends.map(friend => ({
+                ...friend,
+                avatar: getFullImageUrl(friend.avatar || friend.logoUrl),
+                role: friend.jobTitle || friend.role || "Соискатель"
+            }));
+            setFriends(formattedUpdatedFriends);
             const updatedRequests = await getRequests();
-            setFriendRequests(updatedRequests);
+            const formattedUpdatedRequests = updatedRequests.map(request => ({
+                ...request,
+                Requester: {
+                    ...request.Requester,
+                    avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl),
+                    role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель"
+                }
+            }));
+            setFriendRequests(formattedUpdatedRequests);
             alert("Заявка принята!");
         } catch (err) {
             console.error("Error accepting request:", err);
@@ -226,7 +275,15 @@ export default function FriendsPage() {
         try {
             await rejectRequest(connectionId);
             const updatedRequests = await getRequests();
-            setFriendRequests(updatedRequests);
+            const formattedUpdatedRequests = updatedRequests.map(request => ({
+                ...request,
+                Requester: {
+                    ...request.Requester,
+                    avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl),
+                    role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель"
+                }
+            }));
+            setFriendRequests(formattedUpdatedRequests);
             alert("Заявка отклонена");
         } catch (err) {
             console.error("Error rejecting request:", err);
@@ -354,22 +411,30 @@ export default function FriendsPage() {
                             getCurrentList().map(item => {
                                 const friendData = activeTab === "requests" && searchQuery.length < 2 ? item.Requester : item;
                                 const isRequest = activeTab === "requests" && searchQuery.length < 2;
+                                const connectionId = isRequest ? item.id : null;
 
-                                return (
-                                    <CandidateCard
-                                        key={friendData?.id}
-                                        candidate={friendData}
-                                        buttonText={isRequest ? "Принять заявку" : "💬 Сообщение"}
-                                        onButtonClick={() => {
-                                            if (isRequest) {
-                                                handleAcceptRequest(item.id);
-                                            } else {
-                                                handleMessage(friendData);
-                                            }
-                                        }}
-                                        onClick={() => handleFriendClick(friendData)}
-                                    />
-                                );
+                                if (isRequest) {
+                                    return (
+                                        <FriendCard
+                                            key={friendData?.id}
+                                            friend={friendData}
+                                            variant="request"
+                                            onAccept={() => handleAcceptRequest(connectionId)}
+                                            onReject={() => handleRejectRequest(connectionId)}
+                                            onClick={() => handleFriendClick(friendData)}
+                                        />
+                                    );
+                                } else {
+                                    return (
+                                        <FriendCard
+                                            key={friendData?.id}
+                                            friend={friendData}
+                                            variant="friend"
+                                            onMessage={() => handleMessage(friendData)}
+                                            onClick={() => handleFriendClick(friendData)}
+                                        />
+                                    );
+                                }
                             })
                         ) : (
                             <div className="empty-state">
@@ -383,11 +448,11 @@ export default function FriendsPage() {
                             {filteredPossibleFriends.length > 0 ? (
                                 <div className="possible-friends-list">
                                     {filteredPossibleFriends.map(friend => (
-                                        <CandidateCard
+                                        <FriendCard
                                             key={friend.id}
-                                            candidate={friend}
-                                            buttonText="+ Добавить в друзья"
-                                            onButtonClick={() => handleAddFriend(friend)}
+                                            friend={friend}
+                                            variant="suggest"
+                                            onAddFriend={() => handleAddFriend(friend)}
                                             onClick={() => handlePossibleFriendClick(friend)}
                                         />
                                     ))}

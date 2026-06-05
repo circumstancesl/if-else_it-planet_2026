@@ -2,21 +2,19 @@ import "./FriendCard.css";
 
 export default function FriendCard({
                                        friend,
-                                       variant,
+                                       variant = "friend", // "friend", "suggest", "request"
                                        onAddFriend,
                                        onAccept,
                                        onReject,
                                        onMessage,
                                        onClick,
-                                       showActions = false
                                    }) {
     const isSuggest = variant === "suggest";
-    const isRequest = showActions;
+    const isRequest = variant === "request";
 
     // Получаем теги для отображения
     const getDisplayTags = () => {
         if (friend.tags && friend.tags.length > 0) {
-            // Сначала уровень, потом технологии
             const levelTag = friend.tags.find(t => t.type === "level");
             const techTags = friend.tags.filter(t => t.type === "technology");
             return [
@@ -51,7 +49,7 @@ export default function FriendCard({
                     />
                     <div className="friend-info">
                         <div className="friend-name">{friend.name}</div>
-                        <div className="friend-role">{friend.role}</div>
+                        <div className="friend-role">{friend.role || "Соискатель"}</div>
                         {displayTags.length > 0 && (
                             <div className="friend-card-tags">
                                 {displayTags.map((tag) => (
@@ -97,7 +95,7 @@ export default function FriendCard({
                     />
                     <div className="friend-card-info">
                         <div className="friend-name">{friend.name}</div>
-                        <div className="friend-role">{friend.role}</div>
+                        <div className="friend-role">{friend.role || "Соискатель"}</div>
                         {friend.mutualFriends > 0 && (
                             <div className="mutual-friends">
                                 {friend.mutualFriends} общих друзей
@@ -112,7 +110,6 @@ export default function FriendCard({
                         )}
                     </div>
                 </div>
-
                 <div className="friend-actions">
                     <button
                         className="primary-small add-friend-btn"
@@ -143,7 +140,7 @@ export default function FriendCard({
 
                 <div className="friend-info">
                     <div className="friend-name">{friend.name}</div>
-                    <div className="friend-role">{friend.role}</div>
+                    <div className="friend-role">{friend.role || "Соискатель"}</div>
                     {displayTags.length > 0 && (
                         <div className="friend-card-tags">
                             {displayTags.map((tag) => (

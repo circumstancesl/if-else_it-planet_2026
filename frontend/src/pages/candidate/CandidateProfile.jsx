@@ -12,7 +12,7 @@ export default function CandidateProfile() {
         fullName: "",
         jobTitle: "",
         university: "",
-        graduationYear: "",
+        course: "", // изменено с graduationYear на course
         about: "",
         resumeURL: "",
         email: "",
@@ -42,11 +42,18 @@ export default function CandidateProfile() {
     // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
         if (!url) return null;
+
+        // Если уже полный URL (http:// или https://)
         if (url.startsWith('http')) return url;
+
+        // Если относительный путь к uploads
         if (url.startsWith('/uploads')) {
+            // В разработке используем localhost:3000
+            // В продакшене можно использовать переменную окружения
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             return `${baseUrl}${url}`;
         }
+
         return url;
     };
 
@@ -77,7 +84,7 @@ export default function CandidateProfile() {
                     fullName: profileData.fullName || "",
                     jobTitle: profileData.jobTitle || "",
                     university: profileData.university || "",
-                    graduationYear: profileData.graduationYear || "",
+                    course: profileData.graduationYear ? (2028 - profileData.graduationYear) : "", // преобразуем год в курс
                     about: profileData.about || "",
                     resumeURL: profileData.resumeURL || "",
                     email: data.email || "",
@@ -220,12 +227,33 @@ export default function CandidateProfile() {
     const handleSave = async () => {
         console.log("CLICK SAVE");
 
+        // Валидация
+        if (form.jobTitle && form.jobTitle.length > 50) {
+            alert("Желаемая должность не может превышать 50 символов");
+            return;
+        }
+
+        if (form.university && form.university.length > 150) {
+            alert("Название учебного заведения не может превышать 150 символов");
+            return;
+        }
+
+        // Преобразуем курс в год окончания (текущий год + (4 - курс))
+        let graduationYear = null;
+        if (form.course) {
+            const currentYear = new Date().getFullYear();
+            const currentMonth = new Date().getMonth();
+            // Если сейчас сентябрь (месяц 8) или позже, то текущий учебный год
+            const studyYear = currentMonth >= 8 ? currentYear : currentYear - 1;
+            graduationYear = studyYear + (4 - parseInt(form.course));
+        }
+
         try {
             const rawPayload = {
                 fullName: form.fullName,
                 jobTitle: form.jobTitle,
                 university: form.university,
-                graduationYear: form.graduationYear,
+                graduationYear: graduationYear,
                 about: form.about,
                 resumeURL: form.resumeURL,
                 profileVisible: !isPrivate,
@@ -323,53 +351,55 @@ export default function CandidateProfile() {
                             onChange={(e) => handleChange("fullName", e.target.value)}
                         />
 
-                        <label>Желаемая должность</label>
-                        <select
+                        <label>Желаемая должность (до 50 символов)</label>
+                        <input
+                            type="text"
                             value={form.jobTitle}
-                            onChange={(e) => handleChange("jobTitle", e.target.value)}
-                        >
-                            <option value="">Выберите</option>
-                            <option>Frontend разработчик</option>
-                            <option>Backend разработчик</option>
-                            <option>UI/UX дизайнер</option>
-                        </select>
+                            onChange={(e) => {
+                                const value = e.target.value.slice(0, 50);
+                                handleChange("jobTitle", value);
+                            }}
+                            placeholder="Введите желаемую должность"
+                        />
+                        <span className="char-count">{form.jobTitle.length}/50 символов</span>
 
-                        <label>Учебное заведение</label>
-                        <select
+                        <label>Учебное заведение (до 150 символов)</label>
+                        <input
+                            type="text"
                             value={form.university}
-                            onChange={(e) => handleChange("university", e.target.value)}
-                        >
-                            <option value="">Выберите</option>
-                            <option>МГУ</option>
-                            <option>СПбГУ</option>
-                            <option>НИУ ВШЭ</option>
-                            <option>МФТИ</option>
-                        </select>
+                            onChange={(e) => {
+                                const value = e.target.value.slice(0, 150);
+                                handleChange("university", value);
+                            }}
+                            placeholder="Введите название учебного заведения"
+                        />
+                        <span className="char-count">{form.university.length}/150 символов</span>
 
                         <label>Курс</label>
                         <select
-                            value={form.graduationYear}
-                            onChange={(e) =>
-                                handleChange("graduationYear", Number(e.target.value))
-                            }
+                            value={form.course}
+                            onChange={(e) => handleChange("course", e.target.value)}
                         >
-                            <option value="">Выберите</option>
-                            <option value={2027}>1 курс</option>
-                            <option value={2026}>2 курс</option>
-                            <option value={2025}>3 курс</option>
-                            <option value={2024}>4 курс</option>
+                            <option value="">Выберите курс</option>
+                            <option value="1">1 курс</option>
+                            <option value="2">2 курс</option>
+                            <option value="3">3 курс</option>
+                            <option value="4">4 курс</option>
+                            <option value="5">5 курс</option>
                         </select>
 
                         <label>О себе</label>
                         <textarea
                             value={form.about}
                             onChange={(e) => handleChange("about", e.target.value)}
+                            rows="4"
                         />
 
                         <h3>Портфолио</h3>
                         <input
                             value={form.resumeURL}
                             onChange={(e) => handleChange("resumeURL", e.target.value)}
+                            placeholder="Ссылка на портфолио или резюме"
                         />
                     </div>
 

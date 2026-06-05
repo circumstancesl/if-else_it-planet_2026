@@ -151,14 +151,14 @@ export default function Favorites() {
 
             <div className="container">
                 {favoriteEvents.length === 0 ? (
-                    <div className="empty-favorites">
-                        <div className="empty-content">
-                            <img src="/icons/empty-favorites.svg" alt="Нет избранных" />
-                            <h3>У вас пока нет избранных событий</h3>
+                    <div className="empty-state-wrapper">
+                        <div className="empty-state-card">
+                            <div className="empty-icon">❤️</div>
+                            <h3>Нет избранных событий</h3>
                             <p>Добавляйте события в избранное, чтобы не потерять интересные варианты</p>
                             <button
                                 className="primary"
-                                onClick={() => window.location.href = "/"}
+                                onClick={() => navigate("/")}
                             >
                                 Перейти к событиям
                             </button>

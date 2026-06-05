@@ -17,6 +17,7 @@ export default function FriendProfilePage() {
         rejectRequest,
         getFriends,
         getRequests,
+        removeFriend,
         loading: connectionLoading
     } = useConnections();
     const { createOrGetChat, loading: chatLoading } = useChat();
@@ -27,11 +28,24 @@ export default function FriendProfilePage() {
     const [friendStatus, setFriendStatus] = useState(null);
     const [pendingConnectionId, setPendingConnectionId] = useState(null);
 
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return "/images/avatar.png";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
+
     useEffect(() => {
         const fetchProfile = async () => {
             try {
                 setProfileLoading(true);
                 const data = await getCandidateProfile(friendId);
+                console.log("Friend profile data:", data);
+
                 if (data) {
                     setFriend({
                         id: data.userId,
@@ -41,14 +55,15 @@ export default function FriendProfilePage() {
                         skills: data.skills || [],
                         tags: data.Tags || [],
                         about: data.about || "Нет информации",
-                        education: data.university ? `${data.university}${data.graduationYear ? `, ${data.graduationYear}` : ""}` : null,
-                        contacts: {
-                            phone: data.phone || null,
-                            telegram: data.telegram || null,
-                            email: data.email || null
-                        },
+                        university: data.university || null,
+                        graduationYear: data.graduationYear || null,
+                        phone: data.phone || null,
+                        telegram: data.telegram || null,
+                        email: data.email || null,
+                        resumeURL: data.resumeURL || null,
+                        logoUrl: data.logoUrl || null,
                         portfolio: data.portfolio || [],
-                        avatar: data.avatar || "/images/avatar.png"
+                        avatar: getFullImageUrl(data.logoUrl) || "/images/avatar.png"
                     });
                 }
 
@@ -71,7 +86,7 @@ export default function FriendProfilePage() {
                     }
                 }
 
-                // Загружаем рекомендованных друзей через новый эндпоинт с полными профилями
+                // Загружаем рекомендованных друзей
                 try {
                     const suggested = await getSuggestedFriends(5, 0);
                     const friendIds = new Set(friendsList.map(f => f.id));
@@ -86,11 +101,14 @@ export default function FriendProfilePage() {
                                     id: candidate.userId,
                                     userId: candidate.userId,
                                     name: fullProfile?.fullName || candidate.fullName || "Пользователь",
-                                    role: fullProfile?.jobTitle || candidate.jobTitle || "Соискатель",
+                                    // Используем желаемую должность из профиля, если есть
+                                    role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
+                                        ? fullProfile.jobTitle
+                                        : "Соискатель",
                                     mutualFriends: candidate.mutualFriendsCount || 0,
                                     skills: fullProfile?.skills || [],
                                     tags: fullProfile?.Tags || [],
-                                    avatar: fullProfile?.avatar || "/images/avatar.png"
+                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
                                 });
                             } catch (err) {
                                 console.error(`Error fetching profile for ${candidate.userId}:`, err);
@@ -98,7 +116,9 @@ export default function FriendProfilePage() {
                                     id: candidate.userId,
                                     userId: candidate.userId,
                                     name: candidate.fullName || "Пользователь",
-                                    role: candidate.jobTitle || "Соискатель",
+                                    role: candidate.jobTitle && candidate.jobTitle.trim() !== ""
+                                        ? candidate.jobTitle
+                                        : "Соискатель",
                                     mutualFriends: candidate.mutualFriendsCount || 0,
                                     skills: [],
                                     tags: [],
@@ -110,7 +130,6 @@ export default function FriendProfilePage() {
                     setPossibleFriends(formattedSuggested);
                 } catch (err) {
                     console.error("Error loading suggested friends:", err);
-                    // Fallback: используем старый метод
                     const candidates = await getCandidates(0, 5);
                     const friendIds = new Set(friendsList.map(f => f.id));
                     const requestUserIds = new Set(requestsList.map(r => r.Requester?.id).filter(Boolean));
@@ -124,18 +143,22 @@ export default function FriendProfilePage() {
                                     id: candidate.userId,
                                     userId: candidate.userId,
                                     name: fullProfile?.fullName || candidate.fullName || "Пользователь",
-                                    role: fullProfile?.jobTitle || candidate.jobTitle || "Соискатель",
+                                    role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
+                                        ? fullProfile.jobTitle
+                                        : "Соискатель",
                                     mutualFriends: 0,
                                     skills: fullProfile?.skills || [],
                                     tags: fullProfile?.Tags || [],
-                                    avatar: fullProfile?.avatar || "/images/avatar.png"
+                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
                                 });
                             } catch (err) {
                                 formattedCandidates.push({
                                     id: candidate.userId,
                                     userId: candidate.userId,
                                     name: candidate.fullName || "Пользователь",
-                                    role: candidate.jobTitle || "Соискатель",
+                                    role: candidate.jobTitle && candidate.jobTitle.trim() !== ""
+                                        ? candidate.jobTitle
+                                        : "Соискатель",
                                     mutualFriends: 0,
                                     skills: [],
                                     tags: [],
@@ -168,6 +191,24 @@ export default function FriendProfilePage() {
                 alert("Нельзя добавить себя в друзья");
             } else {
                 alert("Ошибка при отправке заявки");
+            }
+        }
+    };
+
+    const handleRemoveFriend = async () => {
+        if (window.confirm("Вы уверены, что хотите удалить этого пользователя из друзей?")) {
+            try {
+                await removeFriend(friendId);
+                setFriendStatus('none');
+                alert("Пользователь удален из друзей");
+                const friendsList = await getFriends();
+                const isFriend = friendsList.some(f => f.id === friendId);
+                if (!isFriend) {
+                    setFriendStatus('none');
+                }
+            } catch (err) {
+                console.error("Error removing friend:", err);
+                alert("Ошибка при удалении из друзей");
             }
         }
     };
@@ -270,16 +311,27 @@ export default function FriendProfilePage() {
                             <div className="portfolio-text">Связаться:</div>
 
                             <div className="contact-icons">
-                                {friend.contacts?.phone && (
-                                    <a href={`tel:${friend.contacts.phone}`} className="icon-link">📞</a>
+                                {friend.phone && (
+                                    <a href={`tel:${friend.phone}`} className="icon-link">📞</a>
                                 )}
-                                {friend.contacts?.telegram && (
-                                    <a href={`https://t.me/${friend.contacts.telegram}`} className="icon-link">💬</a>
+                                {friend.telegram && (
+                                    <a href={`https://t.me/${friend.telegram}`} className="icon-link">💬</a>
                                 )}
-                                {friend.contacts?.email && (
-                                    <a href={`mailto:${friend.contacts.email}`} className="icon-link">📧</a>
+                                {friend.email && (
+                                    <a href={`mailto:${friend.email}`} className="icon-link">📧</a>
                                 )}
                             </div>
+
+                            {friend.resumeURL && (
+                                <>
+                                    <div className="portfolio-text">Резюме:</div>
+                                    <div className="portfolio-icons">
+                                        <a href={friend.resumeURL} target="_blank" rel="noopener noreferrer" className="portfolio-link">
+                                            📄 Смотреть резюме
+                                        </a>
+                                    </div>
+                                </>
+                            )}
 
                             {friend.portfolio && friend.portfolio.length > 0 && (
                                 <>
@@ -299,12 +351,14 @@ export default function FriendProfilePage() {
                             <h1>{friend.name}</h1>
                             <p className="role">{friend.role}</p>
 
-                            {/* Уровень - в том же стиле, что и технологии */}
-                            <div className="skills-tags">
-                                {levelTags.map((tag) => (
-                                    <span key={tag.id} className="skill-tag">{tag.name}</span>
-                                ))}
-                            </div>
+                            {/* Уровень */}
+                            {levelTags.length > 0 && (
+                                <div className="skills-tags">
+                                    {levelTags.map((tag) => (
+                                        <span key={tag.id} className="skill-tag">{tag.name}</span>
+                                    ))}
+                                </div>
+                            )}
 
                             <div className="action-buttons">
                                 <button className="btn-accept" onClick={handleMessage}>
@@ -312,8 +366,8 @@ export default function FriendProfilePage() {
                                 </button>
 
                                 {friendStatus === 'friend' && (
-                                    <button className="btn-reserve" disabled style={{ opacity: 0.6, cursor: 'default' }}>
-                                        ✓ Уже в друзьях
+                                    <button className="btn-reject" onClick={handleRemoveFriend} disabled={connectionLoading}>
+                                        {connectionLoading ? "Удаление..." : "✕ Удалить из друзей"}
                                     </button>
                                 )}
 
@@ -324,14 +378,14 @@ export default function FriendProfilePage() {
                                 )}
 
                                 {friendStatus === 'pending_received' && (
-                                    <div className="request-actions-buttons">
-                                        <button className="btn-accept-small" onClick={handleAcceptRequest} disabled={connectionLoading}>
+                                    <>
+                                        <button className="btn-accept" onClick={handleAcceptRequest} disabled={connectionLoading}>
                                             {connectionLoading ? "..." : "✓ Принять"}
                                         </button>
-                                        <button className="btn-reject-small" onClick={handleRejectRequest} disabled={connectionLoading}>
+                                        <button className="btn-reject" onClick={handleRejectRequest} disabled={connectionLoading}>
                                             {connectionLoading ? "..." : "✕ Отклонить"}
                                         </button>
-                                    </div>
+                                    </>
                                 )}
 
                                 {friendStatus === 'none' && (
@@ -346,27 +400,38 @@ export default function FriendProfilePage() {
                                 <p>{friend.about}</p>
                             </div>
 
-                            {friend.education && (
+                            {(friend.university || friend.graduationYear) && (
                                 <div className="inner-profile-section">
                                     <h3>Образование</h3>
-                                    <p>{friend.education}</p>
+                                    <p>
+                                        {friend.university}
+                                        {friend.university && friend.graduationYear && ", "}
+                                        {friend.graduationYear && `${new Date().getFullYear() - friend.graduationYear + 4}-й курс`}
+                                    </p>
                                 </div>
                             )}
 
-                            <div className="inner-profile-section">
-                                <h3>Навыки</h3>
-                                <div className="skills-full">
-                                    {technologyTags.length > 0 ? (
-                                        technologyTags.map(tag => (
+                            {technologyTags.length > 0 && (
+                                <div className="inner-profile-section">
+                                    <h3>Навыки</h3>
+                                    <div className="skills-full">
+                                        {technologyTags.map(tag => (
                                             <span key={tag.id} className="skill-tag">{tag.name}</span>
-                                        ))
-                                    ) : (
-                                        friend.skills?.map((skill, idx) => (
-                                            <span key={idx} className="skill-tag">{skill}</span>
-                                        ))
-                                    )}
+                                        ))}
+                                    </div>
                                 </div>
-                            </div>
+                            )}
+
+                            {friend.skills?.length > 0 && technologyTags.length === 0 && (
+                                <div className="inner-profile-section">
+                                    <h3>Навыки</h3>
+                                    <div className="skills-full">
+                                        {friend.skills.map((skill, idx) => (
+                                            <span key={idx} className="skill-tag">{skill}</span>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
 
