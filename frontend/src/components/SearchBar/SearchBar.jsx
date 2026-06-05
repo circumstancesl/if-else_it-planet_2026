@@ -1,16 +1,31 @@
+import { forwardRef } from "react";
 import "./SearchBar.css";
 
-export default function SearchBar({
-                                      search,
-                                      setSearch,
-                                      onSearch,
-                                      onOpenFilters,
-                                      leftButton,
-                                      rightButtons,
-                                      placeholder = "Профессия, должность или компания",
-                                      variant = "default",
-                                      className = "",
-                                  }) {
+const SearchBar = forwardRef(({
+                                  search,
+                                  setSearch,
+                                  onSearch,
+                                  onOpenFilters,
+                                  leftButton,
+                                  rightButtons,
+                                  placeholder = "Профессия, должность или компания",
+                                  variant = "default",
+                                  className = "",
+                                  onChange,
+                                  onKeyDown
+                              }, ref) => {
+    const handleChange = (e) => {
+        setSearch(e.target.value);
+        onChange?.(e);
+    };
+
+    const handleKeyDownEvent = (e) => {
+        if (e.key === "Enter") {
+            onSearch?.();
+        }
+        onKeyDown?.(e);
+    };
+
     return (
         <div className={`search-wrapper ${variant} ${className}`}>
             {leftButton && (
@@ -24,11 +39,12 @@ export default function SearchBar({
                     <img src="/icons/search.svg" alt="search" />
                 </span>
                 <input
+                    ref={ref}
                     type="text"
                     placeholder={placeholder}
                     value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && onSearch()}
+                    onChange={handleChange}
+                    onKeyDown={handleKeyDownEvent}
                 />
             </div>
 
@@ -49,4 +65,8 @@ export default function SearchBar({
             )}
         </div>
     );
-}
+});
+
+SearchBar.displayName = "SearchBar";
+
+export default SearchBar;

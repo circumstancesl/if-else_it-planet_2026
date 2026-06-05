@@ -308,7 +308,7 @@ export default function FriendProfilePage() {
                                 <img src={friend.avatar} alt="avatar" />
                             </div>
 
-                            <div className="portfolio-text">Связаться:</div>
+                            {/*<div className="portfolio-text">Связаться:</div>*/}
 
                             <div className="contact-icons">
                                 {friend.phone && (
@@ -327,7 +327,7 @@ export default function FriendProfilePage() {
                                     <div className="portfolio-text">Резюме:</div>
                                     <div className="portfolio-icons">
                                         <a href={friend.resumeURL} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                                            📄 Смотреть резюме
+                                            Смотреть резюме
                                         </a>
                                     </div>
                                 </>
@@ -362,7 +362,7 @@ export default function FriendProfilePage() {
 
                             <div className="action-buttons">
                                 <button className="btn-accept" onClick={handleMessage}>
-                                    💬 Написать сообщение
+                                    Написать сообщение
                                 </button>
 
                                 {friendStatus === 'friend' && (

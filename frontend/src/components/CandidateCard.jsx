@@ -4,9 +4,9 @@ import "./CandidateCard.css";
 export default function CandidateCard({
                                           candidate,
                                           onClick,
-                                          buttonText = "Смотреть резюме",  // ← текст кнопки по умолчанию
-                                          onButtonClick,                  // ← отдельный обработчик для кнопки
-                                          showButton = true               // ← показывать ли кнопку
+                                          buttonText = "Смотреть резюме",
+                                          onButtonClick,
+                                          showButton = true
                                       }) {
     const tagsRef = useRef(null);
     const [visibleTags, setVisibleTags] = useState([]);
@@ -64,7 +64,6 @@ export default function CandidateCard({
     }, [orderedTags]);
 
     const handleCardClick = (e) => {
-        // Если кликнули по кнопке, не вызываем onClick карточки
         if (e.target.tagName === 'BUTTON') {
             return;
         }
@@ -91,6 +90,12 @@ export default function CandidateCard({
                 <div className="candidate-info">
                     <div className="name">{candidate.name}</div>
                     <div className="role">{candidate.role}</div>
+                    {/* Показываем количество общих друзей для suggested friends */}
+                    {candidate.mutualFriends > 0 && (
+                        <div className="mutual-friends">
+                            {candidate.mutualFriends} общих друзей
+                        </div>
+                    )}
                 </div>
             </div>
 

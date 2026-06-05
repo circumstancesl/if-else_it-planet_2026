@@ -1,0 +1,178 @@
+/* Landing Pages - Трамплин (выровненная версия) */
+
+.landing-page {
+    min-height: 100vh;
+    font-family: 'Inter', system-ui, sans-serif;
+    background: #ffffff;
+}
+
+.landing-container {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 40px;
+}
+
+/* ==================== HERO ==================== */
+.landing-hero {
+    padding: 100px 0 130px;
+    background: linear-gradient(135deg, #0051B3 0%, #0071E8 100%);
+    color: #ffffff;
+    text-align: center;
+}
+
+.hero-content h1 {
+    font-size: 68px;
+    font-weight: 700;
+    letter-spacing: -0.04em;
+    margin-bottom: 20px;
+}
+
+.hero-subtitle {
+    font-size: 26px;
+    margin-bottom: 16px;
+    opacity: 0.95;
+}
+
+.hero-description {
+    font-size: 19px;
+    max-width: 720px;
+    margin: 0 auto 50px;
+    line-height: 1.55;
+    opacity: 0.92;
+}
+
+/* Цветовая палитра */
+.color-palette {
+    display: flex;
+    justify-content: center;
+    gap: 28px;
+    flex-wrap: wrap;
+    margin-top: 40px;
+}
+
+.color-swatch {
+    width: 138px;
+    height: 138px;
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 16px 14px;
+    color: white;
+    font-size: 13.5px;
+    line-height: 1.4;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.color-swatch.accent { background: #0071E8; }
+.color-swatch.white { background: #FFFFFF; color: #1a1a1a; }
+.color-swatch.gray { background: #F2F4FA; color: #1a1a1a; }
+.color-swatch.red { background: #FF5246; }
+.color-swatch.black { background: #000000; }
+
+/* ==================== Основной контент ==================== */
+.section {
+    padding: 40px 0;
+}
+
+.section h2 {
+    font-size: 32px;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 60px;
+    color: #1a1a1a;
+}
+
+/* Карточки */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+    gap: 32px;
+}
+
+.info-card {
+    background: white;
+    border-radius: 20px;
+    padding: 40px 36px;
+    box-shadow: 0 6px 24px rgba(0, 113, 232, 0.09);
+    border: 1px solid #f0f2f7;
+}
+
+.info-card h2 {
+    font-size: 26px;
+    margin-bottom: 20px;
+    color: #0071E8;
+    text-align: left;
+}
+
+/* Таблица конкурентов */
+.competitors-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 50px 0;
+    background: white;
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.07);
+}
+
+.competitors-table th {
+    background: #0071E8;
+    color: white;
+    padding: 18px 20px;
+    text-align: left;
+    font-weight: 500;
+}
+
+.competitors-table td {
+    padding: 18px 20px;
+    border-bottom: 1px solid #eaeef2;
+}
+
+/* Метрики */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 28px;
+}
+
+.metric-card {
+    background: #F8FAFF;
+    padding: 36px 24px;
+    border-radius: 18px;
+    text-align: center;
+}
+
+.metric-number {
+    font-size: 52px;
+    font-weight: 700;
+    color: #0071E8;
+    margin-bottom: 8px;
+}
+
+/* УТП */
+.utp-block {
+    background: #0071E8;
+    color: white;
+    padding: 52px 48px;
+    border-radius: 24px;
+    margin: 80px 0;
+}
+
+.utp-block h2 {
+    color: white;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.utp-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+}
+
+/* Кнопка внизу */
+.final-cta {
+    text-align: center;
+    padding: 60px 0;
+}

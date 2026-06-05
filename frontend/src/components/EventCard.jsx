@@ -116,7 +116,7 @@ export default function EventCard({
             return (
                 <div className="chat-section">
                     <div className="messages-badge">
-                        <span>💬</span>
+                        <span><img src="/icons/message-conversation.svg" alt="message-conversation"/></span>
                         <span>{messagesCount || 0}</span>
                     </div>
                     <button

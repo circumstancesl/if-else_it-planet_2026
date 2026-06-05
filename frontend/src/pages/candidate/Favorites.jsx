@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import "./Favorites.css";
 import { useFavorites } from "../../api/useFavorites";
 import { usePossibilities } from "../../api/usePossibilities";
+import { useTags } from "../../api/useTags";
 
 export default function Favorites() {
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -18,11 +19,36 @@ export default function Favorites() {
     const [favoriteEvents, setFavoriteEvents] = useState([]);
     const navigate = useNavigate();
 
+    const [filters, setFilters] = useState({
+        type: "",
+        format: "",
+        city: "",
+        tags: []
+    });
+
+    // Теги для фильтрации
+    const { tags, fetchTags, loading: tagsLoading } = useTags();
+    const [availableTags, setAvailableTags] = useState([]);
+    const [showTagDropdown, setShowTagDropdown] = useState(false);
+    const [tagSearch, setTagSearch] = useState("");
+
     const isMounted = useRef(true);
     const isLoadingRef = useRef(false);
 
     const { favorites, favoriteIds, toggleFavorite, isFavorite, fetchFavorites } = useFavorites();
     const { getPossibilityById } = usePossibilities();
+
+    // Загружаем теги
+    useEffect(() => {
+        fetchTags({});
+    }, []);
+
+    // Обновляем доступные теги
+    useEffect(() => {
+        if (tags && tags.length > 0) {
+            setAvailableTags(tags);
+        }
+    }, [tags]);
 
     const handleEventClick = (event) => {
         setSelectedEvent(event);
@@ -37,16 +63,13 @@ export default function Favorites() {
         setLoading(true);
 
         try {
-            // Получаем список избранных из хука
             const favs = await fetchFavorites();
 
             if (!isMounted.current) return;
 
-            // Загружаем полные данные каждого события и нормализуем
             const eventsData = [];
             for (const fav of favs || favorites) {
                 if (fav.type === 'possibility' && fav.item) {
-                    // Нормализуем данные: приводим теги к единому формату
                     const normalizedEvent = {
                         ...fav.item,
                         tags: fav.item.tags || fav.item.Tags || []
@@ -56,7 +79,6 @@ export default function Favorites() {
                     try {
                         const eventData = await getPossibilityById(fav.itemId);
                         if (eventData && isMounted.current) {
-                            // Нормализуем данные: приводим теги к единому формату
                             const normalizedEvent = {
                                 ...eventData,
                                 tags: eventData.tags || eventData.Tags || []
@@ -92,15 +114,94 @@ export default function Favorites() {
         };
     }, []);
 
-    // Поиск по избранным
-    const filteredEvents = useMemo(() => {
-        return favoriteEvents.filter((e) => {
-            const matchSearch =
-                e.title?.toLowerCase().includes(submittedSearch.toLowerCase()) ||
-                e.company?.name?.toLowerCase().includes(submittedSearch.toLowerCase());
-            return matchSearch;
+    // Добавление тега
+    const handleAddTag = (tag) => {
+        if (!filters.tags.includes(tag.name)) {
+            setFilters({
+                ...filters,
+                tags: [...filters.tags, tag.name]
+            });
+        }
+        setShowTagDropdown(false);
+        setTagSearch("");
+    };
+
+    // Удаление тега
+    const handleRemoveTag = (tagToRemove) => {
+        setFilters({
+            ...filters,
+            tags: filters.tags.filter(tag => tag !== tagToRemove)
         });
-    }, [favoriteEvents, submittedSearch]);
+    };
+
+    // Фильтрация тегов по поиску
+    const filteredTags = availableTags.filter(tag =>
+        tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+        !filters.tags.includes(tag.name)
+    );
+
+    const handleResetFilters = () => {
+        setFilters({
+            type: "",
+            format: "",
+            city: "",
+            tags: []
+        });
+        setTagSearch("");
+        setSubmittedSearch("");
+        setSearch("");
+    };
+
+    const handleApplyFilters = () => {
+        setShowFilters(false);
+    };
+
+    // Фильтрация событий
+    const filteredEvents = useMemo(() => {
+        let result = favoriteEvents;
+
+        // Поиск по названию или компании
+        if (submittedSearch) {
+            result = result.filter((e) => {
+                const matchSearch =
+                    e.title?.toLowerCase().includes(submittedSearch.toLowerCase()) ||
+                    e.company?.name?.toLowerCase().includes(submittedSearch.toLowerCase());
+                return matchSearch;
+            });
+        }
+
+        // Фильтр по типу
+        if (filters.type) {
+            result = result.filter(e => e.type === filters.type);
+        }
+
+        // Фильтр по формату
+        if (filters.format) {
+            result = result.filter(e => e.format === filters.format);
+        }
+
+        // Фильтр по городу
+        if (filters.city) {
+            result = result.filter(e =>
+                e.city?.toLowerCase().includes(filters.city.toLowerCase())
+            );
+        }
+
+        // Фильтр по тегам
+        if (filters.tags.length > 0) {
+            result = result.filter(event => {
+                const eventTags = event.tags || [];
+                const eventTagNames = eventTags.map(t => t.name || t);
+                return filters.tags.some(filterTag =>
+                    eventTagNames.some(eventTag =>
+                        eventTag.toLowerCase().includes(filterTag.toLowerCase())
+                    )
+                );
+            });
+        }
+
+        return result;
+    }, [favoriteEvents, submittedSearch, filters]);
 
     // Сортировка с выбранным событием
     const sortedEvents = useMemo(() => {
@@ -150,7 +251,7 @@ export default function Favorites() {
             />
 
             <div className="container">
-                {favoriteEvents.length === 0 ? (
+                {filteredEvents.length === 0 ? (
                     <div className="empty-state-wrapper">
                         <div className="empty-state-card">
                             <div className="empty-icon">❤️</div>
@@ -172,7 +273,7 @@ export default function Favorites() {
                                     events={eventsWithCoords}
                                     selectedEvent={selectedEvent}
                                     onSelect={setSelectedEvent}
-                                    favorites={Array.from(favoriteIds)} // 👈 передаем массив ID
+                                    favorites={Array.from(favoriteIds)}
                                 />
                             </div>
 
@@ -210,29 +311,112 @@ export default function Favorites() {
             </div>
 
             {showFilters && (
-                <div className="filters-modal">
-                    <div className="filters-content">
-                        <h3>Фильтры</h3>
-                        <select>
-                            <option>Все типы</option>
-                            <option>Стажировка</option>
-                            <option>Работа</option>
-                            <option>Менторство</option>
-                            <option>Мероприятие</option>
-                        </select>
-                        <select>
-                            <option>Все города</option>
-                            <option>Москва</option>
-                            <option>Санкт-Петербург</option>
-                            <option>Казань</option>
-                            <option>Новосибирск</option>
-                        </select>
-                        <button
-                            className="primary"
-                            onClick={() => setShowFilters(false)}
-                        >
-                            Применить
-                        </button>
+                <div className="filters-modal-overlay" onClick={() => setShowFilters(false)}>
+                    <div className="filters-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="filters-header">
+                            <h3>Фильтры</h3>
+                            <button className="close-btn" onClick={() => setShowFilters(false)}>✕</button>
+                        </div>
+
+                        <div className="filters-body">
+                            <div className="filter-group">
+                                <label>Тип мероприятия</label>
+                                <select
+                                    value={filters.type}
+                                    onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                                >
+                                    <option value="">Все типы</option>
+                                    <option value="internship">Стажировка</option>
+                                    <option value="vacancy">Работа</option>
+                                    <option value="mentorship">Менторство</option>
+                                    <option value="event">Событие</option>
+                                </select>
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Формат работы</label>
+                                <select
+                                    value={filters.format}
+                                    onChange={(e) => setFilters({ ...filters, format: e.target.value })}
+                                >
+                                    <option value="">Все форматы</option>
+                                    <option value="office">Офис</option>
+                                    <option value="remote">Удаленно</option>
+                                    <option value="hybrid">Гибридный</option>
+                                </select>
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Город</label>
+                                <input
+                                    type="text"
+                                    placeholder="Введите город"
+                                    value={filters.city}
+                                    onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Теги</label>
+                                <div className="tags">
+                                    {filters.tags.map((tag) => (
+                                        <span
+                                            key={tag}
+                                            className="tag"
+                                            onClick={() => handleRemoveTag(tag)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            {tag} ✕
+                                        </span>
+                                    ))}
+                                    <div className="add-tag-dropdown">
+                                        <button
+                                            className="add-tag"
+                                            onClick={() => setShowTagDropdown(!showTagDropdown)}
+                                            type="button"
+                                        >
+                                            + Добавить тег
+                                        </button>
+                                        {showTagDropdown && (
+                                            <div className="dropdown-menu">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Поиск тега..."
+                                                    value={tagSearch}
+                                                    onChange={(e) => setTagSearch(e.target.value)}
+                                                    className="dropdown-search"
+                                                    autoFocus
+                                                />
+                                                <div className="dropdown-list">
+                                                    {filteredTags.slice(0, 3).length > 0 ? (
+                                                        filteredTags.slice(0, 3).map(tag => (
+                                                            <div
+                                                                key={tag.id}
+                                                                className="dropdown-item"
+                                                                onClick={() => handleAddTag(tag)}
+                                                            >
+                                                                {tag.name}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="dropdown-empty">Теги не найдены</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="filters-footer">
+                            <button className="secondary" onClick={handleResetFilters}>
+                                Сбросить
+                            </button>
+                            <button className="primary" onClick={handleApplyFilters}>
+                                Применить
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}

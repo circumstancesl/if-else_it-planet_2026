@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header.jsx";
 import FriendCard from "../../../components/FriendCard.jsx";
@@ -25,14 +25,25 @@ export default function FriendsPage() {
     const [friendRequests, setFriendRequests] = useState([]);
     const [possibleFriends, setPossibleFriends] = useState([]);
     const [allUsers, setAllUsers] = useState([]);
-    const [activeTab, setActiveTab] = useState("friends");
+    const [activeTab, setActiveTab] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
+    const [submittedSearch, setSubmittedSearch] = useState("");
     const [searchResults, setSearchResults] = useState([]);
     const [searchLoading, setSearchLoading] = useState(false);
     const [loading, setLoading] = useState(true);
+    const [isSearching, setIsSearching] = useState(false);
 
-    // Функция для получения полного URL изображения
-    const getFullImageUrl = (url) => {
+    // Пагинация для вкладки "Все"
+    const [allUsersList, setAllUsersList] = useState([]);
+    const [allUsersOffset, setAllUsersOffset] = useState(0);
+    const [allUsersHasMore, setAllUsersHasMore] = useState(true);
+    const [allUsersLoading, setAllUsersLoading] = useState(false);
+    const allUsersLimit = 10;
+
+    // Бесконечный скролл
+    const lastElementRef = useRef(null);
+
+    const getFullImageUrl = useCallback((url) => {
         if (!url) return "/images/avatar.png";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
@@ -40,40 +51,186 @@ export default function FriendsPage() {
             return `${baseUrl}${url}`;
         }
         return url;
-    };
+    }, []);
+
+    // Загрузка всех пользователей с пагинацией (с полными профилями)
+    const loadAllUsers = useCallback(async (reset = true) => {
+        if (allUsersLoading) return;
+
+        if (reset) {
+            setAllUsersLoading(true);
+        }
+
+        try {
+            const offset = reset ? 0 : allUsersOffset;
+            const data = await getCandidates(offset, allUsersLimit);
+
+            const formattedUsers = [];
+            for (const user of data) {
+                try {
+                    const fullProfile = await getCandidateProfile(user.userId);
+                    formattedUsers.push({
+                        id: user.userId,
+                        userId: user.userId,
+                        name: fullProfile?.fullName || user.fullName || "Пользователь",
+                        role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
+                            ? fullProfile.jobTitle
+                            : (user.jobTitle && user.jobTitle.trim() !== "" ? user.jobTitle : "Должность пуста"),
+                        avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png",
+                        online: false,
+                        tags: fullProfile?.Tags || [],
+                        skills: fullProfile?.skills || []
+                    });
+                } catch (err) {
+                    console.error(`Error loading full profile for ${user.userId}:`, err);
+                    formattedUsers.push({
+                        id: user.userId,
+                        userId: user.userId,
+                        name: user.fullName || "Пользователь",
+                        role: user.jobTitle && user.jobTitle.trim() !== "" ? user.jobTitle : "Должность пуста",
+                        avatar: "/images/avatar.png",
+                        online: false,
+                        tags: [],
+                        skills: []
+                    });
+                }
+            }
+
+            if (reset) {
+                setAllUsersList(formattedUsers);
+                setAllUsersOffset(formattedUsers.length);
+                setAllUsersHasMore(data.length === allUsersLimit);
+            } else {
+                setAllUsersList(prev => [...prev, ...formattedUsers]);
+                setAllUsersOffset(prev => prev + formattedUsers.length);
+                setAllUsersHasMore(data.length === allUsersLimit);
+            }
+        } catch (err) {
+            console.error("Error loading all users:", err);
+        } finally {
+            if (reset) {
+                setAllUsersLoading(false);
+            }
+        }
+    }, [allUsersOffset, allUsersLoading, getCandidates, getCandidateProfile, getFullImageUrl]);
+
+    // Настройка Intersection Observer для бесконечного скролла
+    useEffect(() => {
+        if (activeTab === "all" && !isSearching && allUsersHasMore && !allUsersLoading && allUsersList.length > 0) {
+            const observer = new IntersectionObserver(
+                (entries) => {
+                    if (entries[0].isIntersecting && allUsersHasMore && !allUsersLoading) {
+                        loadAllUsers(false);
+                    }
+                },
+                { threshold: 0.1, rootMargin: "100px" }
+            );
+
+            if (lastElementRef.current) {
+                observer.observe(lastElementRef.current);
+            }
+
+            return () => {
+                if (lastElementRef.current) {
+                    observer.unobserve(lastElementRef.current);
+                }
+            };
+        }
+    }, [activeTab, isSearching, allUsersHasMore, allUsersLoading, allUsersList.length, loadAllUsers]);
+
+    // При поиске переключаемся на вкладку "Все"
+    useEffect(() => {
+        if (submittedSearch.length >= 2) {
+            setActiveTab("all");
+            setIsSearching(true);
+        } else {
+            setIsSearching(false);
+            setSearchResults([]);
+        }
+    }, [submittedSearch]);
+
+    // Загрузка при смене вкладки "Все"
+    useEffect(() => {
+        if (activeTab === "all" && allUsersList.length === 0 && !isSearching && !loading) {
+            loadAllUsers(true);
+        }
+    }, [activeTab, isSearching, loading, loadAllUsers]);
 
     useEffect(() => {
         const loadData = async () => {
             try {
                 setLoading(true);
 
+                // Загрузка друзей с полными профилями
                 const friendsData = await getFriends();
-                // Форматируем друзей с правильными аватарками
-                const formattedFriends = friendsData.map(friend => ({
-                    ...friend,
-                    avatar: getFullImageUrl(friend.avatar || friend.logoUrl),
-                    role: friend.jobTitle || friend.role || "Соискатель"
-                }));
+                const formattedFriends = [];
+                for (const friend of friendsData) {
+                    try {
+                        const fullProfile = await getCandidateProfile(friend.id || friend.userId);
+                        formattedFriends.push({
+                            id: friend.id || friend.userId,
+                            userId: friend.userId || friend.id,
+                            name: fullProfile?.fullName || friend.fullName || friend.name || "Пользователь",
+                            role: fullProfile?.jobTitle || friend.jobTitle || friend.role || "Соискатель",
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                            online: friend.online || false,
+                            tags: fullProfile?.Tags || friend.Tags || friend.tags || [],
+                            skills: fullProfile?.skills || friend.skills || []
+                        });
+                    } catch (err) {
+                        formattedFriends.push({
+                            id: friend.id || friend.userId,
+                            userId: friend.userId || friend.id,
+                            name: friend.fullName || friend.name || "Пользователь",
+                            role: friend.jobTitle || friend.role || "Соискатель",
+                            avatar: getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                            online: friend.online || false,
+                            tags: friend.Tags || friend.tags || [],
+                            skills: friend.skills || []
+                        });
+                    }
+                }
                 setFriends(formattedFriends);
 
+                // Загрузка заявок с полными профилями
                 const requestsData = await getRequests();
-                // Форматируем заявки с правильными аватарками
-                const formattedRequests = requestsData.map(request => ({
-                    ...request,
-                    Requester: {
-                        ...request.Requester,
-                        avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl),
-                        role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель"
+                const formattedRequests = [];
+                for (const request of requestsData) {
+                    try {
+                        const fullProfile = await getCandidateProfile(request.Requester?.id || request.Requester?.userId);
+                        formattedRequests.push({
+                            ...request,
+                            Requester: {
+                                id: request.Requester?.id || request.Requester?.userId,
+                                userId: request.Requester?.userId || request.Requester?.id,
+                                name: fullProfile?.fullName || request.Requester?.fullName || request.Requester?.name || "Пользователь",
+                                role: fullProfile?.jobTitle || request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
+                                avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                                tags: fullProfile?.Tags || request.Requester?.Tags || request.Requester?.tags || []
+                            }
+                        });
+                    } catch (err) {
+                        formattedRequests.push({
+                            ...request,
+                            Requester: {
+                                id: request.Requester?.id || request.Requester?.userId,
+                                userId: request.Requester?.userId || request.Requester?.id,
+                                name: request.Requester?.fullName || request.Requester?.name || "Пользователь",
+                                role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
+                                avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                                tags: request.Requester?.Tags || request.Requester?.tags || []
+                            }
+                        });
                     }
-                }));
+                }
                 setFriendRequests(formattedRequests);
 
                 const allCandidates = await getCandidates(0, 100);
                 setAllUsers(allCandidates);
 
+                // Загрузка возможных друзей с полными профилями
                 try {
                     const suggested = await getSuggestedFriends(20, 0);
-
                     const formattedSuggested = [];
                     for (const candidate of suggested) {
                         try {
@@ -84,7 +241,7 @@ export default function FriendsPage() {
                                 name: fullProfile?.fullName || candidate.fullName || "Пользователь",
                                 role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
                                     ? fullProfile.jobTitle
-                                    : "Должность пуста",
+                                    : (candidate.jobTitle && candidate.jobTitle.trim() !== "" ? candidate.jobTitle : "Должность пуста"),
                                 mutualFriends: candidate.mutualFriendsCount || 0,
                                 skills: fullProfile?.skills || [],
                                 tags: fullProfile?.Tags || [],
@@ -92,7 +249,7 @@ export default function FriendsPage() {
                                 avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
                             });
                         } catch (err) {
-                            console.error(`Error fetching full profile for ${candidate.userId}:`, err);
+                            console.error(`Error loading full profile for suggested friend ${candidate.userId}:`, err);
                             formattedSuggested.push({
                                 id: candidate.userId,
                                 userId: candidate.userId,
@@ -111,25 +268,6 @@ export default function FriendsPage() {
                     setPossibleFriends(formattedSuggested);
                 } catch (err) {
                     console.error("Error loading suggested friends:", err);
-                    const friendIds = new Set(friendsData.map(f => f.id));
-                    const requestUserIds = new Set(requestsData.map(r => r.Requester?.id).filter(Boolean));
-
-                    const formattedCandidates = allCandidates
-                        .filter(c => !friendIds.has(c.userId) && !requestUserIds.has(c.userId))
-                        .map(candidate => ({
-                            id: candidate.userId,
-                            userId: candidate.userId,
-                            name: candidate.fullName || "Пользователь",
-                            role: candidate.jobTitle && candidate.jobTitle.trim() !== ""
-                                ? candidate.jobTitle
-                                : "Должность пуста",
-                            mutualFriends: 0,
-                            skills: candidate.skills || [],
-                            tags: candidate.Tags || [],
-                            online: false,
-                            avatar: "/images/avatar.png"
-                        }));
-                    setPossibleFriends(formattedCandidates);
                 }
             } catch (err) {
                 console.error("Error loading friends data:", err);
@@ -138,26 +276,19 @@ export default function FriendsPage() {
             }
         };
         loadData();
-    }, [getFriends, getRequests, getCandidates, getSuggestedFriends, getCandidateProfile]);
+    }, [getFriends, getRequests, getCandidates, getSuggestedFriends, getCandidateProfile, getFullImageUrl]);
 
-    // Глобальный поиск
+    // Глобальный поиск - выполняется только при submittedSearch
     useEffect(() => {
         const performSearch = async () => {
-            if (searchQuery.trim().length >= 2) {
+            if (submittedSearch.trim().length >= 2) {
                 setSearchLoading(true);
-                const friendIds = new Set(friends.map(f => f.id));
-                const requestUserIds = new Set(friendRequests.map(r => r.Requester?.id).filter(Boolean));
-
-                const filteredUsers = allUsers.filter(user => {
-                    const matchesSearch = user.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                        user.jobTitle?.toLowerCase().includes(searchQuery.toLowerCase());
-                    const notFriend = !friendIds.has(user.userId);
-                    const notRequested = !requestUserIds.has(user.userId);
-                    return matchesSearch && notFriend && notRequested;
-                });
 
                 const results = [];
-                for (const user of filteredUsers) {
+                for (const user of allUsers.slice(0, 50)) {
+                    const matchesSearch = user.fullName?.toLowerCase().includes(submittedSearch.toLowerCase());
+                    if (!matchesSearch) continue;
+
                     try {
                         const fullProfile = await getCandidateProfile(user.userId);
                         results.push({
@@ -173,7 +304,6 @@ export default function FriendsPage() {
                             avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
                         });
                     } catch (err) {
-                        console.error(`Error fetching profile for ${user.userId}:`, err);
                         results.push({
                             id: user.userId,
                             userId: user.userId,
@@ -191,41 +321,29 @@ export default function FriendsPage() {
 
                 setSearchResults(results);
                 setSearchLoading(false);
-            } else {
-                setSearchResults([]);
             }
         };
 
         performSearch();
-    }, [searchQuery, allUsers, friends, friendRequests, getCandidateProfile]);
+    }, [submittedSearch, allUsers, getCandidateProfile, getFullImageUrl]);
 
-    const filteredFriends = useMemo(() => {
-        let filtered = friends;
-        if (searchQuery && activeTab === "friends") {
-            filtered = filtered.filter(friend =>
-                friend.name?.toLowerCase().includes(searchQuery.toLowerCase())
-            );
+    const handleSearch = () => {
+        if (searchQuery.trim().length >= 2) {
+            setSubmittedSearch(searchQuery);
+        } else {
+            setSubmittedSearch("");
+            setSearchResults([]);
+            setIsSearching(false);
         }
-        return filtered;
-    }, [friends, searchQuery, activeTab]);
+    };
 
-    const filteredOnlineFriends = useMemo(() => {
-        return filteredFriends.filter(friend => friend.online);
-    }, [filteredFriends]);
-
-    const filteredRequests = useMemo(() => {
-        if (!searchQuery || activeTab !== "requests") return friendRequests;
-        return friendRequests.filter(request =>
-            request.Requester?.name?.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-    }, [friendRequests, searchQuery, activeTab]);
-
-    const filteredPossibleFriends = useMemo(() => {
-        if (searchQuery) return [];
-        return possibleFriends;
-    }, [possibleFriends, searchQuery]);
-
-    const onlineCount = friends.filter(f => f.online).length;
+    const handleResetSearch = useCallback(() => {
+        setSearchQuery("");
+        setSubmittedSearch("");
+        setSearchResults([]);
+        setIsSearching(false);
+        setActiveTab("all");
+    }, []);
 
     const handleAddFriend = async (friend) => {
         try {
@@ -247,23 +365,68 @@ export default function FriendsPage() {
     const handleAcceptRequest = async (connectionId) => {
         try {
             await acceptRequest(connectionId);
+            // Обновляем данные после принятия заявки
             const updatedFriends = await getFriends();
-            const formattedUpdatedFriends = updatedFriends.map(friend => ({
-                ...friend,
-                avatar: getFullImageUrl(friend.avatar || friend.logoUrl),
-                role: friend.jobTitle || friend.role || "Соискатель"
-            }));
-            setFriends(formattedUpdatedFriends);
-            const updatedRequests = await getRequests();
-            const formattedUpdatedRequests = updatedRequests.map(request => ({
-                ...request,
-                Requester: {
-                    ...request.Requester,
-                    avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl),
-                    role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель"
+            const formattedFriends = [];
+            for (const friend of updatedFriends) {
+                try {
+                    const fullProfile = await getCandidateProfile(friend.id || friend.userId);
+                    formattedFriends.push({
+                        id: friend.id || friend.userId,
+                        userId: friend.userId || friend.id,
+                        name: fullProfile?.fullName || friend.fullName || friend.name || "Пользователь",
+                        role: fullProfile?.jobTitle || friend.jobTitle || friend.role || "Соискатель",
+                        avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                        online: friend.online || false,
+                        tags: fullProfile?.Tags || friend.Tags || friend.tags || [],
+                        skills: fullProfile?.skills || friend.skills || []
+                    });
+                } catch (err) {
+                    formattedFriends.push({
+                        id: friend.id || friend.userId,
+                        userId: friend.userId || friend.id,
+                        name: friend.fullName || friend.name || "Пользователь",
+                        role: friend.jobTitle || friend.role || "Соискатель",
+                        avatar: getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                        online: friend.online || false,
+                        tags: friend.Tags || friend.tags || [],
+                        skills: friend.skills || []
+                    });
                 }
-            }));
-            setFriendRequests(formattedUpdatedRequests);
+            }
+            setFriends(formattedFriends);
+
+            const updatedRequests = await getRequests();
+            const formattedRequests = [];
+            for (const request of updatedRequests) {
+                try {
+                    const fullProfile = await getCandidateProfile(request.Requester?.id || request.Requester?.userId);
+                    formattedRequests.push({
+                        ...request,
+                        Requester: {
+                            id: request.Requester?.id || request.Requester?.userId,
+                            userId: request.Requester?.userId || request.Requester?.id,
+                            name: fullProfile?.fullName || request.Requester?.fullName || request.Requester?.name || "Пользователь",
+                            role: fullProfile?.jobTitle || request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            tags: fullProfile?.Tags || request.Requester?.Tags || request.Requester?.tags || []
+                        }
+                    });
+                } catch (err) {
+                    formattedRequests.push({
+                        ...request,
+                        Requester: {
+                            id: request.Requester?.id || request.Requester?.userId,
+                            userId: request.Requester?.userId || request.Requester?.id,
+                            name: request.Requester?.fullName || request.Requester?.name || "Пользователь",
+                            role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
+                            avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            tags: request.Requester?.Tags || request.Requester?.tags || []
+                        }
+                    });
+                }
+            }
+            setFriendRequests(formattedRequests);
             alert("Заявка принята!");
         } catch (err) {
             console.error("Error accepting request:", err);
@@ -275,15 +438,36 @@ export default function FriendsPage() {
         try {
             await rejectRequest(connectionId);
             const updatedRequests = await getRequests();
-            const formattedUpdatedRequests = updatedRequests.map(request => ({
-                ...request,
-                Requester: {
-                    ...request.Requester,
-                    avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl),
-                    role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель"
+            const formattedRequests = [];
+            for (const request of updatedRequests) {
+                try {
+                    const fullProfile = await getCandidateProfile(request.Requester?.id || request.Requester?.userId);
+                    formattedRequests.push({
+                        ...request,
+                        Requester: {
+                            id: request.Requester?.id || request.Requester?.userId,
+                            userId: request.Requester?.userId || request.Requester?.id,
+                            name: fullProfile?.fullName || request.Requester?.fullName || request.Requester?.name || "Пользователь",
+                            role: fullProfile?.jobTitle || request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            tags: fullProfile?.Tags || request.Requester?.Tags || request.Requester?.tags || []
+                        }
+                    });
+                } catch (err) {
+                    formattedRequests.push({
+                        ...request,
+                        Requester: {
+                            id: request.Requester?.id || request.Requester?.userId,
+                            userId: request.Requester?.userId || request.Requester?.id,
+                            name: request.Requester?.fullName || request.Requester?.name || "Пользователь",
+                            role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
+                            avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            tags: request.Requester?.Tags || request.Requester?.tags || []
+                        }
+                    });
                 }
-            }));
-            setFriendRequests(formattedUpdatedRequests);
+            }
+            setFriendRequests(formattedRequests);
             alert("Заявка отклонена");
         } catch (err) {
             console.error("Error rejecting request:", err);
@@ -312,26 +496,30 @@ export default function FriendsPage() {
     };
 
     const getCurrentList = () => {
-        if (searchQuery.length >= 2) {
+        if (submittedSearch.length >= 2) {
             return searchResults;
         }
         switch(activeTab) {
+            case "all":
+                return allUsersList;
             case "friends":
-                return filteredFriends;
+                return friends;
             case "online":
-                return filteredOnlineFriends;
+                return friends.filter(f => f.online);
             case "requests":
-                return filteredRequests;
+                return friendRequests.map(r => r.Requester);
             default:
                 return [];
         }
     };
 
     const getEmptyMessage = () => {
-        if (searchQuery.length >= 2) {
+        if (submittedSearch.length >= 2) {
             return "Пользователи не найдены";
         }
         switch(activeTab) {
+            case "all":
+                return allUsersLoading ? "Загрузка..." : "Нет пользователей";
             case "friends":
                 return "У вас пока нет друзей";
             case "online":
@@ -356,6 +544,8 @@ export default function FriendsPage() {
         );
     }
 
+    const currentList = getCurrentList();
+
     return (
         <div className="page">
             <Header />
@@ -364,7 +554,8 @@ export default function FriendsPage() {
                 <GlobalSearchBar
                     search={searchQuery}
                     setSearch={setSearchQuery}
-                    onSearch={() => {}}
+                    onSearch={handleSearch}
+                    onReset={handleResetSearch}
                     searchResults={searchResults}
                     loading={searchLoading}
                     onAddFriend={handleAddFriend}
@@ -374,10 +565,16 @@ export default function FriendsPage() {
             </div>
 
             <div className="container">
-                {searchQuery.length < 2 && (
+                {submittedSearch.length < 2 && (
                     <div className="friends-header">
                         <div className="friends-tabs-section">
                             <div className="tabs">
+                                <span
+                                    className={activeTab === "all" ? "active" : ""}
+                                    onClick={() => setActiveTab("all")}
+                                >
+                                    Все
+                                </span>
                                 <span
                                     className={activeTab === "friends" ? "active" : ""}
                                     onClick={() => setActiveTab("friends")}
@@ -388,7 +585,7 @@ export default function FriendsPage() {
                                     className={activeTab === "online" ? "active" : ""}
                                     onClick={() => setActiveTab("online")}
                                 >
-                                    Онлайн ({onlineCount})
+                                    Онлайн ({friends.filter(f => f.online).length})
                                 </span>
                                 <span
                                     className={activeTab === "requests" ? "active" : ""}
@@ -407,47 +604,64 @@ export default function FriendsPage() {
 
                 <div className="friends-layout">
                     <div className="friends-list">
-                        {getCurrentList().length > 0 ? (
-                            getCurrentList().map(item => {
-                                const friendData = activeTab === "requests" && searchQuery.length < 2 ? item.Requester : item;
-                                const isRequest = activeTab === "requests" && searchQuery.length < 2;
-                                const connectionId = isRequest ? item.id : null;
+                        {currentList.length > 0 ? (
+                            <>
+                                {currentList.map((friend, index) => {
+                                    const isRequest = activeTab === "requests" && submittedSearch.length < 2;
+                                    const connectionId = isRequest ? friendRequests.find(r => r.Requester?.id === friend.id)?.id : null;
+                                    const isLastElement = activeTab === "all" && !isSearching && index === currentList.length - 1;
 
-                                if (isRequest) {
                                     return (
-                                        <FriendCard
-                                            key={friendData?.id}
-                                            friend={friendData}
-                                            variant="request"
-                                            onAccept={() => handleAcceptRequest(connectionId)}
-                                            onReject={() => handleRejectRequest(connectionId)}
-                                            onClick={() => handleFriendClick(friendData)}
-                                        />
+                                        <div
+                                            key={friend.id}
+                                            ref={isLastElement ? lastElementRef : null}
+                                        >
+                                            {isRequest ? (
+                                                <FriendCard
+                                                    friend={friend}
+                                                    variant="request"
+                                                    onAccept={() => handleAcceptRequest(connectionId)}
+                                                    onReject={() => handleRejectRequest(connectionId)}
+                                                    onClick={() => handleFriendClick(friend)}
+                                                />
+                                            ) : (
+                                                <FriendCard
+                                                    friend={friend}
+                                                    variant="friend"
+                                                    onMessage={() => handleMessage(friend)}
+                                                    onClick={() => handleFriendClick(friend)}
+                                                />
+                                            )}
+                                        </div>
                                     );
-                                } else {
-                                    return (
-                                        <FriendCard
-                                            key={friendData?.id}
-                                            friend={friendData}
-                                            variant="friend"
-                                            onMessage={() => handleMessage(friendData)}
-                                            onClick={() => handleFriendClick(friendData)}
-                                        />
-                                    );
-                                }
-                            })
+                                })}
+                                {activeTab === "all" && !isSearching && allUsersLoading && (
+                                    <div className="load-more-container">
+                                        <div className="loading-spinner">Загрузка ещё...</div>
+                                    </div>
+                                )}
+                            </>
                         ) : (
                             <div className="empty-state">
                                 <p>{getEmptyMessage()}</p>
+                                {activeTab === "all" && !isSearching && !allUsersLoading && (
+                                    <button
+                                        className="primary-small"
+                                        onClick={() => loadAllUsers(true)}
+                                        style={{ marginTop: "16px" }}
+                                    >
+                                        Попробовать снова
+                                    </button>
+                                )}
                             </div>
                         )}
                     </div>
 
-                    {searchQuery.length < 2 && (
+                    {submittedSearch.length < 2 && (
                         <div className="friends-sidebar">
-                            {filteredPossibleFriends.length > 0 ? (
+                            {possibleFriends.length > 0 ? (
                                 <div className="possible-friends-list">
-                                    {filteredPossibleFriends.map(friend => (
+                                    {possibleFriends.map(friend => (
                                         <FriendCard
                                             key={friend.id}
                                             friend={friend}

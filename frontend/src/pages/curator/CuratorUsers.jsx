@@ -15,6 +15,17 @@ export default function CuratorUsers() {
 
     const { getCompanies, updateCompanyStatus, loading: apiLoading } = useCurator();
 
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return "/img/employer.jpg";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
+
     useEffect(() => {
         loadCompanies();
     }, [activeTab]);
@@ -26,7 +37,6 @@ export default function CuratorUsers() {
             if (activeTab === "verification") {
                 status = "pending";
             } else if (activeTab === "employers") {
-                // Для вкладки "Работодатели" показываем всех
                 status = null;
             } else {
                 status = null;
@@ -51,13 +61,13 @@ export default function CuratorUsers() {
     const getStatusBadge = (status) => {
         switch (status) {
             case "approved":
-                return <span className="status verified">✓ Верифицирован</span>;
+                return <span className="status verified">Верифицирован</span>;
             case "pending":
-                return <span className="status pending">● Ожидает проверки</span>;
+                return <span className="status pending">Ожидает проверки</span>;
             case "rejected":
-                return <span className="status rejected">✕ Отклонен</span>;
+                return <span className="status no-data">Заблокирован</span>;
             default:
-                return null;
+                return <span className="status no-data">Не верифицирован</span>;
         }
     };
 
@@ -89,17 +99,21 @@ export default function CuratorUsers() {
     };
 
     const renderCompanyCard = (company) => {
+        const avatarUrl = getFullImageUrl(company.logoUrl);
+
         return (
             <div key={company.id} className="user-card company-card">
                 <div className="user-header">
                     <img
-                        src="/img/employer.jpg"
+                        src={avatarUrl}
                         alt={company.name}
                         className="user-avatar"
+                        onError={(e) => { e.target.src = "/img/employer.jpg"; }}
                     />
                     <div className="user-info">
                         <h3>{company.name}</h3>
                         <p>ИНН: {company.inn || "Не указан"}</p>
+                        {company.industry && <p className="position">{company.industry}</p>}
                     </div>
                     {getStatusBadge(company.verification_status)}
                 </div>
@@ -152,7 +166,7 @@ export default function CuratorUsers() {
             />
             <div className="container">
                 <div className="search-section">
-
+                    {/* Поиск уже есть выше */}
                 </div>
 
                 <div className="tabs">

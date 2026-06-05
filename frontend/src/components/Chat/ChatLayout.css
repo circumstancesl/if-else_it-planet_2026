@@ -301,3 +301,26 @@
 .messages::-webkit-scrollbar-thumb:hover {
     background: #64748b;
 }
+
+.event-info {
+    margin-top: 12px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e5e7eb;
+}
+
+.event-label {
+    font-size: 12px;
+    font-weight: 500;
+    color: #64748b;
+    display: block;
+    margin-bottom: 4px;
+}
+/* Стиль для названия вакансии - как должность */
+/* Стиль для названия вакансии - как должность */
+.event-title {
+    font-size: 14px;
+    color: #64748b;
+    margin-top: 4px;
+}

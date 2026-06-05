@@ -6,6 +6,7 @@ import "./Home.css";
 import HomeSearchBar from "../components/SearchBar/HomeSearchBar";
 import { useFavorites } from "../api/useFavorites";
 import { usePossibilities } from "../api/usePossibilities";
+import { useTags } from "../api/useTags";
 import { useNavigate } from "react-router-dom";
 
 export default function Home() {
@@ -14,84 +15,166 @@ export default function Home() {
     const [search, setSearch] = useState("");
     const [submittedSearch, setSubmittedSearch] = useState("");
     const [showFilters, setShowFilters] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [hasMore, setHasMore] = useState(true);
 
     const [filters, setFilters] = useState({
         type: "",
-        city: ""
+        format: "",
+        city: "",
+        salaryFrom: "",
+        salaryTo: "",
+        tags: []
     });
 
     const [events, setEvents] = useState([]);
     const [offset, setOffset] = useState(0);
     const limit = 10;
 
+    // Теги для фильтрации
+    const { tags, fetchTags, loading: tagsLoading } = useTags();
+    const [availableTags, setAvailableTags] = useState([]);
+    const [showTagDropdown, setShowTagDropdown] = useState(false);
+    const [tagSearch, setTagSearch] = useState("");
+
     const { getAllPossibilities } = usePossibilities();
     const { favorites, favoriteIds, toggleFavorite, isFavorite } = useFavorites();
 
-    // Клик на карточку - обновляем selectedEvent и переходим на страницу
-    const handleEventClick = useCallback((event) => {
-        setSelectedEvent(event); // 👈 только приближение
+    // Загружаем теги
+    useEffect(() => {
+        fetchTags({});
     }, []);
 
-    // Клик на пин - только выделение, без навигации
+    // Обновляем доступные теги
+    useEffect(() => {
+        if (tags && tags.length > 0) {
+            setAvailableTags(tags);
+        }
+    }, [tags]);
+
+    // Функция загрузки событий с фильтрами
+    const loadEvents = useCallback(async (reset = true) => {
+        if (loading) return;
+
+        setLoading(true);
+        try {
+            // Получаем ID тегов по их названиям
+            let tagIds = [];
+            if (filters.tags.length > 0) {
+                // Ищем ID для каждого выбранного тега
+                tagIds = availableTags
+                    .filter(tag => filters.tags.includes(tag.name))
+                    .map(tag => tag.id);
+            }
+
+            const params = {
+                offset: reset ? 0 : offset,
+                limit: limit,
+                search: submittedSearch || undefined,
+                type: filters.type || undefined,
+                format: filters.format || undefined,
+                city: filters.city || undefined,
+                salaryFrom: filters.salaryFrom ? Number(filters.salaryFrom) : undefined,
+                salaryTo: filters.salaryTo ? Number(filters.salaryTo) : undefined,
+                tags: tagIds.length > 0 ? tagIds.join(',') : undefined // передаем ID через запятую
+            };
+
+            console.log("Sending params:", params);
+
+            Object.keys(params).forEach(key => {
+                if (params[key] === undefined || params[key] === "") {
+                    delete params[key];
+                }
+            });
+
+            const data = await getAllPossibilities(params);
+            const normalizedEvents = (Array.isArray(data) ? data : []).map(event => ({
+                ...event,
+                tags: event.tags || event.Tags || []
+            }));
+
+            if (reset) {
+                setEvents(normalizedEvents);
+                setOffset(normalizedEvents.length);
+                setHasMore(normalizedEvents.length === limit);
+            } else {
+                setEvents(prev => [...prev, ...normalizedEvents]);
+                setOffset(prev => prev + normalizedEvents.length);
+                setHasMore(normalizedEvents.length === limit);
+            }
+        } catch (e) {
+            console.error("Error loading events:", e);
+        } finally {
+            setLoading(false);
+        }
+    }, [submittedSearch, filters, offset, loading, limit, availableTags]);
+
+    // Загрузка при изменении поиска или фильтров
+    useEffect(() => {
+        loadEvents(true);
+    }, [submittedSearch, filters.type, filters.format, filters.city, filters.salaryFrom, filters.salaryTo, filters.tags]);
+
+    const loadMore = () => {
+        if (!loading && hasMore) {
+            loadEvents(false);
+        }
+    };
+
+    const handleEventClick = useCallback((event) => {
+        setSelectedEvent(event);
+        navigate(`/candidate/event/${event.id}`);
+    }, [navigate]);
+
     const handleMapSelect = useCallback((event) => {
         setSelectedEvent(event);
     }, []);
 
-    useEffect(() => {
-        loadEvents();
-    }, []);
-
-    const loadEvents = async () => {
-        try {
-            const data = await getAllPossibilities({ offset: 0, limit });
-            const normalizedEvents = (Array.isArray(data) ? data : []).map(event => ({
-                ...event,
-                tags: event.tags || event.Tags || []
-            }));
-            setEvents(normalizedEvents);
-            setOffset(0);
-        } catch (e) {
-            console.error(e);
-        }
+    const handleApplyFilters = () => {
+        setShowFilters(false);
     };
 
-    const loadMore = async () => {
-        try {
-            const newOffset = offset + limit;
-            const data = await getAllPossibilities({
-                offset: newOffset,
-                limit
+    const handleResetFilters = () => {
+        setFilters({
+            type: "",
+            format: "",
+            city: "",
+            salaryFrom: "",
+            salaryTo: "",
+            tags: []
+        });
+        setTagSearch("");
+    };
+
+    // Добавление тега
+    const handleAddTag = (tag) => {
+        if (!filters.tags.includes(tag.name)) {
+            setFilters({
+                ...filters,
+                tags: [...filters.tags, tag.name]
             });
-            const normalizedEvents = (Array.isArray(data) ? data : []).map(event => ({
-                ...event,
-                tags: event.tags || event.Tags || []
-            }));
-            setEvents(prev => [...prev, ...normalizedEvents]);
-            setOffset(newOffset);
-        } catch (e) {
-            console.error(e);
         }
+        setShowTagDropdown(false);
+        setTagSearch("");
     };
+
+    // Удаление тега
+    const handleRemoveTag = (tagToRemove) => {
+        setFilters({
+            ...filters,
+            tags: filters.tags.filter(tag => tag !== tagToRemove)
+        });
+    };
+
+    // Фильтрация тегов по поиску
+    const filteredTags = availableTags.filter(tag =>
+        tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
+        !filters.tags.includes(tag.name)
+    );
 
     const filteredEvents = useMemo(() => {
-        return events.filter((e) => {
-            const matchSearch =
-                e.title?.toLowerCase().includes(submittedSearch.toLowerCase()) ||
-                e.company?.name?.toLowerCase().includes(submittedSearch.toLowerCase());
+        return events;
+    }, [events]);
 
-            const matchType = filters.type
-                ? e.type === filters.type
-                : true;
-
-            const matchCity = filters.city
-                ? e.city === filters.city
-                : true;
-
-            return matchSearch && matchType && matchCity;
-        });
-    }, [events, submittedSearch, filters]);
-
-    // Сортировка: выбранное событие наверх
     const sortedEvents = useMemo(() => {
         if (selectedEvent) {
             return [
@@ -114,7 +197,6 @@ export default function Home() {
         }));
     }, [filteredEvents]);
 
-    // Находим выбранное событие с координатами для карты
     const selectedEventWithCoords = useMemo(() => {
         if (!selectedEvent) return null;
         if (selectedEvent.latitude && selectedEvent.longitude) {
@@ -178,47 +260,159 @@ export default function Home() {
                     </div>
                 )}
 
-                {events.length >= limit && (
-                    <div style={{ marginTop: "20px" }}>
-                        <button className="primary" onClick={loadMore}>
-                            Загрузить ещё
+                {hasMore && events.length >= limit && (
+                    <div className="load-more-container">
+                        <button
+                            className="primary"
+                            onClick={loadMore}
+                            disabled={loading}
+                        >
+                            {loading ? "Загрузка..." : "Загрузить ещё"}
                         </button>
+                    </div>
+                )}
+
+                {!loading && events.length === 0 && (
+                    <div className="empty-state-wrapper">
+                        <div className="empty-state-card">
+                            <div className="empty-icon">🔍</div>
+                            <h3>Ничего не найдено</h3>
+                            <p>Попробуйте изменить параметры поиска или фильтры</p>
+                            <button className="primary" onClick={handleResetFilters}>
+                                Сбросить фильтры
+                            </button>
+                        </div>
                     </div>
                 )}
             </div>
 
             {showFilters && (
-                <div className="filters-modal">
-                    <div className="filters-content">
-                        <h3>Фильтры</h3>
-                        <select
-                            value={filters.type}
-                            onChange={(e) =>
-                                setFilters({ ...filters, type: e.target.value })
-                            }
-                        >
-                            <option value="">Все типы</option>
-                            <option value="internship">Стажировка</option>
-                            <option value="vacancy">Работа</option>
-                            <option value="mentorship">Менторство</option>
-                            <option value="event">Событие</option>
-                        </select>
-                        <select
-                            value={filters.city}
-                            onChange={(e) =>
-                                setFilters({ ...filters, city: e.target.value })
-                            }
-                        >
-                            <option value="">Все города</option>
-                            <option value="Москва">Москва</option>
-                            <option value="СПб">СПб</option>
-                        </select>
-                        <button
-                            className="primary"
-                            onClick={() => setShowFilters(false)}
-                        >
-                            Применить
-                        </button>
+                <div className="filters-modal-overlay" onClick={() => setShowFilters(false)}>
+                    <div className="filters-modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="filters-header">
+                            <h3>Фильтры</h3>
+                            <button className="close-btn" onClick={() => setShowFilters(false)}>✕</button>
+                        </div>
+
+                        <div className="filters-body">
+                            <div className="filter-group">
+                                <label>Тип мероприятия</label>
+                                <select
+                                    value={filters.type}
+                                    onChange={(e) => setFilters({ ...filters, type: e.target.value })}
+                                >
+                                    <option value="">Все типы</option>
+                                    <option value="internship">Стажировка</option>
+                                    <option value="vacancy">Работа</option>
+                                    <option value="mentorship">Менторство</option>
+                                    <option value="event">Событие</option>
+                                </select>
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Формат работы</label>
+                                <select
+                                    value={filters.format}
+                                    onChange={(e) => setFilters({ ...filters, format: e.target.value })}
+                                >
+                                    <option value="">Все форматы</option>
+                                    <option value="office">Офис</option>
+                                    <option value="remote">Удаленно</option>
+                                    <option value="hybrid">Гибридный</option>
+                                </select>
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Город</label>
+                                <input
+                                    type="text"
+                                    placeholder="Введите город"
+                                    value={filters.city}
+                                    onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Зарплата (от)</label>
+                                <input
+                                    type="number"
+                                    placeholder="От"
+                                    value={filters.salaryFrom}
+                                    onChange={(e) => setFilters({ ...filters, salaryFrom: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Зарплата (до)</label>
+                                <input
+                                    type="number"
+                                    placeholder="До"
+                                    value={filters.salaryTo}
+                                    onChange={(e) => setFilters({ ...filters, salaryTo: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="filter-group">
+                                <label>Теги</label>
+                                <div className="tags">
+                                    {filters.tags.map((tag) => (
+                                        <span
+                                            key={tag}
+                                            className="tag"
+                                            onClick={() => handleRemoveTag(tag)}
+                                            style={{ cursor: 'pointer' }}
+                                        >
+                                            {tag} ✕
+                                        </span>
+                                    ))}
+                                    <div className="add-tag-dropdown">
+                                        <button
+                                            className="add-tag"
+                                            onClick={() => setShowTagDropdown(!showTagDropdown)}
+                                            type="button"
+                                        >
+                                            + Добавить тег
+                                        </button>
+                                        {showTagDropdown && (
+                                            <div className="dropdown-menu">
+                                                <input
+                                                    type="text"
+                                                    placeholder="Поиск тега..."
+                                                    value={tagSearch}
+                                                    onChange={(e) => setTagSearch(e.target.value)}
+                                                    className="dropdown-search"
+                                                    autoFocus
+                                                />
+                                                <div className="dropdown-list">
+                                                    {filteredTags.slice(0, 3).length > 0 ? (
+                                                        filteredTags.slice(0, 3).map(tag => (
+                                                            <div
+                                                                key={tag.id}
+                                                                className="dropdown-item"
+                                                                onClick={() => handleAddTag(tag)}
+                                                            >
+                                                                {tag.name}
+                                                            </div>
+                                                        ))
+                                                    ) : (
+                                                        <div className="dropdown-empty">Теги не найдены</div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="filters-footer">
+                            <button className="secondary" onClick={handleResetFilters}>
+                                Сбросить
+                            </button>
+                            <button className="primary" onClick={handleApplyFilters}>
+                                Применить
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
