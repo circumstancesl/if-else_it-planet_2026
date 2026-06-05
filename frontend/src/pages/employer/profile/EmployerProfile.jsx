@@ -105,6 +105,7 @@ export default function EmployerProfile() {
         } catch (err) {
             console.error(err);
             setEvents([]);
+            setInitialLoad(false); // ← ВАЖНО: сбрасываем initialLoad даже при ошибке
         } finally {
             setLoading(false);
         }
