@@ -47,4 +47,5 @@ module.exports = {
   sendRequest: connection.sendRequest,
   getSuggestedFriends: user.getSuggestedFriends,
   getCompanyPossibilities: possibility.getCompanyPossibilities,
+  removeFriend: connection.removeFriend,
 }

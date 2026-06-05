@@ -7,6 +7,7 @@ const {
   rejectRequest,
   getFriends,
   getRequests,
+  removeFriend,
 } = require('../controllers/connections.controller');
 
 routerConnection.post('/:userId', asyncHandler(async (req, res) => {
@@ -33,5 +34,13 @@ routerConnection.get('/requests', asyncHandler(async (req, res) => {
   const result = await getRequests(req.user.id);
   res.send(result);
 }));
+
+routerConnection.delete(
+  '/:friendId',
+  asyncHandler(async (req, res) => {
+    const result = await removeFriend(req.user.id, req.params.friendId);
+    res.send(result);
+  }),
+);
 
 module.exports = routerConnection;

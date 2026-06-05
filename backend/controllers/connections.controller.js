@@ -105,10 +105,39 @@ async function getRequests(userId) {
   });
 }
 
+async function removeFriend(currentUserId, friendId) {
+  if (!currentUserId) {
+    throw createError(401, 'Требуется авторизация');
+  }
+
+  if (currentUserId === friendId) {
+    throw createError(400, 'Нельзя удалить самого себя');
+  }
+
+  const connection = await Connections.findOne({
+    where: {
+      status: 'accepted',
+      [Op.or]: [
+        { requesterId: currentUserId, receiverId: friendId },
+        { requesterId: friendId, receiverId: currentUserId }
+      ]
+    }
+  });
+
+  if (!connection) {
+    throw createError(404, 'Дружба не найдена');
+  }
+
+  await connection.destroy();
+
+  return { message: 'Друг успешно удалён' };
+}
+
 module.exports = {
   getRequests,
   getFriends,
   rejectRequest,
   acceptRequest,
   sendRequest,
+  removeFriend,
 }
