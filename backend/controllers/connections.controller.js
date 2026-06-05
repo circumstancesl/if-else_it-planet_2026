@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const { Users, Connections } = require('../db/models');
+const { Users, Connections, CandidateProfiles, Tags } = require('../db/models');
 const { Op } = require('sequelize');
 
 async function sendRequest(currentUserId, targetUserId) {
@@ -72,20 +72,54 @@ async function getFriends(userId) {
       {
         model: Users,
         as: 'Requester',
-        attributes: ['id', 'name'],
+        attributes: ['id'],
+        include: [
+          {
+            model: CandidateProfiles,
+            attributes: ['fullName', 'jobTitle', 'logoUrl'],
+            include: [
+              {
+                model: Tags,
+                through: { attributes: [] },
+                attributes: ['id', 'name', 'type'],
+              },
+            ],
+          },
+        ],
       },
       {
         model: Users,
         as: 'Receiver',
-        attributes: ['id', 'name'],
+        attributes: ['id'],
+        include: [
+          {
+            model: CandidateProfiles,
+            attributes: ['fullName', 'jobTitle', 'logoUrl'],
+            include: [
+              {
+                model: Tags,
+                through: { attributes: [] },
+                attributes: ['id', 'name', 'type'],
+              },
+            ],
+          },
+        ],
       },
     ],
   });
 
   return connections.map(c => {
-    return c.requesterId === userId
-      ? c.Receiver
-      : c.Requester;
+    const user = c.requesterId === userId ? c.Receiver : c.Requester;
+
+    const profile = user.CandidateProfile || {};
+
+    return {
+      id: user.id,
+      fullName: profile.fullName || null,
+      jobTitle: profile.jobTitle || null,
+      logoUrl: profile.logoUrl || null,
+      tags: profile.Tags || [],
+    };
   });
 }
 
