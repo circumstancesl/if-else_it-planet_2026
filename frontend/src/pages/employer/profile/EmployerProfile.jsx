@@ -5,18 +5,42 @@ import EventCard from "../../../components/EventCard";
 import CandidateCard from "../../../components/CandidateCard";
 import { usePossibilities } from "../../../api/usePossibilities";
 import { useResponses } from "../../../api/useResponses";
+import { users } from "../../../api/endpoints";
+import { useUsers } from "../../../api/useUsers";
 import "./EmployerProfile.css";
 
 export default function EmployerProfile() {
     const navigate = useNavigate();
     const { getMyPossibilities, loading: eventsLoading } = usePossibilities();
     const { getResponsesForPossibility } = useResponses();
+    const { getCandidateProfile } = useUsers();
     const [visibleCount, setVisibleCount] = useState(3);
     const [events, setEvents] = useState([]);
     const [responsesCount, setResponsesCount] = useState({});
     const [latestResponses, setLatestResponses] = useState([]);
     const [loading, setLoading] = useState(true);
     const [initialLoad, setInitialLoad] = useState(true);
+
+    // Данные компании из бэкенда
+    const [company, setCompany] = useState(null);
+    const [companyLoading, setCompanyLoading] = useState(true);
+
+    // Загрузка профиля компании
+    useEffect(() => {
+        const loadCompany = async () => {
+            try {
+                const data = await users.getMyProfile();
+                console.log("Company profile FULL:", data);
+                console.log("Logo URL from backend:", data.profile.logoUrl);
+                setCompany(data.profile);
+            } catch (err) {
+                console.error("Error loading company:", err);
+            } finally {
+                setCompanyLoading(false);
+            }
+        };
+        loadCompany();
+    }, []);
 
     const loadData = useCallback(async () => {
         if (!initialLoad) return;
@@ -37,13 +61,22 @@ export default function EmployerProfile() {
                     counts[event.id] = responsesArray.length;
 
                     if (responsesArray.length > 0) {
-                        responsesArray.forEach(response => {
+                        for (const response of responsesArray) {
+                            const userId = response.User?.id || response.candidateId;
+                            let fullProfile = null;
+                            try {
+                                fullProfile = await getCandidateProfile(userId);
+                            } catch (err) {
+                                console.error(`Error fetching profile for ${userId}:`, err);
+                            }
+
                             allResponses.push({
                                 ...response,
+                                fullProfile: fullProfile,
                                 eventTitle: event.title,
                                 eventId: event.id
                             });
-                        });
+                        }
                     }
                 } catch (err) {
                     console.error(`Error loading responses for event ${event.id}:`, err);
@@ -64,7 +97,7 @@ export default function EmployerProfile() {
         } finally {
             setLoading(false);
         }
-    }, [getMyPossibilities, getResponsesForPossibility, initialLoad]);
+    }, [getMyPossibilities, getResponsesForPossibility, getCandidateProfile, initialLoad]);
 
     useEffect(() => {
         loadData();
@@ -89,7 +122,7 @@ export default function EmployerProfile() {
             id: e.id,
             title: e.title,
             description: e.description || "",
-            company: "Моя компания",
+            company: company?.name || "Моя компания",
             address: e.city || "Не указано",
             type: e.type,
             format: e.format,
@@ -97,18 +130,20 @@ export default function EmployerProfile() {
             tags: e.Tags || [],
             responses: responsesCount[e.id] || 0,
         }));
-    }, [events, responsesCount]);
+    }, [events, responsesCount, company]);
 
     const formattedResponses = useMemo(() => {
         return latestResponses.map(response => ({
             id: response.User?.id || response.candidateId,
             responseId: response.id,
-            name: response.User?.name || "Неизвестно",
-            role: response.User?.role || "Соискатель",
-            skills: response.User?.skills || [],
+            name: response.fullProfile?.fullName || response.User?.fullName || response.User?.name || "Неизвестно",
+            role: response.fullProfile?.jobTitle || response.User?.role || "Соискатель",
+            skills: response.fullProfile?.skills || response.User?.skills || [],
+            tags: response.fullProfile?.Tags || [],
             status: response.status || "pending",
             eventTitle: response.eventTitle,
-            eventId: response.eventId
+            eventId: response.eventId,
+            avatar: response.fullProfile?.avatar || response.User?.avatar || "/img/default-avatar.jpg"
         }));
     }, [latestResponses]);
 
@@ -136,7 +171,7 @@ export default function EmployerProfile() {
         });
     };
 
-    if (loading || eventsLoading) {
+    if (loading || eventsLoading || companyLoading) {
         return (
             <div className="page">
                 <Header />
@@ -157,11 +192,23 @@ export default function EmployerProfile() {
                 <div className="profile-header">
                     <div className="company-info">
                         <div className="company-avatar">
-                            <span className="icon">🏢</span>
+                            {company?.logoUrl ? (
+                                <img
+                                    src={company.logoUrl}
+                                    alt={company.name}
+                                    className="company-logo"
+                                />
+                            ) : (
+                                <span className="icon">🏢</span>
+                            )}
                         </div>
                         <div className="company-details">
-                            <h2>ТехноСофт</h2>
-                            <span className="verified">Верифицировано ✔</span>
+                            <h2>{company?.name || "Моя компания"}</h2>
+                            <span className="verified">
+                                {company?.verification_status === 'approved' ? 'Верифицировано ✔' :
+                                    company?.verification_status === 'pending' ? 'На верификации' :
+                                        'Не верифицировано'}
+                            </span>
                         </div>
                     </div>
 

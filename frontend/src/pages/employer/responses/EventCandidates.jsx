@@ -5,6 +5,7 @@ import HomeSearchBar from "../../../components/SearchBar/HomeSearchBar.jsx";
 import CandidateCard from "../../../components/CandidateCard.jsx";
 import { useResponses } from "../../../api/useResponses";
 import { usePossibilities } from "../../../api/usePossibilities";
+import { useUsers } from "../../../api/useUsers";
 import "./EventCandidates.css";
 import Breadcrumbs from "../../../components/Breadcrumbs.jsx";
 
@@ -21,6 +22,7 @@ export default function EventCandidates() {
 
     const { getResponsesForPossibility, updateResponseStatus } = useResponses();
     const { getPossibilityById } = usePossibilities();
+    const { getCandidateProfile } = useUsers(); // ← добавляем
 
     const loadData = useCallback(async () => {
         if (!initialLoad) return;
@@ -34,18 +36,54 @@ export default function EventCandidates() {
             const responses = await getResponsesForPossibility(eventId);
             const responsesArray = Array.isArray(responses) ? responses : [];
 
-            const candidatesData = responsesArray.map(response => ({
-                id: response.User?.id || response.candidateId,
-                responseId: response.id,
-                name: response.User?.name || "Неизвестно",
-                email: response.User?.email,
-                role: response.User?.role || "Соискатель",
-                skills: response.User?.skills || [],
-                status: response.status || "pending",
-                appliedAt: response.createdAt,
-                avatar: response.User?.avatar || "/img/default-avatar.jpg"
-            }));
+            // 🔥 Для каждого кандидата получаем полный профиль
+            const candidatesData = [];
+            for (const response of responsesArray) {
+                const userId = response.User?.id || response.candidateId;
 
+                try {
+                    // Получаем полный профиль кандидата с тегами
+                    const fullProfile = await getCandidateProfile(userId);
+
+                    candidatesData.push({
+                        id: userId,
+                        responseId: response.id,
+                        name: fullProfile?.fullName || "Неизвестно",
+                        fullName: fullProfile?.fullName || "Неизвестно",
+                        email: response.User?.email || "",
+                        role: fullProfile?.jobTitle || "Соискатель",
+                        skills: fullProfile?.skills || [],
+                        tags: fullProfile?.Tags || [], // ← теги из полного профиля
+                        about: fullProfile?.about || "Нет информации",
+                        phone: fullProfile?.phone || "",
+                        telegram: fullProfile?.telegram || "",
+                        status: response.status || "pending",
+                        appliedAt: response.createdAt,
+                        avatar: fullProfile?.avatar || "/img/default-avatar.jpg",
+                    });
+                } catch (err) {
+                    console.error(`Error fetching full profile for ${userId}:`, err);
+                    // Fallback: используем то, что есть
+                    candidatesData.push({
+                        id: userId,
+                        responseId: response.id,
+                        name: response.User?.fullName || "Неизвестно",
+                        fullName: response.User?.fullName || "Неизвестно",
+                        email: response.User?.email || "",
+                        role: response.User?.role || "Соискатель",
+                        skills: response.User?.skills || [],
+                        tags: [],
+                        about: "Нет информации",
+                        phone: "",
+                        telegram: "",
+                        status: response.status || "pending",
+                        appliedAt: response.createdAt,
+                        avatar: "/img/default-avatar.jpg",
+                    });
+                }
+            }
+
+            console.log("Loaded candidates with full data:", candidatesData);
             setCandidates(candidatesData);
             setInitialLoad(false);
         } catch (err) {
@@ -55,7 +93,7 @@ export default function EventCandidates() {
         } finally {
             setLoading(false);
         }
-    }, [eventId, getPossibilityById, getResponsesForPossibility, initialLoad]);
+    }, [eventId, getPossibilityById, getResponsesForPossibility, getCandidateProfile, initialLoad]);
 
     useEffect(() => {
         loadData();
@@ -63,13 +101,20 @@ export default function EventCandidates() {
 
     const filteredCandidates = useMemo(() => {
         return candidates.filter((c) =>
-            c.name.toLowerCase().includes(submittedSearch.toLowerCase())
+            (c.fullName || "")
+                .toLowerCase()
+                .includes(submittedSearch.toLowerCase())
         );
     }, [candidates, submittedSearch]);
 
     const handleCandidateClick = (candidate) => {
+        console.log("Navigating with candidate:", candidate);
         navigate(`/employer/responses/candidate/${candidate.id}`, {
-            state: { responseId: candidate.responseId, status: candidate.status }
+            state: {
+                candidate: candidate,
+                responseId: candidate.responseId,
+                status: candidate.status
+            }
         });
     };
 

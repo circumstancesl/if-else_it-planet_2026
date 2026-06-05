@@ -47,4 +47,55 @@ label {
     font-size: 18px;
 }
 
+.changed {
+    border-color: #4c6ef5;
+    background-color: #f8f9ff;
+}
 
+.changed-hint {
+    font-size: 12px;
+    color: #4c6ef5;
+    margin-top: 4px;
+    display: inline-block;
+}
+
+.logo-preview {
+    width: 100px;
+    height: 100px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 12px;
+    border: 1px solid #e5e7eb;
+    position: relative;
+}
+
+.logo-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.logo-changed-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #1e73e8;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 500;
+}
+
+.file-upload {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-upload input {
+    padding: 8px;
+    border: 1px dashed #cbd5e1;
+    border-radius: 8px;
+    cursor: pointer;
+}

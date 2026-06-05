@@ -31,9 +31,11 @@ export default function EditEvent() {
         tags: [],
         level: [],
         employment: [],
+        status: "draft"
     });
 
     const [isLoadingData, setIsLoadingData] = useState(isEditMode);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     // ==================== ЗАГРУЗКА ====================
     useEffect(() => {
@@ -53,8 +55,7 @@ export default function EditEvent() {
                     location: event.city || "",
                     salary: event.salary ? String(event.salary) : "",
                     endDate: event.date ? event.date.split("T")[0] : "",
-
-                    // 💥 ВАЖНО: правильное распределение
+                    status: event.status || "draft",
                     tags: allTags.filter(t => t.type === "technology"),
                     level: allTags.filter(t => t.type === "level"),
                     employment: allTags.filter(t => t.type === "employmentType"),
@@ -95,9 +96,11 @@ export default function EditEvent() {
         }));
     };
 
-    // ==================== SAVE ====================
-    const handleSubmit = async () => {
+    // ==================== СОХРАНЕНИЕ С РАЗНЫМИ СТАТУСАМИ ====================
+    const saveEvent = async (status) => {
         try {
+            setIsSubmitting(true);
+
             if (!form.title.trim()) {
                 alert("Введите название события");
                 return;
@@ -106,14 +109,12 @@ export default function EditEvent() {
             const payload = {
                 title: form.title.trim(),
                 description: form.description.trim(),
-
                 type: form.type,
                 format: form.format,
-
                 city: form.location || null,
                 salary: form.salary ? Number(form.salary) : null,
                 date: form.endDate || null,
-
+                status: status,
                 tagIds: [
                     ...form.tags,
                     ...form.level,
@@ -123,10 +124,15 @@ export default function EditEvent() {
 
             if (isEditMode) {
                 await updatePossibility(eventId, payload);
-                alert("Событие обновлено!");
+                const statusMessages = {
+                    draft: "Событие сохранено в черновики!",
+                    published: "Событие опубликовано!",
+                    archived: "Событие закрыто и перемещено в архив!"
+                };
+                alert(statusMessages[status] || "Событие сохранено!");
             } else {
                 await createPossibility(payload);
-                alert("Событие создано!");
+                alert("Событие создано и опубликовано!");
             }
 
             navigate("/employer/events");
@@ -134,21 +140,31 @@ export default function EditEvent() {
         } catch (err) {
             console.error(err);
             alert(err.message || "Ошибка сохранения");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
-    // ==================== DELETE ====================
+    const handleSaveDraft = () => saveEvent('draft');
+    const handlePublish = () => saveEvent('published');
+    const handleArchive = () => saveEvent('archived');
+
+    // ==================== УДАЛЕНИЕ (СТЕРЕТЬ) ====================
     const handleDelete = async () => {
-        if (!window.confirm("Удалить событие?")) return;
+        if (!window.confirm("Вы уверены, что хотите полностью удалить это событие? Это действие нельзя отменить.")) return;
 
         try {
             await deletePossibility(eventId);
-            alert("Событие удалено");
+            alert("Событие полностью удалено");
             navigate("/employer/events");
         } catch (err) {
             console.error(err);
             alert("Ошибка удаления");
         }
+    };
+
+    const handleCancel = () => {
+        navigate("/employer/events");
     };
 
     if (isLoadingData) {
@@ -160,6 +176,24 @@ export default function EditEvent() {
         );
     }
 
+    const isPublished = form.status === 'published';
+    const isArchived = form.status === 'archived';
+    const isDraft = form.status === 'draft';
+
+    const getStatusText = () => {
+        if (isDraft) return "📝 Черновик";
+        if (isPublished) return "✅ Активно";
+        if (isArchived) return "📦 В архиве";
+        return "";
+    };
+
+    const getStatusClass = () => {
+        if (isDraft) return "status-draft";
+        if (isPublished) return "status-published";
+        if (isArchived) return "status-archived";
+        return "";
+    };
+
     return (
         <div className="create-event-page">
             <Header />
@@ -167,7 +201,7 @@ export default function EditEvent() {
             <div className="container create-event">
                 <Breadcrumbs
                     backLabel="Активные события"
-                    currentLabel="Редактирование события"
+                    currentLabel={isEditMode ? "Редактирование события" : "Новое событие"}
                     backPath="/employer/events"
                 />
 
@@ -186,6 +220,7 @@ export default function EditEvent() {
                         <textarea
                             value={form.description}
                             onChange={(e) => handleChange("description", e.target.value)}
+                            rows={5}
                         />
 
                         <label>Тип</label>
@@ -195,7 +230,7 @@ export default function EditEvent() {
                         >
                             <option value="event">Событие</option>
                             <option value="internship">Стажировка</option>
-                            <option value="vacancy">Работа</option>
+                            <option value="vacancy">Вакансия</option>
                         </select>
 
                         <label>Формат</label>
@@ -212,12 +247,15 @@ export default function EditEvent() {
                         <input
                             value={form.location}
                             onChange={(e) => handleChange("location", e.target.value)}
+                            placeholder="Город или адрес"
                         />
 
                         <label>Зарплата</label>
                         <input
                             value={form.salary}
                             onChange={(e) => handleChange("salary", e.target.value)}
+                            placeholder="от 0"
+                            type="number"
                         />
                     </div>
 
@@ -255,7 +293,7 @@ export default function EditEvent() {
 
                     {/* ===== ПРАВАЯ ===== */}
                     <div className="right">
-                        <h3>Дата</h3>
+                        <h3>Дата и статус</h3>
 
                         <label>Дата события</label>
                         <input
@@ -264,27 +302,75 @@ export default function EditEvent() {
                             onChange={(e) => handleChange("endDate", e.target.value)}
                         />
 
+                        {isEditMode && (
+                            <div className="status-bar">
+                                <span className="status-label">Статус:</span>
+                                <span className={`status-badge-small ${getStatusClass()}`}>
+                                    {getStatusText()}
+                                </span>
+                            </div>
+                        )}
+
                         <div className="action-buttons">
-                            <button
-                                className="btn-primary"
-                                onClick={handleSubmit}
-                                disabled={loading}
-                            >
-                                {loading ? "Сохранение..." : "Сохранить изменения"}
-                            </button>
+                            {!isArchived && (
+                                <>
+                                    <button
+                                        className="primary"
+                                        onClick={handlePublish}
+                                        disabled={isSubmitting || loading}
+                                    >
+                                        {isSubmitting ? "Публикация..." : "📢 Опубликовать"}
+                                    </button>
+
+                                    <button
+                                        className="secondary"
+                                        onClick={handleSaveDraft}
+                                        disabled={isSubmitting || loading}
+                                    >
+                                        {isSubmitting ? "Сохранение..." : "💾 В черновики"}
+                                    </button>
+
+                                    {isEditMode && (
+                                        <button
+                                            className="reject"
+                                            onClick={handleArchive}
+                                            disabled={isSubmitting || loading}
+                                        >
+                                            🔒 Закрыть событие
+                                        </button>
+                                    )}
+                                </>
+                            )}
+
+                            {isArchived && (
+                                <>
+                                    <button
+                                        className="primary"
+                                        onClick={handlePublish}
+                                        disabled={isSubmitting || loading}
+                                    >
+                                        🔓 Открыть снова
+                                    </button>
+                                </>
+                            )}
+
+                            {/* Кнопка "Стереть" - всегда доступна в режиме редактирования */}
+                            {isEditMode && (
+                                <button
+                                    className="reject"
+                                    onClick={handleDelete}
+                                    disabled={isSubmitting}
+                                >
+                                    🗑 Стереть событие
+                                </button>
+                            )}
 
                             <button
-                                className="btn-secondary"
-                                onClick={() => navigate("/employer/events")}
+                                className="secondary"
+                                onClick={handleCancel}
+                                disabled={isSubmitting}
                             >
                                 Отмена
-                            </button>
-
-                            <button
-                                className="btn-secondary"
-                                onClick={handleDelete}
-                            >
-                                Удалить событие
                             </button>
                         </div>
                     </div>

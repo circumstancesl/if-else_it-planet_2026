@@ -9,7 +9,7 @@ import Breadcrumbs from "../../../components/Breadcrumbs.jsx";
 
 export default function CreateEvent() {
     const navigate = useNavigate();
-    const { createPossibility, loading } = usePossibilities();
+    const { createPossibility, updatePossibility, loading } = usePossibilities();
 
     const [form, setForm] = useState({
         title: "",
@@ -26,6 +26,8 @@ export default function CreateEvent() {
         latitude: null,
         longitude: null
     });
+
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const handleChange = (field, value) => {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -66,8 +68,11 @@ export default function CreateEvent() {
         }));
     };
 
-    const handleSubmit = async () => {
+    // Сохранение в черновики
+    const handleSaveDraft = async () => {
         try {
+            setIsSubmitting(true);
+
             if (!form.title) {
                 alert("Введите название события");
                 return;
@@ -92,13 +97,69 @@ export default function CreateEvent() {
             };
 
             console.log("CREATE EVENT PAYLOAD:", payload);
-            await createPossibility(payload);
-            alert("Событие создано!");
+            const createdEvent = await createPossibility(payload);
+
+            // После создания меняем статус на draft (если получили id)
+            if (createdEvent && createdEvent.id) {
+                await updatePossibility(createdEvent.id, { status: 'draft' });
+                alert("Черновик события сохранен!");
+            } else {
+                alert("Черновик события сохранен!");
+            }
+
             navigate("/employer/events");
 
         } catch (err) {
-            console.error("CREATE ERROR:", err);
-            alert(err.message || "Ошибка создания события");
+            console.error("CREATE DRAFT ERROR:", err);
+            alert(err.message || "Ошибка создания черновика");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    // Публикация события
+    const handlePublish = async () => {
+        try {
+            setIsSubmitting(true);
+
+            if (!form.title) {
+                alert("Введите название события");
+                return;
+            }
+
+            if (form.tags.length === 0 && form.level.length === 0 && form.employment.length === 0) {
+                alert("Добавьте хотя бы один тег");
+                return;
+            }
+
+            const payload = {
+                title: form.title,
+                description: form.description,
+                type: form.type,
+                format: form.format,
+                city: form.city,
+                address: form.address,
+                salary: form.salary ? Number(form.salary) : null,
+                date: form.date || null,
+                latitude: form.latitude,
+                longitude: form.longitude,
+                tagIds: [
+                    ...form.tags.map(t => t.id),
+                    ...form.level.map(t => t.id),
+                    ...form.employment.map(t => t.id),
+                ]
+            };
+
+            console.log("PUBLISH PAYLOAD:", payload);
+            await createPossibility(payload);
+            alert("Событие опубликовано!");
+            navigate("/employer/events");
+
+        } catch (err) {
+            console.error("PUBLISH ERROR:", err);
+            alert(err.message || "Ошибка публикации события");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -121,12 +182,15 @@ export default function CreateEvent() {
                         <input
                             value={form.title}
                             onChange={(e) => handleChange("title", e.target.value)}
+                            placeholder="Введите название события"
                         />
 
                         <label>Описание</label>
                         <textarea
                             value={form.description}
                             onChange={(e) => handleChange("description", e.target.value)}
+                            rows={5}
+                            placeholder="Опишите событие, требования, условия..."
                         />
 
                         <label>Тип</label>
@@ -136,7 +200,7 @@ export default function CreateEvent() {
                         >
                             <option value="event">Событие</option>
                             <option value="internship">Стажировка</option>
-                            <option value="vacancy">Работа</option>
+                            <option value="vacancy">Вакансия</option>
                         </select>
 
                         <label>Формат</label>
@@ -166,7 +230,7 @@ export default function CreateEvent() {
 
                         {form.latitude && form.longitude && (
                             <div className="coordinates-info">
-                                <span>Координаты: {form.latitude.toFixed(4)}, {form.longitude.toFixed(4)}</span>
+                                <span>📍 Координаты: {form.latitude.toFixed(4)}, {form.longitude.toFixed(4)}</span>
                             </div>
                         )}
 
@@ -175,11 +239,13 @@ export default function CreateEvent() {
                             value={form.salary}
                             onChange={(e) => handleChange("salary", e.target.value)}
                             placeholder="от 0"
+                            type="number"
                         />
                     </div>
 
                     <div className="middle">
                         <h3>Теги</h3>
+                        <p className="hint">Добавьте теги для лучшего поиска</p>
 
                         <TagBlock
                             title="Технологии"
@@ -219,18 +285,34 @@ export default function CreateEvent() {
                             onChange={(e) => handleChange("date", e.target.value)}
                         />
 
+                        <div className="info-block">
+                            <p className="info-text">
+                                💡 <strong>Черновик</strong> - сохранится в черновиках<br/>
+                                📢 <strong>Публикация</strong> - станет доступен для всех
+                            </p>
+                        </div>
+
                         <div className="action-buttons">
                             <button
-                                className="btn-primary"
-                                onClick={handleSubmit}
-                                disabled={loading}
+                                className="primary"
+                                onClick={handlePublish}
+                                disabled={isSubmitting || loading}
                             >
-                                {loading ? "Создание..." : "Создать"}
+                                {isSubmitting ? "Публикация..." : "📢 Опубликовать"}
                             </button>
 
                             <button
-                                className="btn-secondary"
+                                className="secondary"
+                                onClick={handleSaveDraft}
+                                disabled={isSubmitting || loading}
+                            >
+                                {isSubmitting ? "Сохранение..." : "💾 Сохранить в черновики"}
+                            </button>
+
+                            <button
+                                className="secondary"
                                 onClick={() => navigate("/employer/events")}
+                                disabled={isSubmitting}
                             >
                                 Отмена
                             </button>

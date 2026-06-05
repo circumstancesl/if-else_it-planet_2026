@@ -40,6 +40,7 @@ export function usePossibilities() {
             setLoading(true);
             setError(null);
             const query = new URLSearchParams(params).toString();
+            console.log("Query string:", query); // 👈 добавь этот лог
             const response = await apiClient.get(`/guest/possibility?${query}`);
             return response;
         } catch (err) {

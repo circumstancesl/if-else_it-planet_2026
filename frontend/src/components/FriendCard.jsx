@@ -13,6 +13,25 @@ export default function FriendCard({
     const isSuggest = variant === "suggest";
     const isRequest = showActions;
 
+    // Получаем теги для отображения
+    const getDisplayTags = () => {
+        if (friend.tags && friend.tags.length > 0) {
+            // Сначала уровень, потом технологии
+            const levelTag = friend.tags.find(t => t.type === "level");
+            const techTags = friend.tags.filter(t => t.type === "technology");
+            return [
+                ...(levelTag ? [levelTag] : []),
+                ...techTags
+            ].slice(0, 3);
+        }
+        if (friend.skills && friend.skills.length > 0) {
+            return friend.skills.slice(0, 3).map(skill => ({ id: skill, name: skill, type: "technology" }));
+        }
+        return [];
+    };
+
+    const displayTags = getDisplayTags();
+
     const handleCardClick = (e) => {
         if (e.target.tagName === 'BUTTON') {
             return;
@@ -33,6 +52,13 @@ export default function FriendCard({
                     <div className="friend-info">
                         <div className="friend-name">{friend.name}</div>
                         <div className="friend-role">{friend.role}</div>
+                        {displayTags.length > 0 && (
+                            <div className="friend-card-tags">
+                                {displayTags.map((tag) => (
+                                    <span key={tag.id} className="tag">{tag.name}</span>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
                 <div className="request-actions">
@@ -77,16 +103,15 @@ export default function FriendCard({
                                 {friend.mutualFriends} общих друзей
                             </div>
                         )}
+                        {displayTags.length > 0 && (
+                            <div className="friend-card-tags">
+                                {displayTags.map((tag) => (
+                                    <span key={tag.id} className="tag">{tag.name}</span>
+                                ))}
+                            </div>
+                        )}
                     </div>
                 </div>
-
-                {friend.skills && friend.skills.length > 0 && (
-                    <div className="friend-skills">
-                        {friend.skills.map((skill) => (
-                            <span key={skill}>{skill}</span>
-                        ))}
-                    </div>
-                )}
 
                 <div className="friend-actions">
                     <button
@@ -98,20 +123,10 @@ export default function FriendCard({
                     >
                         + Добавить в друзья
                     </button>
-                    {/*<button*/}
-                    {/*    className="secondary-small message-btn"*/}
-                    {/*    onClick={(e) => {*/}
-                    {/*        e.stopPropagation();*/}
-                    {/*        onMessage?.(friend);*/}
-                    {/*    }}*/}
-                    {/*>*/}
-                    {/*    💬 Сообщение*/}
-                    {/*</button>*/}
                 </div>
             </div>
         );
     }
-
 
     // Обычная карточка друга
     return (
@@ -129,6 +144,13 @@ export default function FriendCard({
                 <div className="friend-info">
                     <div className="friend-name">{friend.name}</div>
                     <div className="friend-role">{friend.role}</div>
+                    {displayTags.length > 0 && (
+                        <div className="friend-card-tags">
+                            {displayTags.map((tag) => (
+                                <span key={tag.id} className="tag">{tag.name}</span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
 

@@ -6,8 +6,8 @@
 .friends-header {
     display: grid;
     grid-template-columns: 1fr 320px;
-    align-items: end;
-    margin-bottom: 24px;
+    /*align-items: end;*/
+    /*margin-bottom: 24px;*/
     gap: 24px;
 }
 
@@ -16,17 +16,14 @@
     flex: 1;
 }
 
+.possible-friends-header {
+    margin-bottom: 16px;
+}
+
 .possible-friends-list {
     display: flex;
     flex-direction: column;
     gap: 16px;
-    max-height: 500px;
-    overflow-y: auto;
-}
-
-/* Правая часть с заголовком "Возможные друзья" */
-.possible-friends-header {
-    min-width: 200px;
 }
 
 .possible-friends-header h3 {
@@ -66,7 +63,7 @@
 
 /* Убираем старый h3 из sidebar */
 .friends-sidebar h3 {
-    display: none;
+    /*display: none;*/
 }
 
 /* Пустые состояния */

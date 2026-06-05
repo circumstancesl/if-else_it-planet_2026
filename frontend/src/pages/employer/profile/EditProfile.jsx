@@ -1,10 +1,13 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Header from "../../../components/Header/Header.jsx";
 import "./EditProfile.css";
 import { users } from "../../../api/endpoints";
 import Breadcrumbs from "../../../components/Breadcrumbs.jsx";
 
 export default function EditProfile() {
+    const navigate = useNavigate();
+
     const [form, setForm] = useState({
         name: "",
         inn: "",
@@ -12,7 +15,6 @@ export default function EditProfile() {
         website: "",
         social: "",
         description: "",
-        logo: null,
     });
 
     const [initialForm, setInitialForm] = useState({
@@ -22,11 +24,15 @@ export default function EditProfile() {
         website: "",
         social: "",
         description: "",
-        logo: null,
     });
 
-    const [savingField, setSavingField] = useState("");
+    const [logo, setLogo] = useState(null);
+    const [initialLogo, setInitialLogo] = useState(null);
+    const [logoPreview, setLogoPreview] = useState(null);
+
     const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
+    const [uploadingLogo, setUploadingLogo] = useState(false);
 
     useEffect(() => {
         const load = async () => {
@@ -40,16 +46,21 @@ export default function EditProfile() {
 
                 const loadedForm = {
                     name: company.name || "",
-                    inn: "1111111111",
+                    inn: company.inn || "",
                     sphere: company.industry || "",
                     website: company.websiteURL?.[0] || "",
-                    social: "",
+                    social: company.socialLinks?.[0] || "",
                     description: company.description || "",
-                    logo: null,
                 };
 
                 setForm(loadedForm);
                 setInitialForm(loadedForm);
+
+                if (company.logoUrl) {
+                    setLogoPreview(company.logoUrl);
+                    setInitialLogo(company.logoUrl);
+                }
+
                 setLoading(false);
             } catch (err) {
                 console.error("LOAD ERROR:", err);
@@ -67,123 +78,140 @@ export default function EditProfile() {
         }));
     };
 
-    const handleFileChange = (e) => {
-        setForm((prev) => ({
-            ...prev,
-            logo: e.target.files[0]
-        }));
+    const handleLogoChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!file.type.startsWith('image/')) {
+            alert("Пожалуйста, выберите изображение");
+            return;
+        }
+
+        if (file.size > 5 * 1024 * 1024) {
+            alert("Размер файла не должен превышать 5MB");
+            return;
+        }
+
+        // Сохраняем файл для отправки
+        setLogo(file);
+
+        // Показываем превью
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            setLogoPreview(reader.result);
+        };
+        reader.readAsDataURL(file);
     };
 
-    const getPayloadByField = (field) => {
-        switch (field) {
-            case "name":
-                return { name: form.name };
-            case "sphere":
-                return { industry: form.sphere };
-            case "website":
-                return { websiteURL: [form.website] };
-            case "description":
-                return { description: form.description };
-            default:
-                return null;
-        }
+    // Проверка, изменилось ли поле
+    const hasChanged = (field) => {
+        return form[field] !== initialForm[field];
     };
 
-    const saveField = async (field) => {
-        try {
-            const payload = getPayloadByField(field);
+    const hasLogoChanged = () => {
+        return logo !== null;
+    };
 
-            if (!payload) {
-                return;
-            }
+    // Получить только измененные текстовые поля
+    const getChangedFields = () => {
+        const changed = {};
 
-            const cleanedPayload = {};
-            Object.entries(payload).forEach(([key, value]) => {
-                if (value !== null && value !== undefined && value !== "") {
-                    cleanedPayload[key] = value;
-                }
-            });
-
-            if (Object.keys(cleanedPayload).length === 0) {
-                return;
-            }
-
-            setSavingField(field);
-
-            console.log("SAVING FIELD:", field, cleanedPayload);
-
-            const res = await users.updateCompany(cleanedPayload);
-
-            console.log("UPDATED:", res);
-
-            setInitialForm((prev) => ({
-                ...prev,
-                [field]: form[field]
-            }));
-
-            alert(`Поле "${field}" успешно сохранено!`);
-        } catch (err) {
-            console.error("SAVE FIELD ERROR:", err);
-            alert("Ошибка сохранения поля: " + (err.message || "Неизвестная ошибка"));
-        } finally {
-            setSavingField("");
+        if (form.name !== initialForm.name && form.name.trim()) {
+            changed.name = form.name;
         }
+
+        if (form.inn !== initialForm.inn && form.inn.trim()) {
+            changed.inn = form.inn;
+        }
+
+        if (form.description !== initialForm.description && form.description.trim()) {
+            changed.description = form.description;
+        }
+
+        if (form.sphere !== initialForm.sphere && form.sphere.trim()) {
+            changed.industry = form.sphere;
+        }
+
+        if (form.website !== initialForm.website && form.website.trim()) {
+            changed.websiteURL = [form.website];
+        }
+
+        if (form.social !== initialForm.social && form.social.trim()) {
+            changed.socialLinks = [form.social];
+        }
+
+        return changed;
     };
 
     const handleSubmit = async () => {
-        console.log("CLICK SAVE COMPANY");
+        const changedFields = getChangedFields();
+        const hasTextChanges = Object.keys(changedFields).length > 0;
+        const hasLogoChange = hasLogoChanged();
+
+        if (!hasTextChanges && !hasLogoChange) {
+            alert("Нет изменений для сохранения");
+            return;
+        }
+
+        setSaving(true);
 
         try {
-            const rawPayload = {};
-
-            if (form.name !== initialForm.name) {
-                rawPayload.name = form.name;
+            // Сохраняем текстовые поля
+            if (hasTextChanges) {
+                console.log("SENDING TEXT FIELDS:", changedFields);
+                await users.updateCompany(changedFields);
             }
 
-            if (form.description !== initialForm.description) {
-                rawPayload.description = form.description;
+            // Сохраняем логотип
+            if (hasLogoChange && logo) {
+                console.log("UPLOADING LOGO...");
+                const formData = new FormData();
+                formData.append('logoUrl', logo);
+                await users.uploadCompanyLogo(formData);
+                alert("Логотип обновлен!");
             }
 
-            if (form.sphere !== initialForm.sphere) {
-                rawPayload.industry = form.sphere;
-            }
-
-            if (form.website !== initialForm.website) {
-                // Бэкенд ожидает МАССИВ
-                rawPayload.websiteURL = [form.website];
-            }
-
-            const payload = {};
-            Object.entries(rawPayload).forEach(([key, value]) => {
-                if (value !== "" && value !== null && value !== undefined) {
-                    payload[key] = value;
-                }
-            });
-
-            if (Object.keys(payload).length === 0) {
-                alert("Нет изменений для сохранения");
-                return;
-            }
-
-            console.log("SENDING:", payload);
-
-            const res = await users.updateCompany(payload);
-
-            console.log("UPDATED:", res);
-
-            setInitialForm((prev) => ({
-                ...prev,
+            // Обновляем initialForm после успешного сохранения
+            setInitialForm({
                 name: form.name,
+                inn: form.inn,
                 sphere: form.sphere,
                 website: form.website,
+                social: form.social,
                 description: form.description,
-            }));
+            });
 
-            alert("Профиль компании успешно обновлен!");
+            if (hasLogoChange) {
+                setInitialLogo(logoPreview);
+                setLogo(null);
+            }
+
+            // Обновляем данные из бэкенда
+            const updated = await users.getMyProfile();
+            if (updated.profile.logoUrl) {
+                setLogoPreview(updated.profile.logoUrl);
+                setInitialLogo(updated.profile.logoUrl);
+            }
+
+            alert(`Профиль компании успешно обновлен!`);
         } catch (err) {
             console.error("SAVE ERROR:", err);
-            alert("Ошибка сохранения: " + (err.message || "Неизвестная ошибка"));
+
+            let errorMessage = "Ошибка сохранения";
+            if (err.message) {
+                errorMessage = err.message;
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            }
+
+            alert(errorMessage);
+        } finally {
+            setSaving(false);
         }
+    };
+
+    const handleCancel = () => {
+        navigate(-1);
     };
 
     if (loading) {
@@ -215,42 +243,45 @@ export default function EditProfile() {
                             <input
                                 value={form.name}
                                 onChange={(e) => handleChange("name", e.target.value)}
+                                className={hasChanged("name") ? "changed" : ""}
                             />
-                            <button
-                                type="button"
-                                onClick={() => saveField("name")}
-                                disabled={savingField === "name" || form.name === initialForm.name}
-                            >
-                                {savingField === "name" ? "..." : "Сохранить"}
-                            </button>
                         </div>
+                        {hasChanged("name") && (
+                            <span className="changed-hint">Изменено</span>
+                        )}
 
                         <label>ИНН*</label>
-                        <input
-                            value={form.inn}
-                            onChange={(e) => handleChange("inn", e.target.value)}
-                        />
-                        <span className="hint">(пока мок)</span>
+                        <div className="field-row">
+                            <input
+                                value={form.inn}
+                                onChange={(e) => handleChange("inn", e.target.value)}
+                                placeholder="Введите ИНН"
+                                className={hasChanged("inn") ? "changed" : ""}
+                            />
+                        </div>
+                        {hasChanged("inn") && (
+                            <span className="changed-hint">Изменено</span>
+                        )}
+                        <span className="hint">(10 или 12 цифр)</span>
 
                         <label>Сфера деятельности*</label>
                         <div className="field-row">
                             <select
                                 value={form.sphere}
                                 onChange={(e) => handleChange("sphere", e.target.value)}
+                                className={hasChanged("sphere") ? "changed" : ""}
                             >
                                 <option value="">Выберите</option>
                                 <option>Разработка ПО</option>
                                 <option>Финансы</option>
                                 <option>Маркетинг</option>
+                                <option>Консалтинг</option>
+                                <option>Образование</option>
                             </select>
-                            <button
-                                type="button"
-                                onClick={() => saveField("sphere")}
-                                disabled={savingField === "sphere" || form.sphere === initialForm.sphere}
-                            >
-                                {savingField === "sphere" ? "..." : "Сохранить"}
-                            </button>
                         </div>
+                        {hasChanged("sphere") && (
+                            <span className="changed-hint">Изменено</span>
+                        )}
 
                         <label>Сайт компании</label>
                         <div className="field-row">
@@ -258,24 +289,27 @@ export default function EditProfile() {
                                 value={form.website}
                                 onChange={(e) => handleChange("website", e.target.value)}
                                 placeholder="https://example.com"
+                                className={hasChanged("website") ? "changed" : ""}
                             />
-                            <button
-                                type="button"
-                                onClick={() => saveField("website")}
-                                disabled={savingField === "website" || form.website === initialForm.website}
-                            >
-                                {savingField === "website" ? "..." : "Сохранить"}
-                            </button>
                         </div>
+                        {hasChanged("website") && (
+                            <span className="changed-hint">Изменено</span>
+                        )}
                     </div>
 
                     <div className="middle">
                         <label>Социальные сети</label>
-                        <input
-                            value={form.social}
-                            onChange={(e) => handleChange("social", e.target.value)}
-                            placeholder="https://t.me/company"
-                        />
+                        <div className="field-row">
+                            <input
+                                value={form.social}
+                                onChange={(e) => handleChange("social", e.target.value)}
+                                placeholder="https://t.me/company"
+                                className={hasChanged("social") ? "changed" : ""}
+                            />
+                        </div>
+                        {hasChanged("social") && (
+                            <span className="changed-hint">Изменено</span>
+                        )}
 
                         <label>Краткое описание*</label>
                         <div className="field-column">
@@ -283,23 +317,23 @@ export default function EditProfile() {
                                 value={form.description}
                                 onChange={(e) => handleChange("description", e.target.value)}
                                 rows={4}
+                                className={hasChanged("description") ? "changed" : ""}
                             />
-                            <button
-                                type="button"
-                                onClick={() => saveField("description")}
-                                disabled={
-                                    savingField === "description" ||
-                                    form.description === initialForm.description
-                                }
-                            >
-                                {savingField === "description" ? "..." : "Сохранить описание"}
-                            </button>
                         </div>
+                        {hasChanged("description") && (
+                            <span className="changed-hint">Изменено</span>
+                        )}
 
                         <label>Логотип</label>
                         <div className="file-upload">
-                            <input type="file" onChange={handleFileChange} />
-                            <span>Загрузка пока не подключена</span>
+                            {logoPreview && (
+                                <div className="logo-preview">
+                                    <img src={logoPreview} alt="Логотип" />
+                                    {hasLogoChanged() && <span className="logo-changed-badge">Изменено</span>}
+                                </div>
+                            )}
+                            <input type="file" onChange={handleLogoChange} accept="image/*" />
+                            <span>{uploadingLogo ? "Загрузка..." : "Выберите файл (PNG, JPG, до 5MB)"}</span>
                         </div>
                     </div>
 
@@ -308,12 +342,18 @@ export default function EditProfile() {
                             type="button"
                             className="primary"
                             onClick={handleSubmit}
+                            disabled={saving}
                         >
-                            Сохранить всё
+                            {saving ? "Сохранение..." : "Сохранить"}
                         </button>
 
-                        <button type="button" className="secondary">
-                            Закрыть
+                        <button
+                            type="button"
+                            className="secondary"
+                            onClick={handleCancel}
+                            disabled={saving}
+                        >
+                            Отмена
                         </button>
                     </div>
                 </div>

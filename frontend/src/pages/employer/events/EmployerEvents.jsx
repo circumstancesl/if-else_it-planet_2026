@@ -8,12 +8,12 @@ import "./EmployerEvents.css";
 
 export default function EmployerEvents() {
     const { getMyPossibilities, loading } = usePossibilities();
+    const navigate = useNavigate();
 
     const [events, setEvents] = useState([]);
     const [tab, setTab] = useState("all");
     const [search, setSearch] = useState("");
     const [submittedSearch, setSubmittedSearch] = useState("");
-    const navigate = useNavigate();
 
     const handleEventClick = (event) => {
         navigate(`/employer/event/${event.id}`);
@@ -30,7 +30,7 @@ export default function EmployerEvents() {
         };
 
         load();
-    }, [getMyPossibilities]);
+    }, []); // ← пустой массив, без зависимостей
 
     const mapStatus = (status) => {
         switch (status) {
@@ -50,17 +50,12 @@ export default function EmployerEvents() {
             id: e.id,
             title: e.title,
             description: e.description || "",
-
             status: mapStatus(e.status),
-
             company: "Моя компания",
             address: e.city || "Не указано",
-
             type: e.type,
             format: e.format,
             salary: e.salary,
-
-            // 💥 КРИТИЧНО
             tags: e.Tags || [],
         }));
     }, [events]);
@@ -70,9 +65,7 @@ export default function EmployerEvents() {
             const matchSearch = e.title
                 .toLowerCase()
                 .includes(submittedSearch.toLowerCase());
-
             const matchTab = tab === "all" ? true : e.status === tab;
-
             return matchSearch && matchTab;
         });
     }, [normalizedEvents, submittedSearch, tab]);
@@ -80,6 +73,9 @@ export default function EmployerEvents() {
     const handleSearch = () => {
         setSubmittedSearch(search);
     };
+
+    // Показываем загрузку только если нет событий и идет загрузка
+    const showLoading = loading && events.length === 0;
 
     return (
         <div className="page">
@@ -107,7 +103,7 @@ export default function EmployerEvents() {
                     </span>
                 </div>
 
-                {loading ? (
+                {showLoading ? (
                     <div style={{ textAlign: "center", padding: "40px" }}>
                         Загрузка...
                     </div>
@@ -122,6 +118,12 @@ export default function EmployerEvents() {
                                 onClick={handleEventClick}
                             />
                         ))}
+                    </div>
+                )}
+
+                {!showLoading && filteredEvents.length === 0 && (
+                    <div style={{ textAlign: "center", padding: "40px" }}>
+                        Нет событий
                     </div>
                 )}
             </div>
