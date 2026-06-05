@@ -1,6 +1,5 @@
 const createError = require('http-errors');
 const { Responses, Possibilities, Companies, Users, Tags, CandidateProfiles } = require('../db/models');
-require('dotenv').config();
 const axios = require('axios');
 
 async function applyToPossibility(userId, possibilityId) {

@@ -49,4 +49,5 @@ module.exports = {
   getCompanyPossibilities: possibility.getCompanyPossibilities,
   removeFriend: connection.removeFriend,
   getSummaryCandidate: response.getSummaryCandidate,
+  verifyCompany: curator.verifyCompany,
 }

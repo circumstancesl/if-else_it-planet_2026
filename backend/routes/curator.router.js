@@ -1,7 +1,7 @@
 const routerCurator = require('express').Router();
 const asyncHandler = require("express-async-handler");
 const Joi = require("joi");
-const { getCompanies, updateCompanyStatus } = require("../controllers/curator.controller");
+const { getCompanies, updateCompanyStatus, verifyCompany } = require("../controllers/curator.controller");
 const curatorMiddleware = require("../middleware/curator.middleware");
 
 routerCurator.get(
@@ -38,6 +38,18 @@ routerCurator.patch(
 
     res.send(result);
   }),
+);
+
+routerCurator.get(
+  '/verify/:id',
+  curatorMiddleware,
+  asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    const result = await verifyCompany(id);
+
+    res.json(result);
+  })
 );
 
 module.exports = routerCurator;

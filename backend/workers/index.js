@@ -4,6 +4,7 @@ const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const db = require('../db/models');
 const initSocket = require('../socketIo');
+require('dotenv').config();
 
 const rootRouter = require('../routes');
 const { join } = require("node:path");
