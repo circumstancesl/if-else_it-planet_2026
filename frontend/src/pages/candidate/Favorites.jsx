@@ -225,7 +225,7 @@ export default function Favorites() {
     const topEvents = sortedEvents.slice(0, 2);
     const bottomEvents = sortedEvents.slice(2);
 
-    // Адаптация координат для карты
+    // Формируем события с координатами для карты (как в Home.jsx)
     const eventsWithCoords = useMemo(() => {
         return filteredEvents
             .filter(e => e.latitude && e.longitude)
@@ -234,6 +234,18 @@ export default function Favorites() {
                 coords: [e.latitude, e.longitude]
             }));
     }, [filteredEvents]);
+
+    // Выбранное событие с координатами
+    const selectedEventWithCoords = useMemo(() => {
+        if (!selectedEvent) return null;
+        if (selectedEvent.latitude && selectedEvent.longitude) {
+            return {
+                ...selectedEvent,
+                coords: [selectedEvent.latitude, selectedEvent.longitude]
+            };
+        }
+        return selectedEvent;
+    }, [selectedEvent]);
 
     if (loading && favoriteEvents.length === 0) {
         return (
@@ -280,7 +292,7 @@ export default function Favorites() {
                             <div className="left">
                                 <Map
                                     events={eventsWithCoords}
-                                    selectedEvent={selectedEvent}
+                                    selectedEvent={selectedEventWithCoords}
                                     onSelect={setSelectedEvent}
                                     favorites={Array.from(favoriteIds)}
                                 />
