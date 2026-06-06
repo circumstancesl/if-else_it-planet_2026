@@ -15,8 +15,8 @@
 }
 
 .friend-avatar-small {
-    width: 48px;
-    height: 48px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -101,8 +101,8 @@
 }
 
 .friend-avatar {
-    width: 56px;
-    height: 56px;
+    width: 64px;
+    height: 64px;
     border-radius: 50%;
     object-fit: cover;
     flex-shrink: 0;
