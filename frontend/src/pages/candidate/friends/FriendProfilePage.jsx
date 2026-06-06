@@ -239,7 +239,7 @@ export default function FriendProfilePage() {
     const handleMessage = async () => {
         try {
             const chat = await createOrGetChat(friendId);
-            navigate(`/candidate/chat/${chat.id}`, {
+            navigate(`/candidate/friends/chat/${chat.id}`, {
                 state: {
                     candidateName: friend?.name,
                     candidateRole: friend?.role,
@@ -455,7 +455,7 @@ export default function FriendProfilePage() {
                                         buttonText="+ Добавить в друзья"
                                         onButtonClick={() => handleAddPossibleFriend(possible)}
                                         onClick={() =>
-                                            navigate(`/candidate/friend/${possible.userId}`)
+                                            navigate(`/candidate/friends/${possible.userId}`)
                                         }
                                     />
                                 ))}

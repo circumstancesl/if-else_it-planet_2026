@@ -97,9 +97,9 @@ function App() {
             {/* Соискатель */}
             <Route path="/candidate/favorites" element={<Favorites />} />
             <Route path="/candidate/responses" element={<CandidateResponses />} />
-            <Route path="/candidate/chat/:chatId" element={<ChatPage />} />
+            <Route path="/candidate/friends/chat/:chatId" element={<ChatPage />} />
             <Route path="/candidate/friends" element={<FriendsPage />} />
-            <Route path="/candidate/friend/:friendId" element={<FriendProfilePage />} />
+            <Route path="/candidate/friends/:friendId" element={<FriendProfilePage />} />
 
             {/* Куратор */}
             <Route path="/admin/curators" element={<CuratorsAdmin />} />

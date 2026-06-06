@@ -209,7 +209,7 @@ export default function CandidateResponses() {
 
             const chat = await createOrGetChat(employerUserId);
 
-            navigate(`/candidate/chat/${chat.id}`, {
+            navigate(`/candidate/friends/chat/${chat.id}`, {
                 state: {
                     candidateName: companyName,
                     candidateRole: event.title || "Вакансия",

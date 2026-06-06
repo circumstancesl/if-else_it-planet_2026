@@ -187,7 +187,7 @@ export default function CandidatePage() {
     const handleMessage = async () => {
         try {
             const chat = await createOrGetChat(candidateId);
-            navigate(`/candidate/chat/${chat.id}`, {
+            navigate(`/candidate/friends/chat/${chat.id}`, {
                 state: {
                     candidateName: candidate?.name,
                     candidateRole: candidate?.role,

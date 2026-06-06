@@ -479,7 +479,7 @@ export default function FriendsPage() {
     const handleMessage = async (friend) => {
         try {
             const chat = await createOrGetChat(friend.id);
-            navigate(`/candidate/chat/${chat.id}`);
+            navigate(`/candidate/friends/chat/${chat.id}`);
         } catch (err) {
             console.error("Error opening chat:", err);
             alert("Не удалось открыть чат");
@@ -488,12 +488,12 @@ export default function FriendsPage() {
 
     const handleFriendClick = (friend) => {
         if (friend?.id) {
-            navigate(`/candidate/friend/${friend.id}`);
+            navigate(`/candidate/friends/${friend.id}`);
         }
     };
 
     const handlePossibleFriendClick = (friend) => {
-        navigate(`/candidate/friend/${friend.userId}`);
+        navigate(`/candidate/friends/${friend.userId}`);
     };
 
     const getCurrentList = () => {
@@ -557,7 +557,7 @@ export default function FriendsPage() {
                     loading={searchLoading}
                     onAddFriend={handleAddFriend}
                     onMessage={handleMessage}
-                    onViewProfile={(user) => navigate(`/candidate/friend/${user.id}`)}
+                    onViewProfile={(user) => navigate(`/candidate/friends/${user.id}`)}
                 />
             </div>
 
