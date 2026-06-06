@@ -27,7 +27,7 @@ export default function EmployerProfile() {
 
     // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
-        if (!url) return "/img/default-avatar.jpg";
+        if (!url) return "/img/employer.jpg"; // ← изменено на employer.jpg
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -105,7 +105,7 @@ export default function EmployerProfile() {
         } catch (err) {
             console.error(err);
             setEvents([]);
-            setInitialLoad(false); // ← ВАЖНО: сбрасываем initialLoad даже при ошибке
+            setInitialLoad(false);
         } finally {
             setLoading(false);
         }
@@ -134,9 +134,7 @@ export default function EmployerProfile() {
             id: e.id,
             title: e.title,
             description: e.description || "",
-            // company: company?.name || "Моя компания",
             company: "Моя компания",
-
             address: e.city || "Не указано",
             type: e.type,
             format: e.format,
@@ -144,7 +142,7 @@ export default function EmployerProfile() {
             tags: e.Tags || [],
             responses: responsesCount[e.id] || 0,
         }));
-    }, [events, responsesCount, company]);
+    }, [events, responsesCount]);
 
     const formattedResponses = useMemo(() => {
         return latestResponses.map(response => ({
@@ -158,7 +156,7 @@ export default function EmployerProfile() {
             status: response.status || "pending",
             eventTitle: response.eventTitle,
             eventId: response.eventId,
-            avatar: getFullImageUrl(response.fullProfile?.logoUrl) || getFullImageUrl(response.User?.avatar) || "/img/default-avatar.jpg"
+            avatar: getFullImageUrl(response.fullProfile?.logoUrl) || getFullImageUrl(response.User?.avatar) || "/img/jobseeker.jpg"
         }));
     }, [latestResponses]);
 
@@ -185,7 +183,7 @@ export default function EmployerProfile() {
             state: {
                 responseId: candidate.responseId,
                 status: candidate.status,
-                eventId: candidate.eventId // ← передаем eventId
+                eventId: candidate.eventId
             }
         });
     };
@@ -218,7 +216,11 @@ export default function EmployerProfile() {
                                     className="company-logo"
                                 />
                             ) : (
-                                <span className="icon">🏢</span>
+                                <img
+                                    src="/img/employer.jpg"
+                                    alt="Company"
+                                    className="company-logo"
+                                />
                             )}
                         </div>
                         <div className="company-details">
