@@ -3,6 +3,7 @@ import "./CandidateProfile.css";
 import { useEffect, useState } from "react";
 import { users } from "../../api/endpoints";
 import { useTags } from "../../api/useTags";
+import PageLoader from "../../components/PageLoader";
 
 export default function CandidateProfile() {
     const { tags, fetchTags, loading: tagsLoading } = useTags();
@@ -253,9 +254,7 @@ export default function CandidateProfile() {
         return (
             <div className="page">
                 <Header />
-                <div className="container" style={{textAlign: "center", padding: "50px"}}>
-                    Загрузка...
-                </div>
+                <PageLoader />
             </div>
         );
     }

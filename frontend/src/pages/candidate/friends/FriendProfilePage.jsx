@@ -6,6 +6,7 @@ import { useUsers } from "../../../api/useUsers";
 import { useConnections } from "../../../api/useConnections";
 import { useChat } from "../../../api/useChat";
 import "./FriendProfilePage.css";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function FriendProfilePage() {
     const { friendId } = useParams();
@@ -273,15 +274,12 @@ export default function FriendProfilePage() {
     const technologyTags = friend?.tags?.filter(tag => tag.type === 'technology') || [];
     const levelTags = friend?.tags?.filter(tag => tag.type === 'level') || [];
 
+
     if (profileLoading || usersLoading) {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

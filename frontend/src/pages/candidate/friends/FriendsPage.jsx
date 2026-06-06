@@ -7,6 +7,7 @@ import { useUsers } from "../../../api/useUsers";
 import { useConnections } from "../../../api/useConnections";
 import { useChat } from "../../../api/useChat";
 import "./FriendsPage.css";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function FriendsPage() {
     const navigate = useNavigate();
@@ -535,11 +536,7 @@ export default function FriendsPage() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

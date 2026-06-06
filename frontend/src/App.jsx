@@ -25,25 +25,50 @@ import EditEvent from "./pages/employer/events/EditEvent.jsx";
 import CuratorsAdmin from "./pages/curator/CuratorsAdmin.jsx";
 import CuratorUsers from "./pages/curator/CuratorUsers.jsx";
 import TramplinLanding from "./pages/landings/TramplinLanding.jsx";
+import LoadingScreen from "./components/LoadingScreen.jsx";
+import { useEffect, useState } from "react";
+import { useAuth } from "./context/AuthContext.jsx";
 
 function App() {
+    const { loading: authLoading } = useAuth();
+    const [appLoading, setAppLoading] = useState(true);
+
+    useEffect(() => {
+        // Ждем загрузки всех ресурсов
+        const handleLoad = () => {
+            // Небольшая задержка для плавности
+            setTimeout(() => setAppLoading(false), 300);
+        };
+
+        if (document.readyState === "complete") {
+            handleLoad();
+        } else {
+            window.addEventListener("load", handleLoad);
+            return () => window.removeEventListener("load", handleLoad);
+        }
+    }, []);
+
+    // Показываем загрузку, пока проверяется авторизация или загружаются ресурсы
+    if (authLoading || appLoading) {
+        return <LoadingScreen />;
+    }
+
     return (
         <Routes>
             {/* Общие страницы */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
 
-        <Route path="/candidate" element={<TramplinLanding />} />
-        <Route path="/employer" element={<TramplinLanding />} />
-        <Route path="/curator" element={<TramplinLanding />} />
+            <Route path="/candidate" element={<TramplinLanding />} />
+            <Route path="/employer" element={<TramplinLanding />} />
+            <Route path="/curator" element={<TramplinLanding />} />
 
             {/* Редирект на профиль по роли */}
             <Route path="/profile" element={<ProfileRedirect />} />
 
             {/* Профили по ролям */}
-            {/*<Route path="/candidate/profile" element={<CandidateProfile />} />*/}
             <Route path="/employer/profile" element={<EmployerProfile />} />
-            {/*<Route path="/mentor/profile" element={<MentorProfile />} />*/}
+            <Route path="/candidate/profile" element={<CandidateProfile />} />
 
             {/* Страница События */}
             <Route path="/employer/event/:eventId" element={<EventPage />} />
@@ -72,7 +97,6 @@ function App() {
             {/* Соискатель */}
             <Route path="/candidate/favorites" element={<Favorites />} />
             <Route path="/candidate/responses" element={<CandidateResponses />} />
-            <Route path="/candidate/profile" element={<CandidateProfile />} />
             <Route path="/candidate/chat/:chatId" element={<ChatPage />} />
             <Route path="/candidate/friends" element={<FriendsPage />} />
             <Route path="/candidate/friend/:friendId" element={<FriendProfilePage />} />
@@ -80,7 +104,6 @@ function App() {
             {/* Куратор */}
             <Route path="/admin/curators" element={<CuratorsAdmin />} />
             <Route path="/curator/users" element={<CuratorUsers />} />
-
         </Routes>
     );
 }

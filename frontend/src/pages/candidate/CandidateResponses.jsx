@@ -8,6 +8,7 @@ import { useChat } from "../../api/useChat";
 import { useTags } from "../../api/useTags";
 import { users } from "../../api/endpoints";
 import "./CandidateResponses.css";
+import PageLoader from "../../components/PageLoader.jsx";
 
 export default function CandidateResponses() {
     const [search, setSearch] = useState("");
@@ -232,15 +233,11 @@ export default function CandidateResponses() {
         return 'candidate';
     };
 
-    if (loading) {
+    if (loading || tagsLoading) {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка откликов...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

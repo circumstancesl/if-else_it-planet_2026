@@ -8,6 +8,7 @@ import { getSocket, sendMessage, onNewMessage, joinChats } from "../../api/socke
 import "./ChatPage.css";
 import "../../components/Chat/ChatLayout.css";
 import { useAuth } from "../../context/AuthContext";
+import PageLoader from "../../components/PageLoader.jsx";
 
 
 export default function ChatPage() {
@@ -180,15 +181,12 @@ export default function ChatPage() {
         }));
     };
 
+
     if (loading && messages.length === 0) {
         return (
             <div className="page">
                 <Header />
-                <div className="container chat-container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка сообщений...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

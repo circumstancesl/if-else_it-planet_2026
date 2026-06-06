@@ -8,6 +8,7 @@ import "./Favorites.css";
 import { useFavorites } from "../../api/useFavorites";
 import { usePossibilities } from "../../api/usePossibilities";
 import { useTags } from "../../api/useTags";
+import PageLoader from "../../components/PageLoader.jsx";
 
 export default function Favorites() {
     const [selectedEvent, setSelectedEvent] = useState(null);
@@ -284,11 +285,7 @@ export default function Favorites() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка избранного...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }
