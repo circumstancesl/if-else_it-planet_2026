@@ -37,13 +37,13 @@ export default function EventCard({
         navigate(`/employer/events/edit-event/${event.id}`);
     };
 
-    // 📦 сортировка тегов
+    // 📦 сортировка тегов - с проверкой что tags это массив
     const orderedTags = useMemo(() => {
-        if (!event.tags) return [];
+        if (!event.tags || !Array.isArray(event.tags) || event.tags.length === 0) return [];
 
-        const employmentType = event.tags.find(t => t.type === "employmentType");
-        const level = event.tags.find(t => t.type === "level");
-        const techTags = event.tags.filter(t => t.type === "technology");
+        const employmentType = event.tags.find(t => t?.type === "employmentType");
+        const level = event.tags.find(t => t?.type === "level");
+        const techTags = event.tags.filter(t => t?.type === "technology");
 
         return [
             ...(employmentType ? [employmentType] : []),
@@ -52,7 +52,7 @@ export default function EventCard({
         ];
     }, [event.tags]);
 
-    // 📏 расчет тегов
+    // 📏 계산 тегов
     useEffect(() => {
         if (!tagsRef.current || !orderedTags.length) {
             setVisibleTags([]);
@@ -68,12 +68,13 @@ export default function EventCard({
 
         for (let i = 0; i < orderedTags.length; i++) {
             const tag = orderedTags[i];
+            if (!tag) continue;
 
             const fake = document.createElement("span");
             fake.className = "tag";
             fake.style.visibility = "hidden";
             fake.style.position = "absolute";
-            fake.innerText = tag.name;
+            fake.innerText = tag.name || "";
             fake.style.whiteSpace = "nowrap";
 
             document.body.appendChild(fake);
@@ -104,8 +105,11 @@ export default function EventCard({
     // Обработчик клика на кнопку "Откликнуться" (переход на страницу)
     const handleRespondClick = (e) => {
         e.stopPropagation();
-        // Переход на страницу события
-        navigate(`/candidate/event/${event.id}`);
+        if (onCardClick) {
+            onCardClick(event);
+        } else {
+            navigate(`/candidate/event/${event.id}`);
+        }
     };
 
     // 🎯 действия
@@ -170,6 +174,11 @@ export default function EventCard({
         return null;
     };
 
+    // Получаем название компании (строку)
+    const companyName = typeof event.company === 'string'
+        ? event.company
+        : event.company?.name || event.companyName || "Компания";
+
     return (
         <div
             className={`cardEvent 
@@ -226,7 +235,7 @@ export default function EventCard({
             {/* компания */}
             <div className="cardEvent-companyBlock">
                 <div className="company">
-                    {event.company?.name || event.company || "Компания"}
+                    {companyName}
                     <span className="check">
                         <img src="/icons/verified.svg" alt="company" />
                     </span>

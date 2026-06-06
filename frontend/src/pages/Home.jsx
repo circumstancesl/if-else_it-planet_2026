@@ -83,7 +83,6 @@ export default function Home() {
             const normalizedEvents = (Array.isArray(data) ? data : []).map(event => ({
                 ...event,
                 tags: event.tags || event.Tags || [],
-                // Исправлено: берем название компании из Company.name (с большой буквы)
                 company: event.Company?.name || event.company?.name || event.companyName || "Компания"
             }));
 
@@ -113,8 +112,13 @@ export default function Home() {
         }
     };
 
-    const handleEventClick = useCallback((event) => {
+    // Только наведение на карте
+    const handleEventHover = useCallback((event) => {
         setSelectedEvent(event);
+    }, []);
+
+    // Переход на страницу события
+    const handleEventNavigate = useCallback((event) => {
         navigate(`/candidate/event/${event.id}`);
     }, [navigate]);
 
@@ -226,7 +230,8 @@ export default function Home() {
                                 key={event.id}
                                 event={event}
                                 highlighted={event.id === selectedEvent?.id}
-                                onClick={handleEventClick}
+                                onClick={handleEventHover}
+                                onCardClick={handleEventNavigate}
                                 variant="candidate"
                                 onToggleFavorite={toggleFavorite}
                                 isFavorite={isFavorite(event.id)}
@@ -241,7 +246,8 @@ export default function Home() {
                             <EventCard
                                 key={event.id}
                                 event={event}
-                                onClick={handleEventClick}
+                                onClick={handleEventHover}
+                                onCardClick={handleEventNavigate}
                                 variant="candidate"
                                 onToggleFavorite={toggleFavorite}
                                 isFavorite={isFavorite(event.id)}
