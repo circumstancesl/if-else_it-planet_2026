@@ -83,7 +83,8 @@ export default function Home() {
             const normalizedEvents = (Array.isArray(data) ? data : []).map(event => ({
                 ...event,
                 tags: event.tags || event.Tags || [],
-                company: event.Company?.name || event.company?.name || event.companyName || "Компания"
+                company: event.Company?.name || event.company?.name || event.companyName || "Компания",
+                companyVerificationStatus: event.Company?.verification_status // ← добавляем статус верификации
             }));
 
             if (reset) {
@@ -112,12 +113,10 @@ export default function Home() {
         }
     };
 
-    // Только наведение на карте
     const handleEventHover = useCallback((event) => {
         setSelectedEvent(event);
     }, []);
 
-    // Переход на страницу события
     const handleEventNavigate = useCallback((event) => {
         navigate(`/candidate/event/${event.id}`);
     }, [navigate]);
@@ -235,6 +234,7 @@ export default function Home() {
                                 variant="candidate"
                                 onToggleFavorite={toggleFavorite}
                                 isFavorite={isFavorite(event.id)}
+                                companyVerificationStatus={event.companyVerificationStatus}
                             />
                         ))}
                     </div>
@@ -251,6 +251,7 @@ export default function Home() {
                                 variant="candidate"
                                 onToggleFavorite={toggleFavorite}
                                 isFavorite={isFavorite(event.id)}
+                                companyVerificationStatus={event.companyVerificationStatus}
                             />
                         ))}
                     </div>

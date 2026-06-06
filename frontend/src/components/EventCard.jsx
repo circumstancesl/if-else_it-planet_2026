@@ -15,6 +15,7 @@ export default function EventCard({
                                       onViewResponses,
                                       messagesCount,
                                       onOpenChat,
+                                      companyVerificationStatus
                                   }) {
     const navigate = useNavigate();
 
@@ -233,17 +234,18 @@ export default function EventCard({
             </div>
 
             {/* компания */}
-            <div className="cardEvent-companyBlock">
-                <div className="company">
-                    {companyName}
+            <div className="company">
+                {event.company?.name || event.company || "Компания"}
+                {companyVerificationStatus === 'approved' && (
                     <span className="check">
-                        <img src="/icons/verified.svg" alt="company" />
+                        <img src="/icons/verified.svg" alt="verified" />
                     </span>
-                </div>
-
-                <div className="event-card-address">
-                    {event.address || event.city || "Не указано"}
-                </div>
+                )}
+                {companyVerificationStatus === 'rejected' && (
+                    <span className="check">
+                        <img src="/icons/rejected.svg" alt="rejected" />
+                    </span>
+                )}
             </div>
 
             {renderAction()}
