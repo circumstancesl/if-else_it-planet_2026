@@ -72,7 +72,8 @@ export default function Favorites() {
                 if (fav.type === 'possibility' && fav.item) {
                     const normalizedEvent = {
                         ...fav.item,
-                        tags: fav.item.tags || fav.item.Tags || []
+                        tags: fav.item.tags || fav.item.Tags || [],
+                        company: fav.item.Company?.name || fav.item.company?.name || fav.item.companyName || "Компания"
                     };
                     eventsData.push(normalizedEvent);
                 } else if (fav.type === 'possibility' && fav.itemId) {
@@ -81,7 +82,8 @@ export default function Favorites() {
                         if (eventData && isMounted.current) {
                             const normalizedEvent = {
                                 ...eventData,
-                                tags: eventData.tags || eventData.Tags || []
+                                tags: eventData.tags || eventData.Tags || [],
+                                company: eventData.Company?.name || eventData.company?.name || eventData.companyName || "Компания"
                             };
                             eventsData.push(normalizedEvent);
                         }
@@ -165,7 +167,7 @@ export default function Favorites() {
             result = result.filter((e) => {
                 const matchSearch =
                     e.title?.toLowerCase().includes(submittedSearch.toLowerCase()) ||
-                    e.company?.name?.toLowerCase().includes(submittedSearch.toLowerCase());
+                    (typeof e.company === 'string' ? e.company : e.company?.name || "").toLowerCase().includes(submittedSearch.toLowerCase());
                 return matchSearch;
             });
         }
