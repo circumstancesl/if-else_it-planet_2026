@@ -5,6 +5,7 @@ import EmployerSearchBar from "../../../components/SearchBar/EmployerSearchBar.j
 import { usePossibilities } from "../../../api/usePossibilities";
 import { useNavigate } from "react-router-dom";
 import "./EmployerEvents.css";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function EmployerEvents() {
     const { getMyPossibilities, loading } = usePossibilities();
@@ -104,8 +105,9 @@ export default function EmployerEvents() {
                 </div>
 
                 {showLoading ? (
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
+                    <div className="page">
+                        <Header />
+                        <PageLoader />
                     </div>
                 ) : (
                     <div className="grid">

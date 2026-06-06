@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { usePossibilities } from "../../../api/usePossibilities";
 import { useResponses } from "../../../api/useResponses";
 import "./EmployerResponses.css";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function EmployerResponses() {
     const { getMyPossibilities, loading: eventsLoading } = usePossibilities();
@@ -86,11 +87,7 @@ export default function EmployerResponses() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

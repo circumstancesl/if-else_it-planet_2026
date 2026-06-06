@@ -8,6 +8,7 @@ import { usePossibilities } from "../../../api/usePossibilities";
 import { useUsers } from "../../../api/useUsers";
 import "./EventCandidates.css";
 import Breadcrumbs from "../../../components/Breadcrumbs.jsx";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function EventCandidates() {
     const { eventId } = useParams();
@@ -154,11 +155,7 @@ export default function EventCandidates() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

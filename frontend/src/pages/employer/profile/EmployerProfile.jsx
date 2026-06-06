@@ -8,6 +8,7 @@ import { useResponses } from "../../../api/useResponses";
 import { users } from "../../../api/endpoints";
 import { useUsers } from "../../../api/useUsers";
 import "./EmployerProfile.css";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function EmployerProfile() {
     const navigate = useNavigate();
@@ -203,11 +204,7 @@ export default function EmployerProfile() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

@@ -5,6 +5,7 @@ import TagBlock from "../../../components/TagBlock/TagBlock.jsx";
 import { usePossibilities } from "../../../api/usePossibilities";
 import "./CreateEvent.css";
 import Breadcrumbs from "../../../components/Breadcrumbs.jsx";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function EditEvent() {
     const navigate = useNavigate();
@@ -169,9 +170,9 @@ export default function EditEvent() {
 
     if (isLoadingData) {
         return (
-            <div className="create-event-page">
+            <div className="page">
                 <Header />
-                <div className="container">Загрузка...</div>
+                <PageLoader />
             </div>
         );
     }

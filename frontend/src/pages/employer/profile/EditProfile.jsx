@@ -4,6 +4,7 @@ import Header from "../../../components/Header/Header.jsx";
 import "./EditProfile.css";
 import { users } from "../../../api/endpoints";
 import Breadcrumbs from "../../../components/Breadcrumbs.jsx";
+import PageLoader from "../../../components/PageLoader.jsx";
 
 export default function EditProfile() {
     const navigate = useNavigate();
@@ -216,9 +217,7 @@ export default function EditProfile() {
         return (
             <div className="page">
                 <Header />
-                <div className="container" style={{textAlign: "center", padding: "50px"}}>
-                    Загрузка профиля...
-                </div>
+                <PageLoader />
             </div>
         );
     }
