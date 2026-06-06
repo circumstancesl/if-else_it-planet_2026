@@ -4,6 +4,7 @@ import CuratorSearchBar from "../../components/SearchBar/CuratorSearchBar.jsx";
 import CreateCuratorModal from "../../components/curator/CreateCuratorModal.jsx";
 import { useAdmin } from "../../api/useAdmin";
 import "./CuratorsAdmin.css";
+import PageLoader from "../../components/PageLoader.jsx";
 
 export default function CuratorsAdmin() {
     const [curators, setCurators] = useState([]);
@@ -69,11 +70,7 @@ export default function CuratorsAdmin() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }

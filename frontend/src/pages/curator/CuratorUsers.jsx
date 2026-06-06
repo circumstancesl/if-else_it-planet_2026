@@ -4,6 +4,7 @@ import SearchBar from "../../components/SearchBar/SearchBar.jsx";
 import ChangeRightsModal from "../../components/curator/ChangeRightsModal.jsx";
 import { useCurator } from "../../api/useCurator";
 import "./CuratorUsers.css";
+import PageLoader from "../../components/PageLoader.jsx";
 
 export default function CuratorUsers() {
     const [search, setSearch] = useState("");
@@ -145,11 +146,7 @@ export default function CuratorUsers() {
         return (
             <div className="page">
                 <Header />
-                <div className="container">
-                    <div style={{ textAlign: "center", padding: "40px" }}>
-                        Загрузка...
-                    </div>
-                </div>
+                <PageLoader />
             </div>
         );
     }
