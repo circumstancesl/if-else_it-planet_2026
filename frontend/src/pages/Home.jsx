@@ -31,7 +31,6 @@ export default function Home() {
     const [offset, setOffset] = useState(0);
     const limit = 10;
 
-    // Теги для фильтрации
     const { tags, fetchTags, loading: tagsLoading } = useTags();
     const [availableTags, setAvailableTags] = useState([]);
     const [showTagDropdown, setShowTagDropdown] = useState(false);
@@ -40,28 +39,23 @@ export default function Home() {
     const { getAllPossibilities } = usePossibilities();
     const { favorites, favoriteIds, toggleFavorite, isFavorite } = useFavorites();
 
-    // Загружаем теги
     useEffect(() => {
         fetchTags({});
     }, []);
 
-    // Обновляем доступные теги
     useEffect(() => {
         if (tags && tags.length > 0) {
             setAvailableTags(tags);
         }
     }, [tags]);
 
-    // Функция загрузки событий с фильтрами
     const loadEvents = useCallback(async (reset = true) => {
         if (loading) return;
 
         setLoading(true);
         try {
-            // Получаем ID тегов по их названиям
             let tagIds = [];
             if (filters.tags.length > 0) {
-                // Ищем ID для каждого выбранного тега
                 tagIds = availableTags
                     .filter(tag => filters.tags.includes(tag.name))
                     .map(tag => tag.id);
@@ -76,10 +70,8 @@ export default function Home() {
                 city: filters.city || undefined,
                 salaryFrom: filters.salaryFrom ? Number(filters.salaryFrom) : undefined,
                 salaryTo: filters.salaryTo ? Number(filters.salaryTo) : undefined,
-                tags: tagIds.length > 0 ? tagIds.join(',') : undefined // передаем ID через запятую
+                tags: tagIds.length > 0 ? tagIds.join(',') : undefined
             };
-
-            console.log("Sending params:", params);
 
             Object.keys(params).forEach(key => {
                 if (params[key] === undefined || params[key] === "") {
@@ -90,7 +82,9 @@ export default function Home() {
             const data = await getAllPossibilities(params);
             const normalizedEvents = (Array.isArray(data) ? data : []).map(event => ({
                 ...event,
-                tags: event.tags || event.Tags || []
+                tags: event.tags || event.Tags || [],
+                // Исправлено: берем название компании из Company.name (с большой буквы)
+                company: event.Company?.name || event.company?.name || event.companyName || "Компания"
             }));
 
             if (reset) {
@@ -109,7 +103,6 @@ export default function Home() {
         }
     }, [submittedSearch, filters, offset, loading, limit, availableTags]);
 
-    // Загрузка при изменении поиска или фильтров
     useEffect(() => {
         loadEvents(true);
     }, [submittedSearch, filters.type, filters.format, filters.city, filters.salaryFrom, filters.salaryTo, filters.tags]);
@@ -145,7 +138,6 @@ export default function Home() {
         setTagSearch("");
     };
 
-    // Добавление тега
     const handleAddTag = (tag) => {
         if (!filters.tags.includes(tag.name)) {
             setFilters({
@@ -157,7 +149,6 @@ export default function Home() {
         setTagSearch("");
     };
 
-    // Удаление тега
     const handleRemoveTag = (tagToRemove) => {
         setFilters({
             ...filters,
@@ -165,7 +156,6 @@ export default function Home() {
         });
     };
 
-    // Фильтрация тегов по поиску
     const filteredTags = availableTags.filter(tag =>
         tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
         !filters.tags.includes(tag.name)

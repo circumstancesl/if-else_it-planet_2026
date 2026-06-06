@@ -134,7 +134,9 @@ export default function EmployerProfile() {
             id: e.id,
             title: e.title,
             description: e.description || "",
-            company: company?.name || "Моя компания",
+            // company: company?.name || "Моя компания",
+            company: "Моя компания",
+
             address: e.city || "Не указано",
             type: e.type,
             format: e.format,
