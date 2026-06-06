@@ -25,9 +25,20 @@ export default function EmployerProfile() {
     const [company, setCompany] = useState(null);
     const [companyLoading, setCompanyLoading] = useState(true);
 
-    // Функция для получения полного URL изображения
-    const getFullImageUrl = (url) => {
-        if (!url) return "/img/employer.jpg"; // ← изменено на employer.jpg
+    // Функция для получения полного URL изображения для компании
+    const getCompanyImageUrl = (url) => {
+        if (!url) return "/img/employer.jpg";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
+
+    // Функция для получения полного URL изображения для кандидата
+    const getCandidateImageUrl = (url) => {
+        if (!url) return "/img/jobseeker.jpg";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -156,7 +167,7 @@ export default function EmployerProfile() {
             status: response.status || "pending",
             eventTitle: response.eventTitle,
             eventId: response.eventId,
-            avatar: getFullImageUrl(response.fullProfile?.logoUrl) || getFullImageUrl(response.User?.avatar) || "/img/jobseeker.jpg"
+            avatar: getCandidateImageUrl(response.fullProfile?.logoUrl) || getCandidateImageUrl(response.User?.avatar) || "/img/jobseeker.jpg"
         }));
     }, [latestResponses]);
 
@@ -211,7 +222,7 @@ export default function EmployerProfile() {
                         <div className="company-avatar">
                             {company?.logoUrl ? (
                                 <img
-                                    src={getFullImageUrl(company.logoUrl)}
+                                    src={getCompanyImageUrl(company.logoUrl)}
                                     alt={company.name}
                                     className="company-logo"
                                 />
