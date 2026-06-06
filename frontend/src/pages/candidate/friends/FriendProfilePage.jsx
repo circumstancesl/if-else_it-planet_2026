@@ -373,7 +373,7 @@ export default function FriendProfilePage() {
 
                                 {friendStatus === 'pending_sent' && (
                                     <button className="btn-reserve" disabled style={{ opacity: 0.6, cursor: 'default' }}>
-                                        ⏳ Заявка отправлена
+                                        Заявка отправлена
                                     </button>
                                 )}
 
