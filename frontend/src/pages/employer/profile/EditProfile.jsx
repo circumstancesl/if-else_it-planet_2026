@@ -296,18 +296,18 @@ export default function EditProfile() {
                     </div>
 
                     <div className="middle">
-                        <label>Социальные сети</label>
-                        <div className="field-row">
-                            <input
-                                value={form.social}
-                                onChange={(e) => handleChange("social", e.target.value)}
-                                placeholder="https://t.me/company"
-                                className={hasChanged("social") ? "changed" : ""}
-                            />
-                        </div>
-                        {hasChanged("social") && (
-                            <span className="changed-hint">Изменено</span>
-                        )}
+                        {/*<label>Социальные сети</label>*/}
+                        {/*<div className="field-row">*/}
+                        {/*    <input*/}
+                        {/*        value={form.social}*/}
+                        {/*        onChange={(e) => handleChange("social", e.target.value)}*/}
+                        {/*        placeholder="https://t.me/company"*/}
+                        {/*        className={hasChanged("social") ? "changed" : ""}*/}
+                        {/*    />*/}
+                        {/*</div>*/}
+                        {/*{hasChanged("social") && (*/}
+                        {/*    <span className="changed-hint">Изменено</span>*/}
+                        {/*)}*/}
 
                         <label>Краткое описание*</label>
                         <div className="field-column">
