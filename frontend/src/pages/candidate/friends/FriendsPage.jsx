@@ -479,7 +479,16 @@ export default function FriendsPage() {
     const handleMessage = async (friend) => {
         try {
             const chat = await createOrGetChat(friend.id);
-            navigate(`/candidate/friends/chat/${chat.id}`);
+            // Передаем все данные о друге в чат
+            navigate(`/candidate/friends/chat/${chat.id}`, {
+                state: {
+                    candidateName: friend.name,
+                    candidateRole: friend.role,
+                    candidateAvatar: friend.avatar,
+                    eventTitle: null,
+                    eventId: null
+                }
+            });
         } catch (err) {
             console.error("Error opening chat:", err);
             alert("Не удалось открыть чат");
