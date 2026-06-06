@@ -238,7 +238,15 @@ export default function FriendProfilePage() {
     const handleMessage = async () => {
         try {
             const chat = await createOrGetChat(friendId);
-            navigate(`/candidate/chat/${chat.id}`);
+            navigate(`/candidate/chat/${chat.id}`, {
+                state: {
+                    candidateName: friend?.name,
+                    candidateRole: friend?.role,
+                    candidateAvatar: friend?.avatar,
+                    eventTitle: null,
+                    eventId: null
+                }
+            });
         } catch (err) {
             console.error("Error opening chat:", err);
             alert("Не удалось открыть чат");
