@@ -92,10 +92,17 @@ async function getPossibilities(query, userId) {
     ];
   }
 
-  const include = [{
-    model: Tags,
-    through: { attributes: [] },
-  }];
+  const include = [
+    {
+      model: Tags,
+      through: { attributes: [] },
+    },
+    {
+      model: Companies,
+      attributes: ['id', 'name', 'logoUrl'],
+      required: false,
+    }
+  ];
 
   if (tags) {
     const tagIds = tags.split(',');
