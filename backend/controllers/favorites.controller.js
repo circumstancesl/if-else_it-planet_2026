@@ -1,5 +1,5 @@
 const createError = require('http-errors');
-const { Favorites, Possibilities, Tags } = require('../db/models');
+const { Favorites, Possibilities, Tags, Companies } = require('../db/models');
 const { Op } = require('sequelize');
 
 async function addFavorite(userId, type, itemId) {
