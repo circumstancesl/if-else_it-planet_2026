@@ -1,4 +1,3 @@
-// src/pages/candidate/Favorites.jsx
 import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Header from "../../components/Header/Header.jsx";
 import EventCard from "../../components/EventCard";
@@ -50,7 +49,7 @@ export default function Favorites() {
         }
     }, [tags]);
 
-    // Наведение на карте (обновляет selectedEvent для подсветки и центрирования)
+    // Наведение на карте
     const handleEventHover = useCallback((event) => {
         console.log("Hovering event:", event?.title, event?.id);
         setSelectedEvent(event);
@@ -61,7 +60,6 @@ export default function Favorites() {
         navigate(`/candidate/event/${event.id}`);
     }, [navigate]);
 
-    // Загружаем данные избранных событий
     const loadFavoriteEvents = useCallback(async () => {
         if (isLoadingRef.current) return;
 
@@ -76,20 +74,55 @@ export default function Favorites() {
             const eventsData = [];
             for (const fav of favs || favorites) {
                 if (fav.type === 'possibility' && fav.item) {
+                    // Нормализуем теги: Tags может быть объектом или массивом
+                    let eventTags = [];
+                    if (fav.item.Tags) {
+                        if (Array.isArray(fav.item.Tags)) {
+                            eventTags = fav.item.Tags;
+                        } else if (typeof fav.item.Tags === 'object' && fav.item.Tags.id) {
+                            // Если Tags это объект (один тег), превращаем в массив
+                            eventTags = [fav.item.Tags];
+                        }
+                    } else if (fav.item.tags) {
+                        if (Array.isArray(fav.item.tags)) {
+                            eventTags = fav.item.tags;
+                        } else if (typeof fav.item.tags === 'object' && fav.item.tags.id) {
+                            eventTags = [fav.item.tags];
+                        }
+                    }
+
                     const normalizedEvent = {
                         ...fav.item,
-                        tags: fav.item.tags || fav.item.Tags || [],
-                        company: fav.item.Company?.name || fav.item.company?.name || fav.item.companyName || "Компания"
+                        tags: eventTags,
+                        company: fav.item.Company?.name || fav.item.company?.name || fav.item.companyName || "Компания",
+                        companyVerificationStatus: fav.item.Company?.verification_status
                     };
                     eventsData.push(normalizedEvent);
                 } else if (fav.type === 'possibility' && fav.itemId) {
                     try {
                         const eventData = await getPossibilityById(fav.itemId);
                         if (eventData && isMounted.current) {
+                            // Нормализуем теги аналогично
+                            let eventTags = [];
+                            if (eventData.Tags) {
+                                if (Array.isArray(eventData.Tags)) {
+                                    eventTags = eventData.Tags;
+                                } else if (typeof eventData.Tags === 'object' && eventData.Tags.id) {
+                                    eventTags = [eventData.Tags];
+                                }
+                            } else if (eventData.tags) {
+                                if (Array.isArray(eventData.tags)) {
+                                    eventTags = eventData.tags;
+                                } else if (typeof eventData.tags === 'object' && eventData.tags.id) {
+                                    eventTags = [eventData.tags];
+                                }
+                            }
+
                             const normalizedEvent = {
                                 ...eventData,
-                                tags: eventData.tags || eventData.Tags || [],
-                                company: eventData.Company?.name || eventData.company?.name || eventData.companyName || "Компания"
+                                tags: eventTags,
+                                company: eventData.Company?.name || eventData.company?.name || eventData.companyName || "Компания",
+                                companyVerificationStatus: eventData.Company?.verification_status
                             };
                             eventsData.push(normalizedEvent);
                         }
@@ -225,7 +258,7 @@ export default function Favorites() {
     const topEvents = sortedEvents.slice(0, 2);
     const bottomEvents = sortedEvents.slice(2);
 
-    // Формируем события с координатами для карты (как в Home.jsx)
+    // Формируем события с координатами для карты
     const eventsWithCoords = useMemo(() => {
         return filteredEvents
             .filter(e => e.latitude && e.longitude)
@@ -309,6 +342,7 @@ export default function Favorites() {
                                         variant="candidate"
                                         onToggleFavorite={toggleFavorite}
                                         isFavorite={isFavorite(event.id)}
+                                        companyVerificationStatus={event.companyVerificationStatus}
                                     />
                                 ))}
                             </div>
@@ -325,6 +359,7 @@ export default function Favorites() {
                                         variant="candidate"
                                         onToggleFavorite={toggleFavorite}
                                         isFavorite={isFavorite(event.id)}
+                                        companyVerificationStatus={event.companyVerificationStatus}
                                     />
                                 ))}
                             </div>
