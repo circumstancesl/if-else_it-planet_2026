@@ -1,5 +1,6 @@
 const createError = require('http-errors');
 const { Favorites, Possibilities, Tags } = require('../db/models');
+const { Op } = require('sequelize');
 
 async function addFavorite(userId, type, itemId) {
   const existing = await Favorites.findOne({
@@ -35,28 +36,46 @@ async function removeFavorite(userId, itemId) {
 async function getFavorites(userId) {
   const favorites = await Favorites.findAll({
     where: { userId },
+    attributes: ['type', 'itemId'],
     order: [['createdAt', 'DESC']],
+    raw: true,
   });
 
-  const result = [];
+  const possibilityIds = favorites.filter(f => f.type === 'possibility').map(f => f.itemId);
+  const companyIds = favorites.filter(f => f.type === 'company').map(f => f.itemId);
 
-  for (const fav of favorites) {
+  const possibilities = possibilityIds.length > 0
+    ? await Possibilities.findAll({
+      where: { id: { [Op.in]: possibilityIds } },
+      include: [
+        { model: Tags, through: { attributes: [] }, attributes: ['id', 'name', 'type'] },
+        { model: Companies, attributes: ['id', 'name', 'logoUrl'], required: false },
+      ],
+      raw: true,
+      nest: true,
+    })
+    : [];
+
+  const companies = companyIds.length > 0
+    ? await Companies.findAll({
+      where: { id: { [Op.in]: companyIds } },
+      attributes: ['id', 'name', 'logoUrl', 'description'],
+      raw: true,
+    })
+    : [];
+
+  const possibilitiesMap = new Map(possibilities.map(p => [p.id, p]));
+  const companiesMap = new Map(companies.map(c => [c.id, c]));
+
+  return favorites.map(fav => {
     if (fav.type === 'possibility') {
-      const item = await Possibilities.findByPk(fav.itemId, {
-        include: [{ model: Tags }],
-      });
-
-      if (item) result.push({ type: 'possibility', item });
+      return { type: 'possibility', item: possibilitiesMap.get(fav.itemId) || null };
     }
-
     if (fav.type === 'company') {
-      const item = await Companies.findByPk(fav.itemId);
-
-      if (item) result.push({ type: 'company', item });
+      return { type: 'company', item: companiesMap.get(fav.itemId) || null };
     }
-  }
-
-  return result;
+    return null;
+  }).filter(Boolean);
 }
 
 module.exports = {
