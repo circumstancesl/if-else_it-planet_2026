@@ -11,6 +11,11 @@ export default function Header() {
     const navigate = useNavigate();
     const { user, logout, loading } = useAuth();
 
+    const handleLogout = async () => {
+        await logout();
+        navigate("/"); // ← перенаправляем на главную после выхода
+    };
+
     if (loading) {
         return (
             <header className="header">
@@ -60,7 +65,7 @@ export default function Header() {
 
         return (
             <div className="actions">
-                <button className="logout" onClick={logout}>
+                <button className="logout" onClick={handleLogout}>
                     Выход
                 </button>
             </div>
