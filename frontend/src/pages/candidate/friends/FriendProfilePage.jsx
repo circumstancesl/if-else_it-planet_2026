@@ -30,7 +30,7 @@ export default function FriendProfilePage() {
 
     // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
-        if (!url) return "/images/avatar.png";
+        if (!url) return "/img/jobseeker.jpg";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -63,7 +63,7 @@ export default function FriendProfilePage() {
                         resumeURL: data.resumeURL || null,
                         logoUrl: data.logoUrl || null,
                         portfolio: data.portfolio || [],
-                        avatar: getFullImageUrl(data.logoUrl) || "/images/avatar.png"
+                        avatar: getFullImageUrl(data.logoUrl) || "/img/jobseeker.jpg"
                     });
                 }
 
@@ -108,7 +108,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: candidate.mutualFriendsCount || 0,
                                     skills: fullProfile?.skills || [],
                                     tags: fullProfile?.Tags || [],
-                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
+                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg"
                                 });
                             } catch (err) {
                                 console.error(`Error fetching profile for ${candidate.userId}:`, err);
@@ -122,7 +122,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: candidate.mutualFriendsCount || 0,
                                     skills: [],
                                     tags: [],
-                                    avatar: "/images/avatar.png"
+                                    avatar: "/img/jobseeker.jpg"
                                 });
                             }
                         }
@@ -149,7 +149,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: 0,
                                     skills: fullProfile?.skills || [],
                                     tags: fullProfile?.Tags || [],
-                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
+                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg"
                                 });
                             } catch (err) {
                                 formattedCandidates.push({
@@ -162,7 +162,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: 0,
                                     skills: [],
                                     tags: [],
-                                    avatar: "/images/avatar.png"
+                                    avatar: "/img/jobseeker.jpg"
                                 });
                             }
                         }

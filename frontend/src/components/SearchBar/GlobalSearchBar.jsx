@@ -147,7 +147,7 @@ export default function GlobalSearchBar({
                                             }}
                                         >
                                             <img
-                                                src={result.avatar || "/images/avatar.png"}
+                                                src={result.avatar || "/img/jobseeker.jpg"}
                                                 alt={result.name}
                                                 className="search-result-avatar"
                                             />

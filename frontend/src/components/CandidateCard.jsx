@@ -83,7 +83,7 @@ export default function CandidateCard({
         <div className="candidate-card" onClick={handleCardClick}>
             <div className="candidate-top">
                 <img
-                    src={candidate.avatar || "/images/avatar.png"}
+                    src={candidate.avatar || "/img/jobseeker.jpg"}
                     alt="avatar"
                     className="avatar"
                 />

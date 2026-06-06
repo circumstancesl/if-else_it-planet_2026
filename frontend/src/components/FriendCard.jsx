@@ -89,7 +89,7 @@ export default function FriendCard({
             <div className="friend-card-suggest" onClick={handleCardClick}>
                 <div className="friend-card-top">
                     <img
-                        src={friend.avatar || "/images/avatar.png"}
+                        src={friend.avatar || "/img/jobseeker.jpg"}
                         alt={friend.name}
                         className="friend-avatar"
                     />
@@ -131,7 +131,7 @@ export default function FriendCard({
             <div className="friend-card-left">
                 <div className="friend-avatar-wrapper">
                     <img
-                        src={friend.avatar || "/images/avatar.png"}
+                        src={friend.avatar || "/img/jobseeker.jpg"}
                         alt={friend.name}
                         className="friend-avatar-small"
                     />

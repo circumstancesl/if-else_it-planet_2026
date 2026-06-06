@@ -36,7 +36,7 @@ export default function CandidateResponses() {
 
     // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
-        if (!url) return "/images/avatar.png";
+        if (!url) return "/img/jobseeker.jpg";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';

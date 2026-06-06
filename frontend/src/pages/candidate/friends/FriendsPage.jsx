@@ -44,7 +44,7 @@ export default function FriendsPage() {
     const lastElementRef = useRef(null);
 
     const getFullImageUrl = useCallback((url) => {
-        if (!url) return "/images/avatar.png";
+        if (!url) return "/img/jobseeker.jpg";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -76,7 +76,7 @@ export default function FriendsPage() {
                         role: fullProfile?.jobTitle && fullProfile.jobTitle.trim() !== ""
                             ? fullProfile.jobTitle
                             : (user.jobTitle && user.jobTitle.trim() !== "" ? user.jobTitle : "Должность пуста"),
-                        avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png",
+                        avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg",
                         online: false,
                         tags: fullProfile?.Tags || [],
                         skills: fullProfile?.skills || []
@@ -88,7 +88,7 @@ export default function FriendsPage() {
                         userId: user.userId,
                         name: user.fullName || "Пользователь",
                         role: user.jobTitle && user.jobTitle.trim() !== "" ? user.jobTitle : "Должность пуста",
-                        avatar: "/images/avatar.png",
+                        avatar: "/img/jobseeker.jpg",
                         online: false,
                         tags: [],
                         skills: []
@@ -172,7 +172,7 @@ export default function FriendsPage() {
                             userId: friend.userId || friend.id,
                             name: fullProfile?.fullName || friend.fullName || friend.name || "Пользователь",
                             role: fullProfile?.jobTitle || friend.jobTitle || friend.role || "Соискатель",
-                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(friend.avatar || friend.logoUrl) || "/img/jobseeker.jpg",
                             online: friend.online || false,
                             tags: fullProfile?.Tags || friend.Tags || friend.tags || [],
                             skills: fullProfile?.skills || friend.skills || []
@@ -183,7 +183,7 @@ export default function FriendsPage() {
                             userId: friend.userId || friend.id,
                             name: friend.fullName || friend.name || "Пользователь",
                             role: friend.jobTitle || friend.role || "Соискатель",
-                            avatar: getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                            avatar: getFullImageUrl(friend.avatar || friend.logoUrl) || "/img/jobseeker.jpg",
                             online: friend.online || false,
                             tags: friend.Tags || friend.tags || [],
                             skills: friend.skills || []
@@ -205,7 +205,7 @@ export default function FriendsPage() {
                                 userId: request.Requester?.userId || request.Requester?.id,
                                 name: fullProfile?.fullName || request.Requester?.fullName || request.Requester?.name || "Пользователь",
                                 role: fullProfile?.jobTitle || request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
-                                avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                                avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/img/jobseeker.jpg",
                                 tags: fullProfile?.Tags || request.Requester?.Tags || request.Requester?.tags || []
                             }
                         });
@@ -217,7 +217,7 @@ export default function FriendsPage() {
                                 userId: request.Requester?.userId || request.Requester?.id,
                                 name: request.Requester?.fullName || request.Requester?.name || "Пользователь",
                                 role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
-                                avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                                avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/img/jobseeker.jpg",
                                 tags: request.Requester?.Tags || request.Requester?.tags || []
                             }
                         });
@@ -246,7 +246,7 @@ export default function FriendsPage() {
                                 skills: fullProfile?.skills || [],
                                 tags: fullProfile?.Tags || [],
                                 online: false,
-                                avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
+                                avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg"
                             });
                         } catch (err) {
                             console.error(`Error loading full profile for suggested friend ${candidate.userId}:`, err);
@@ -261,7 +261,7 @@ export default function FriendsPage() {
                                 skills: [],
                                 tags: [],
                                 online: false,
-                                avatar: "/images/avatar.png"
+                                avatar: "/img/jobseeker.jpg"
                             });
                         }
                     }
@@ -301,7 +301,7 @@ export default function FriendsPage() {
                             skills: fullProfile?.skills || [],
                             tags: fullProfile?.Tags || [],
                             online: false,
-                            avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg"
                         });
                     } catch (err) {
                         results.push({
@@ -314,7 +314,7 @@ export default function FriendsPage() {
                             skills: [],
                             tags: [],
                             online: false,
-                            avatar: "/images/avatar.png"
+                            avatar: "/img/jobseeker.jpg"
                         });
                     }
                 }
@@ -376,7 +376,7 @@ export default function FriendsPage() {
                         userId: friend.userId || friend.id,
                         name: fullProfile?.fullName || friend.fullName || friend.name || "Пользователь",
                         role: fullProfile?.jobTitle || friend.jobTitle || friend.role || "Соискатель",
-                        avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                        avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(friend.avatar || friend.logoUrl) || "/img/jobseeker.jpg",
                         online: friend.online || false,
                         tags: fullProfile?.Tags || friend.Tags || friend.tags || [],
                         skills: fullProfile?.skills || friend.skills || []
@@ -387,7 +387,7 @@ export default function FriendsPage() {
                         userId: friend.userId || friend.id,
                         name: friend.fullName || friend.name || "Пользователь",
                         role: friend.jobTitle || friend.role || "Соискатель",
-                        avatar: getFullImageUrl(friend.avatar || friend.logoUrl) || "/images/avatar.png",
+                        avatar: getFullImageUrl(friend.avatar || friend.logoUrl) || "/img/jobseeker.jpg",
                         online: friend.online || false,
                         tags: friend.Tags || friend.tags || [],
                         skills: friend.skills || []
@@ -408,7 +408,7 @@ export default function FriendsPage() {
                             userId: request.Requester?.userId || request.Requester?.id,
                             name: fullProfile?.fullName || request.Requester?.fullName || request.Requester?.name || "Пользователь",
                             role: fullProfile?.jobTitle || request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
-                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/img/jobseeker.jpg",
                             tags: fullProfile?.Tags || request.Requester?.Tags || request.Requester?.tags || []
                         }
                     });
@@ -420,7 +420,7 @@ export default function FriendsPage() {
                             userId: request.Requester?.userId || request.Requester?.id,
                             name: request.Requester?.fullName || request.Requester?.name || "Пользователь",
                             role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
-                            avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/img/jobseeker.jpg",
                             tags: request.Requester?.Tags || request.Requester?.tags || []
                         }
                     });
@@ -449,7 +449,7 @@ export default function FriendsPage() {
                             userId: request.Requester?.userId || request.Requester?.id,
                             name: fullProfile?.fullName || request.Requester?.fullName || request.Requester?.name || "Пользователь",
                             role: fullProfile?.jobTitle || request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
-                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            avatar: getFullImageUrl(fullProfile?.logoUrl) || getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/img/jobseeker.jpg",
                             tags: fullProfile?.Tags || request.Requester?.Tags || request.Requester?.tags || []
                         }
                     });
@@ -461,7 +461,7 @@ export default function FriendsPage() {
                             userId: request.Requester?.userId || request.Requester?.id,
                             name: request.Requester?.fullName || request.Requester?.name || "Пользователь",
                             role: request.Requester?.jobTitle || request.Requester?.role || "Соискатель",
-                            avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/images/avatar.png",
+                            avatar: getFullImageUrl(request.Requester?.avatar || request.Requester?.logoUrl) || "/img/jobseeker.jpg",
                             tags: request.Requester?.Tags || request.Requester?.tags || []
                         }
                     });
