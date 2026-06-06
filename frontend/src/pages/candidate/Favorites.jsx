@@ -9,8 +9,11 @@ import { useFavorites } from "../../api/useFavorites";
 import { usePossibilities } from "../../api/usePossibilities";
 import { useTags } from "../../api/useTags";
 import PageLoader from "../../components/PageLoader.jsx";
+import {useAuth} from "../../context/AuthContext.jsx";
 
 export default function Favorites() {
+    const { user } = useAuth();
+
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [search, setSearch] = useState("");
     const [showFilters, setShowFilters] = useState(false);
@@ -18,6 +21,8 @@ export default function Favorites() {
     const [loading, setLoading] = useState(true);
     const [favoriteEvents, setFavoriteEvents] = useState([]);
     const navigate = useNavigate();
+    const isAuthenticated = !!user;
+
 
     const [filters, setFilters] = useState({
         type: "",
@@ -340,6 +345,8 @@ export default function Favorites() {
                                         onToggleFavorite={toggleFavorite}
                                         isFavorite={isFavorite(event.id)}
                                         companyVerificationStatus={event.companyVerificationStatus}
+                                        isAuthenticated={isAuthenticated}
+
                                     />
                                 ))}
                             </div>

@@ -8,8 +8,10 @@ import { useFavorites } from "../api/useFavorites";
 import { usePossibilities } from "../api/usePossibilities";
 import { useTags } from "../api/useTags";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
+    const { user } = useAuth();
     const [selectedEvent, setSelectedEvent] = useState(null);
     const navigate = useNavigate();
     const [search, setSearch] = useState("");
@@ -38,6 +40,8 @@ export default function Home() {
 
     const { getAllPossibilities } = usePossibilities();
     const { favorites, favoriteIds, toggleFavorite, isFavorite } = useFavorites();
+
+    const isAuthenticated = !!user;
 
     useEffect(() => {
         fetchTags({});
@@ -84,7 +88,7 @@ export default function Home() {
                 ...event,
                 tags: event.tags || event.Tags || [],
                 company: event.Company?.name || event.company?.name || event.companyName || "Компания",
-                companyVerificationStatus: event.Company?.verification_status // ← добавляем статус верификации
+                companyVerificationStatus: event.Company?.verification_status
             }));
 
             if (reset) {
@@ -235,6 +239,7 @@ export default function Home() {
                                 onToggleFavorite={toggleFavorite}
                                 isFavorite={isFavorite(event.id)}
                                 companyVerificationStatus={event.companyVerificationStatus}
+                                isAuthenticated={isAuthenticated}
                             />
                         ))}
                     </div>
@@ -252,6 +257,7 @@ export default function Home() {
                                 onToggleFavorite={toggleFavorite}
                                 isFavorite={isFavorite(event.id)}
                                 companyVerificationStatus={event.companyVerificationStatus}
+                                isAuthenticated={isAuthenticated}
                             />
                         ))}
                     </div>

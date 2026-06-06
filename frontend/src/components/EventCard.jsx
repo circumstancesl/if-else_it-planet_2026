@@ -15,7 +15,8 @@ export default function EventCard({
                                       onViewResponses,
                                       messagesCount,
                                       onOpenChat,
-                                      companyVerificationStatus
+                                      companyVerificationStatus,
+                                      isAuthenticated = false,
                                   }) {
     const navigate = useNavigate();
 
@@ -106,6 +107,14 @@ export default function EventCard({
     // Обработчик клика на кнопку "Откликнуться" (переход на страницу)
     const handleRespondClick = (e) => {
         e.stopPropagation();
+
+        // Если не авторизован - перенаправляем на логин
+        if (!isAuthenticated) {
+            navigate("/login");
+            return;
+        }
+
+        // Для авторизованных пользователей любой роли - переходим на страницу события
         if (onCardClick) {
             onCardClick(event);
         } else {
