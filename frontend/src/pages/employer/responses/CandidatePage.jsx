@@ -36,7 +36,7 @@ export default function CandidatePage() {
 
     // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
-        if (!url) return "/img/default-avatar.jpg";
+        if (!url) return "/img/jobseeker.jpg";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -95,7 +95,7 @@ export default function CandidatePage() {
                                 role: profile?.jobTitle || "Соискатель",
                                 status: response.status,
                                 tags: profile?.Tags || [],
-                                avatar: getFullImageUrl(profile?.logoUrl) || "/img/default-avatar.jpg",
+                                avatar: getFullImageUrl(profile?.logoUrl) || "/img/jobseeker.jpg",
                                 resumeURL: profile?.resumeURL || null
                             });
                         } catch (err) {
@@ -108,7 +108,7 @@ export default function CandidatePage() {
                                 role: "Соискатель",
                                 status: response.status,
                                 tags: [],
-                                avatar: "/img/default-avatar.jpg",
+                                avatar: "/img/jobseeker.jpg",
                                 resumeURL: null
                             });
                         }
@@ -130,7 +130,7 @@ export default function CandidatePage() {
                     phone: data.phone || "",
                     telegram: data.telegram || "",
                     status: statusFromState || "pending",
-                    avatar: getFullImageUrl(data.logoUrl) || "/img/default-avatar.jpg",
+                    avatar: getFullImageUrl(data.logoUrl) || "/img/jobseeker.jpg",
                     portfolio: data.portfolio || [],
                     university: data.university || "",
                     graduationYear: data.graduationYear || "",
@@ -269,7 +269,7 @@ export default function CandidatePage() {
                                 <img
                                     src={candidate.avatar}
                                     alt="avatar"
-                                    onError={(e) => { e.target.src = "/img/default-avatar.jpg"; }}
+                                    onError={(e) => { e.target.src = "/img/jobseeker.jpg"; }}
                                 />
                             </div>
 

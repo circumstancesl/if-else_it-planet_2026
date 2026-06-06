@@ -50,10 +50,16 @@ export default function Favorites() {
         }
     }, [tags]);
 
-    const handleEventClick = (event) => {
+    // Наведение на карте (обновляет selectedEvent для подсветки и центрирования)
+    const handleEventHover = useCallback((event) => {
+        console.log("Hovering event:", event?.title, event?.id);
         setSelectedEvent(event);
+    }, []);
+
+    // Переход на страницу события
+    const handleEventNavigate = useCallback((event) => {
         navigate(`/candidate/event/${event.id}`);
-    };
+    }, [navigate]);
 
     // Загружаем данные избранных событий
     const loadFavoriteEvents = useCallback(async () => {
@@ -207,18 +213,19 @@ export default function Favorites() {
 
     // Сортировка с выбранным событием
     const sortedEvents = useMemo(() => {
-        return selectedEvent
-            ? [
+        if (selectedEvent) {
+            return [
                 selectedEvent,
                 ...filteredEvents.filter((e) => e.id !== selectedEvent.id),
-            ]
-            : filteredEvents;
+            ];
+        }
+        return filteredEvents;
     }, [selectedEvent, filteredEvents]);
 
     const topEvents = sortedEvents.slice(0, 2);
     const bottomEvents = sortedEvents.slice(2);
 
-    // Адаптация координат для карты
+    // Формируем события с координатами для карты (как в Home.jsx)
     const eventsWithCoords = useMemo(() => {
         return filteredEvents
             .filter(e => e.latitude && e.longitude)
@@ -227,6 +234,18 @@ export default function Favorites() {
                 coords: [e.latitude, e.longitude]
             }));
     }, [filteredEvents]);
+
+    // Выбранное событие с координатами
+    const selectedEventWithCoords = useMemo(() => {
+        if (!selectedEvent) return null;
+        if (selectedEvent.latitude && selectedEvent.longitude) {
+            return {
+                ...selectedEvent,
+                coords: [selectedEvent.latitude, selectedEvent.longitude]
+            };
+        }
+        return selectedEvent;
+    }, [selectedEvent]);
 
     if (loading && favoriteEvents.length === 0) {
         return (
@@ -273,7 +292,7 @@ export default function Favorites() {
                             <div className="left">
                                 <Map
                                     events={eventsWithCoords}
-                                    selectedEvent={selectedEvent}
+                                    selectedEvent={selectedEventWithCoords}
                                     onSelect={setSelectedEvent}
                                     favorites={Array.from(favoriteIds)}
                                 />
@@ -285,7 +304,8 @@ export default function Favorites() {
                                         key={event.id}
                                         event={event}
                                         highlighted={event.id === selectedEvent?.id}
-                                        onClick={handleEventClick}
+                                        onClick={handleEventHover}
+                                        onCardClick={handleEventNavigate}
                                         variant="candidate"
                                         onToggleFavorite={toggleFavorite}
                                         isFavorite={isFavorite(event.id)}
@@ -300,7 +320,8 @@ export default function Favorites() {
                                     <EventCard
                                         key={event.id}
                                         event={event}
-                                        onClick={handleEventClick}
+                                        onClick={handleEventHover}
+                                        onCardClick={handleEventNavigate}
                                         variant="candidate"
                                         onToggleFavorite={toggleFavorite}
                                         isFavorite={isFavorite(event.id)}
