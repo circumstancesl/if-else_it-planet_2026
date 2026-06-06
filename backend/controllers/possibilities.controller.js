@@ -99,7 +99,7 @@ async function getPossibilities(query, userId) {
     },
     {
       model: Companies,
-      attributes: ['id', 'name', 'logoUrl'],
+      attributes: ['id', 'name', 'logoUrl', 'verification_status'],
       required: false,
     }
   ];

@@ -49,7 +49,7 @@ async function getFavorites(userId) {
       where: { id: { [Op.in]: possibilityIds } },
       include: [
         { model: Tags, through: { attributes: [] }, attributes: ['id', 'name', 'type'] },
-        { model: Companies, attributes: ['id', 'name', 'logoUrl'], required: false },
+        { model: Companies, attributes: ['id', 'name', 'logoUrl', 'verification_status'], required: false },
       ],
       raw: true,
       nest: true,
