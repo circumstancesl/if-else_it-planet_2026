@@ -127,3 +127,50 @@
     object-fit: cover;
     border-radius: 50%;
 }
+
+.company-name-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.company-name-row h2 {
+    margin: 0;
+}
+
+.company-name-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.company-name-row h2 {
+    margin: 0;
+}
+
+/* Статусы как на странице модератора */
+.status {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 500;
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.status.verified {
+    background: #ecfdf5;
+    color: #10b981;
+}
+
+.status.pending {
+    background: #fefce8;
+    color: #ca8a04;
+}
+
+.status.no-data {
+    background: #fef2f2;
+    color: #ef4444;
+}

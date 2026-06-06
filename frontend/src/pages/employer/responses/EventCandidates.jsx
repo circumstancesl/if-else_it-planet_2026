@@ -22,7 +22,18 @@ export default function EventCandidates() {
 
     const { getResponsesForPossibility, updateResponseStatus } = useResponses();
     const { getPossibilityById } = usePossibilities();
-    const { getCandidateProfile } = useUsers(); // ← добавляем
+    const { getCandidateProfile } = useUsers();
+
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return "/img/default-avatar.jpg";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
 
     const loadData = useCallback(async () => {
         if (!initialLoad) return;
@@ -36,7 +47,7 @@ export default function EventCandidates() {
             const responses = await getResponsesForPossibility(eventId);
             const responsesArray = Array.isArray(responses) ? responses : [];
 
-            // 🔥 Для каждого кандидата получаем полный профиль
+            // Для каждого кандидата получаем полный профиль
             const candidatesData = [];
             for (const response of responsesArray) {
                 const userId = response.User?.id || response.candidateId;
@@ -53,13 +64,13 @@ export default function EventCandidates() {
                         email: response.User?.email || "",
                         role: fullProfile?.jobTitle || "Соискатель",
                         skills: fullProfile?.skills || [],
-                        tags: fullProfile?.Tags || [], // ← теги из полного профиля
+                        tags: fullProfile?.Tags || [],
                         about: fullProfile?.about || "Нет информации",
                         phone: fullProfile?.phone || "",
                         telegram: fullProfile?.telegram || "",
                         status: response.status || "pending",
                         appliedAt: response.createdAt,
-                        avatar: fullProfile?.avatar || "/img/default-avatar.jpg",
+                        avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/default-avatar.jpg",
                     });
                 } catch (err) {
                     console.error(`Error fetching full profile for ${userId}:`, err);
@@ -113,7 +124,8 @@ export default function EventCandidates() {
             state: {
                 candidate: candidate,
                 responseId: candidate.responseId,
-                status: candidate.status
+                status: candidate.status,
+                eventId: eventId
             }
         });
     };

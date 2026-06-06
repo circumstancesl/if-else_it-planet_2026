@@ -24,6 +24,7 @@ import EventPage from "./pages/EventPage.jsx";
 import EditEvent from "./pages/employer/events/EditEvent.jsx";
 import CuratorsAdmin from "./pages/curator/CuratorsAdmin.jsx";
 import CuratorUsers from "./pages/curator/CuratorUsers.jsx";
+import TramplinLanding from "./pages/landings/TramplinLanding.jsx";
 
 function App() {
     return (
@@ -31,6 +32,10 @@ function App() {
             {/* Общие страницы */}
             <Route path="/" element={<Home />} />
             <Route path="/login" element={<Login />} />
+
+        <Route path="/candidate" element={<TramplinLanding />} />
+        <Route path="/employer" element={<TramplinLanding />} />
+        <Route path="/curator" element={<TramplinLanding />} />
 
             {/* Редирект на профиль по роли */}
             <Route path="/profile" element={<ProfileRedirect />} />

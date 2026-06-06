@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import Header from "../../../components/Header/Header.jsx";
 import EventCard from "../../../components/EventCard.jsx";
 import HomeSearchBar from "../../../components/SearchBar/HomeSearchBar.jsx";
@@ -16,42 +16,42 @@ export default function EmployerResponses() {
     const [search, setSearch] = useState("");
     const [submittedSearch, setSubmittedSearch] = useState("");
     const [loading, setLoading] = useState(true);
-    const [initialLoad, setInitialLoad] = useState(true);
+    const hasLoaded = useRef(false);
 
     const navigate = useNavigate();
 
-    const loadEvents = useCallback(async () => {
-        if (!initialLoad) return;
-
-        try {
-            setLoading(true);
-            const data = await getMyPossibilities("published");
-            const eventsData = data || [];
-            setEvents(eventsData);
-
-            const counts = {};
-            for (const event of eventsData) {
-                try {
-                    const responses = await getResponsesForPossibility(event.id);
-                    counts[event.id] = Array.isArray(responses) ? responses.length : 0;
-                } catch (err) {
-                    console.error(`Error loading responses for event ${event.id}:`, err);
-                    counts[event.id] = 0;
-                }
-            }
-            setResponsesCount(counts);
-            setInitialLoad(false);
-        } catch (err) {
-            console.error(err);
-            setEvents([]);
-        } finally {
-            setLoading(false);
-        }
-    }, [getMyPossibilities, getResponsesForPossibility, initialLoad]);
-
     useEffect(() => {
+        if (hasLoaded.current) return;
+        hasLoaded.current = true;
+
+        const loadEvents = async () => {
+            try {
+                setLoading(true);
+                const data = await getMyPossibilities("published");
+                const eventsData = data || [];
+                setEvents(eventsData);
+
+                const counts = {};
+                for (const event of eventsData) {
+                    try {
+                        const responses = await getResponsesForPossibility(event.id);
+                        counts[event.id] = Array.isArray(responses) ? responses.length : 0;
+                    } catch (err) {
+                        console.error(`Error loading responses for event ${event.id}:`, err);
+                        counts[event.id] = 0;
+                    }
+                }
+                setResponsesCount(counts);
+            } catch (err) {
+                console.error(err);
+                setEvents([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
         loadEvents();
-    }, [loadEvents]);
+    }, [getMyPossibilities, getResponsesForPossibility]);
 
     const normalizedEvents = useMemo(() => {
         return events.map((e) => ({

@@ -39,11 +39,21 @@ export function useCurator() {
             setLoading(false);
         }
     }, []);
+    const verifyCompany = async (companyId) => {
+        try {
+            const response = await apiClient.get(`/api/curator/verify/${companyId}`);
+            return response;
+        } catch (err) {
+            console.error("Error verifying company:", err);
+            throw err;
+        }
+    };
 
     return {
         loading,
         error,
         getCompanies,
+        verifyCompany,
         updateCompanyStatus
     };
 }

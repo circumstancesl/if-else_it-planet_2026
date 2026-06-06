@@ -92,10 +92,8 @@ export default function EditProfile() {
             return;
         }
 
-        // Сохраняем файл для отправки
         setLogo(file);
 
-        // Показываем превью
         const reader = new FileReader();
         reader.onloadend = () => {
             setLogoPreview(reader.result);
@@ -103,7 +101,6 @@ export default function EditProfile() {
         reader.readAsDataURL(file);
     };
 
-    // Проверка, изменилось ли поле
     const hasChanged = (field) => {
         return form[field] !== initialForm[field];
     };
@@ -112,7 +109,6 @@ export default function EditProfile() {
         return logo !== null;
     };
 
-    // Получить только измененные текстовые поля
     const getChangedFields = () => {
         const changed = {};
 
@@ -144,6 +140,12 @@ export default function EditProfile() {
     };
 
     const handleSubmit = async () => {
+        // Валидация сферы деятельности
+        if (form.sphere && form.sphere.length > 20) {
+            alert("Сфера деятельности не может превышать 20 символов");
+            return;
+        }
+
         const changedFields = getChangedFields();
         const hasTextChanges = Object.keys(changedFields).length > 0;
         const hasLogoChange = hasLogoChanged();
@@ -156,13 +158,11 @@ export default function EditProfile() {
         setSaving(true);
 
         try {
-            // Сохраняем текстовые поля
             if (hasTextChanges) {
                 console.log("SENDING TEXT FIELDS:", changedFields);
                 await users.updateCompany(changedFields);
             }
 
-            // Сохраняем логотип
             if (hasLogoChange && logo) {
                 console.log("UPLOADING LOGO...");
                 const formData = new FormData();
@@ -171,7 +171,6 @@ export default function EditProfile() {
                 alert("Логотип обновлен!");
             }
 
-            // Обновляем initialForm после успешного сохранения
             setInitialForm({
                 name: form.name,
                 inn: form.inn,
@@ -186,7 +185,6 @@ export default function EditProfile() {
                 setLogo(null);
             }
 
-            // Обновляем данные из бэкенда
             const updated = await users.getMyProfile();
             if (updated.profile.logoUrl) {
                 setLogoPreview(updated.profile.logoUrl);
@@ -266,22 +264,22 @@ export default function EditProfile() {
 
                         <label>Сфера деятельности*</label>
                         <div className="field-row">
-                            <select
+                            <input
+                                type="text"
                                 value={form.sphere}
-                                onChange={(e) => handleChange("sphere", e.target.value)}
+                                onChange={(e) => {
+                                    const value = e.target.value.slice(0, 20);
+                                    handleChange("sphere", value);
+                                }}
+                                placeholder="Введите сферу деятельности"
                                 className={hasChanged("sphere") ? "changed" : ""}
-                            >
-                                <option value="">Выберите</option>
-                                <option>Разработка ПО</option>
-                                <option>Финансы</option>
-                                <option>Маркетинг</option>
-                                <option>Консалтинг</option>
-                                <option>Образование</option>
-                            </select>
+                                maxLength={20}
+                            />
                         </div>
                         {hasChanged("sphere") && (
                             <span className="changed-hint">Изменено</span>
                         )}
+                        <span className="char-count">{form.sphere.length}/20 символов</span>
 
                         <label>Сайт компании</label>
                         <div className="field-row">
@@ -298,18 +296,18 @@ export default function EditProfile() {
                     </div>
 
                     <div className="middle">
-                        <label>Социальные сети</label>
-                        <div className="field-row">
-                            <input
-                                value={form.social}
-                                onChange={(e) => handleChange("social", e.target.value)}
-                                placeholder="https://t.me/company"
-                                className={hasChanged("social") ? "changed" : ""}
-                            />
-                        </div>
-                        {hasChanged("social") && (
-                            <span className="changed-hint">Изменено</span>
-                        )}
+                        {/*<label>Социальные сети</label>*/}
+                        {/*<div className="field-row">*/}
+                        {/*    <input*/}
+                        {/*        value={form.social}*/}
+                        {/*        onChange={(e) => handleChange("social", e.target.value)}*/}
+                        {/*        placeholder="https://t.me/company"*/}
+                        {/*        className={hasChanged("social") ? "changed" : ""}*/}
+                        {/*    />*/}
+                        {/*</div>*/}
+                        {/*{hasChanged("social") && (*/}
+                        {/*    <span className="changed-hint">Изменено</span>*/}
+                        {/*)}*/}
 
                         <label>Краткое описание*</label>
                         <div className="field-column">

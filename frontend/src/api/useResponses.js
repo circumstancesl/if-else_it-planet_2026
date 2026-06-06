@@ -99,13 +99,25 @@ export function useResponses() {
         }
     }, []);
 
+    const getResponseSummary = async (userId) => {
+        try {
+            const response = await apiClient.get(`/api/response/summary/${userId}`);
+            return response;
+        } catch (err) {
+            console.error("Error fetching response summary:", err);
+            throw err;
+        }
+    };
+
+
     return {
         loading,
         error,
         applyToPossibility,
         getMyResponses,
         getResponsesForPossibility,
-        getResponseById,  // ← добавить
+        getResponseById,
+        getResponseSummary,
         updateResponseStatus
     };
 }

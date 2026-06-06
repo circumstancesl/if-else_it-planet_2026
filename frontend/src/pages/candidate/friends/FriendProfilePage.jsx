@@ -30,7 +30,7 @@ export default function FriendProfilePage() {
 
     // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
-        if (!url) return "/images/avatar.png";
+        if (!url) return "/img/jobseeker.jpg";
         if (url.startsWith('http')) return url;
         if (url.startsWith('/uploads')) {
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
@@ -63,7 +63,7 @@ export default function FriendProfilePage() {
                         resumeURL: data.resumeURL || null,
                         logoUrl: data.logoUrl || null,
                         portfolio: data.portfolio || [],
-                        avatar: getFullImageUrl(data.logoUrl) || "/images/avatar.png"
+                        avatar: getFullImageUrl(data.logoUrl) || "/img/jobseeker.jpg"
                     });
                 }
 
@@ -108,7 +108,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: candidate.mutualFriendsCount || 0,
                                     skills: fullProfile?.skills || [],
                                     tags: fullProfile?.Tags || [],
-                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
+                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg"
                                 });
                             } catch (err) {
                                 console.error(`Error fetching profile for ${candidate.userId}:`, err);
@@ -122,7 +122,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: candidate.mutualFriendsCount || 0,
                                     skills: [],
                                     tags: [],
-                                    avatar: "/images/avatar.png"
+                                    avatar: "/img/jobseeker.jpg"
                                 });
                             }
                         }
@@ -149,7 +149,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: 0,
                                     skills: fullProfile?.skills || [],
                                     tags: fullProfile?.Tags || [],
-                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/images/avatar.png"
+                                    avatar: getFullImageUrl(fullProfile?.logoUrl) || "/img/jobseeker.jpg"
                                 });
                             } catch (err) {
                                 formattedCandidates.push({
@@ -162,7 +162,7 @@ export default function FriendProfilePage() {
                                     mutualFriends: 0,
                                     skills: [],
                                     tags: [],
-                                    avatar: "/images/avatar.png"
+                                    avatar: "/img/jobseeker.jpg"
                                 });
                             }
                         }
@@ -308,7 +308,7 @@ export default function FriendProfilePage() {
                                 <img src={friend.avatar} alt="avatar" />
                             </div>
 
-                            <div className="portfolio-text">Связаться:</div>
+                            {/*<div className="portfolio-text">Связаться:</div>*/}
 
                             <div className="contact-icons">
                                 {friend.phone && (
@@ -327,7 +327,7 @@ export default function FriendProfilePage() {
                                     <div className="portfolio-text">Резюме:</div>
                                     <div className="portfolio-icons">
                                         <a href={friend.resumeURL} target="_blank" rel="noopener noreferrer" className="portfolio-link">
-                                            📄 Смотреть резюме
+                                            Смотреть резюме
                                         </a>
                                     </div>
                                 </>
@@ -362,7 +362,7 @@ export default function FriendProfilePage() {
 
                             <div className="action-buttons">
                                 <button className="btn-accept" onClick={handleMessage}>
-                                    💬 Написать сообщение
+                                    Написать сообщение
                                 </button>
 
                                 {friendStatus === 'friend' && (
@@ -373,7 +373,7 @@ export default function FriendProfilePage() {
 
                                 {friendStatus === 'pending_sent' && (
                                     <button className="btn-reserve" disabled style={{ opacity: 0.6, cursor: 'default' }}>
-                                        ⏳ Заявка отправлена
+                                        Заявка отправлена
                                     </button>
                                 )}
 

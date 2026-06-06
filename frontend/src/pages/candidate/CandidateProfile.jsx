@@ -12,17 +12,14 @@ export default function CandidateProfile() {
         fullName: "",
         jobTitle: "",
         university: "",
-        course: "", // изменено с graduationYear на course
+        course: "",
         about: "",
         resumeURL: "",
         email: "",
     });
 
-    // Храним ID тегов для отправки
     const [skillTagIds, setSkillTagIds] = useState([]);
     const [levelTagIds, setLevelTagIds] = useState([]);
-
-    // Храним названия тегов для отображения
     const [skillTags, setSkillTags] = useState([]);
     const [levelTags, setLevelTags] = useState([]);
 
@@ -31,7 +28,6 @@ export default function CandidateProfile() {
     const [avatarPreview, setAvatarPreview] = useState(null);
     const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
-    // Доступные теги из базы
     const [availableSkillTags, setAvailableSkillTags] = useState([]);
     const [availableLevelTags, setAvailableLevelTags] = useState([]);
     const [showSkillDropdown, setShowSkillDropdown] = useState(false);
@@ -39,30 +35,20 @@ export default function CandidateProfile() {
     const [skillSearch, setSkillSearch] = useState("");
     const [levelSearch, setLevelSearch] = useState("");
 
-    // Функция для получения полного URL изображения
     const getFullImageUrl = (url) => {
         if (!url) return null;
-
-        // Если уже полный URL (http:// или https://)
         if (url.startsWith('http')) return url;
-
-        // Если относительный путь к uploads
         if (url.startsWith('/uploads')) {
-            // В разработке используем localhost:3000
-            // В продакшене можно использовать переменную окружения
             const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
             return `${baseUrl}${url}`;
         }
-
         return url;
     };
 
-    // Загружаем теги при монтировании
     useEffect(() => {
         fetchTags({});
     }, []);
 
-    // Обновляем доступные теги из базы
     useEffect(() => {
         if (tags && tags.length > 0) {
             setAvailableSkillTags(tags.filter(t => t.type === 'technology'));
@@ -77,14 +63,13 @@ export default function CandidateProfile() {
                 console.log("PROFILE FROM BACK:", data);
 
                 setProfile(data);
-
                 const profileData = data.profile;
 
                 setForm({
                     fullName: profileData.fullName || "",
                     jobTitle: profileData.jobTitle || "",
                     university: profileData.university || "",
-                    course: profileData.graduationYear ? (2028 - profileData.graduationYear) : "", // преобразуем год в курс
+                    course: profileData.graduationYear ? (2028 - profileData.graduationYear) : "",
                     about: profileData.about || "",
                     resumeURL: profileData.resumeURL || "",
                     email: data.email || "",
@@ -92,12 +77,10 @@ export default function CandidateProfile() {
 
                 setIsPrivate(!profileData.profileVisible);
 
-                // Устанавливаем превью аватарки с полным URL
                 if (profileData.logoUrl) {
                     setAvatarPreview(getFullImageUrl(profileData.logoUrl));
                 }
 
-                // Загружаем теги кандидата из профиля
                 if (profileData.Tags && profileData.Tags.length > 0) {
                     const skillsFromProfile = profileData.Tags.filter(tag => tag.type === 'technology');
                     const levelsFromProfile = profileData.Tags.filter(tag => tag.type === 'level');
@@ -120,7 +103,6 @@ export default function CandidateProfile() {
         }
     }, [tagsLoading]);
 
-    // ===== CHANGE =====
     const handleChange = (field, value) => {
         setForm(prev => ({
             ...prev,
@@ -128,31 +110,26 @@ export default function CandidateProfile() {
         }));
     };
 
-    // ===== ЗАГРУЗКА АВАТАРКИ =====
     const handleAvatarChange = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Проверка типа файла
         if (!file.type.startsWith('image/')) {
             alert("Пожалуйста, выберите изображение");
             return;
         }
 
-        // Проверка размера (до 5MB)
         if (file.size > 5 * 1024 * 1024) {
             alert("Размер файла не должен превышать 5MB");
             return;
         }
 
-        // Превью
         const reader = new FileReader();
         reader.onloadend = () => {
             setAvatarPreview(reader.result);
         };
         reader.readAsDataURL(file);
 
-        // Загрузка на сервер
         try {
             setUploadingAvatar(true);
             const formData = new FormData();
@@ -161,11 +138,9 @@ export default function CandidateProfile() {
             await users.uploadAvatar(formData);
             alert("Аватар успешно обновлен!");
 
-            // Обновляем профиль
             const updated = await users.getMyProfile();
             setProfile(updated);
 
-            // Используем функцию для преобразования URL
             if (updated.profile.logoUrl) {
                 setAvatarPreview(getFullImageUrl(updated.profile.logoUrl));
             }
@@ -177,7 +152,6 @@ export default function CandidateProfile() {
         }
     };
 
-    // ===== ДОБАВЛЕНИЕ ТЕГА ИЗ СПИСКА =====
     const handleAddSkillTag = (tag) => {
         if (!skillTags.includes(tag.name)) {
             setSkillTags([...skillTags, tag.name]);
@@ -212,7 +186,6 @@ export default function CandidateProfile() {
         }
     };
 
-    // Фильтрация тегов по поиску
     const filteredSkillTags = availableSkillTags.filter(tag =>
         tag.name.toLowerCase().includes(skillSearch.toLowerCase()) &&
         !skillTags.includes(tag.name)
@@ -223,11 +196,9 @@ export default function CandidateProfile() {
         !levelTags.includes(tag.name)
     );
 
-    // ===== СОХРАНЕНИЕ =====
     const handleSave = async () => {
         console.log("CLICK SAVE");
 
-        // Валидация
         if (form.jobTitle && form.jobTitle.length > 50) {
             alert("Желаемая должность не может превышать 50 символов");
             return;
@@ -238,12 +209,10 @@ export default function CandidateProfile() {
             return;
         }
 
-        // Преобразуем курс в год окончания (текущий год + (4 - курс))
         let graduationYear = null;
         if (form.course) {
             const currentYear = new Date().getFullYear();
             const currentMonth = new Date().getMonth();
-            // Если сейчас сентябрь (месяц 8) или позже, то текущий учебный год
             const studyYear = currentMonth >= 8 ? currentYear : currentYear - 1;
             graduationYear = studyYear + (4 - parseInt(form.course));
         }
@@ -260,7 +229,6 @@ export default function CandidateProfile() {
                 tagIds: [...skillTagIds, ...levelTagIds]
             };
 
-            // убираем пустые поля
             const payload = {};
             Object.entries(rawPayload).forEach(([key, value]) => {
                 if (value !== "" && value !== null && value !== undefined &&
@@ -292,10 +260,8 @@ export default function CandidateProfile() {
         );
     }
 
-    // Получаем URL для отображения аватарки
     const displayAvatar = avatarPreview || getFullImageUrl(profile?.profile?.logoUrl) || "/img/candidate-page-avatar.jpg";
 
-    // ===== UI =====
     return (
         <div className="page">
             <Header />
@@ -303,14 +269,10 @@ export default function CandidateProfile() {
             <div className="container candidate-profile-container profile-page">
                 <div className="profile-layout">
 
-                    {/* LEFT */}
                     <div className="col-left">
                         <div className="avatar-section">
                             <div className="avatar-block">
-                                <img
-                                    src={displayAvatar}
-                                    alt="avatar"
-                                />
+                                <img src={displayAvatar} alt="avatar" />
                             </div>
                             <label className="avatar-upload-btn">
                                 Изменить фото
@@ -341,7 +303,6 @@ export default function CandidateProfile() {
                         </div>
                     </div>
 
-                    {/* MIDDLE */}
                     <div className="col-middle">
                         <h2>Важная информация</h2>
 
@@ -403,7 +364,6 @@ export default function CandidateProfile() {
                         />
                     </div>
 
-                    {/* RIGHT */}
                     <div className="col-right">
                         <h2>Контакты</h2>
 
@@ -447,8 +407,8 @@ export default function CandidateProfile() {
                                             autoFocus
                                         />
                                         <div className="dropdown-list">
-                                            {filteredSkillTags.length > 0 ? (
-                                                filteredSkillTags.map(tag => (
+                                            {filteredSkillTags.slice(0, 3).length > 0 ? (
+                                                filteredSkillTags.slice(0, 3).map(tag => (
                                                     <div
                                                         key={tag.id}
                                                         className="dropdown-item"
@@ -496,8 +456,8 @@ export default function CandidateProfile() {
                                             autoFocus
                                         />
                                         <div className="dropdown-list">
-                                            {filteredLevelTags.length > 0 ? (
-                                                filteredLevelTags.map(tag => (
+                                            {filteredLevelTags.slice(0, 3).length > 0 ? (
+                                                filteredLevelTags.slice(0, 3).map(tag => (
                                                     <div
                                                         key={tag.id}
                                                         className="dropdown-item"

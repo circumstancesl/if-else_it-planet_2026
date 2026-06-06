@@ -285,12 +285,6 @@ export default function CreateEvent() {
                             onChange={(e) => handleChange("date", e.target.value)}
                         />
 
-                        <div className="info-block">
-                            <p className="info-text">
-                                💡 <strong>Черновик</strong> - сохранится в черновиках<br/>
-                                📢 <strong>Публикация</strong> - станет доступен для всех
-                            </p>
-                        </div>
 
                         <div className="action-buttons">
                             <button
@@ -298,7 +292,7 @@ export default function CreateEvent() {
                                 onClick={handlePublish}
                                 disabled={isSubmitting || loading}
                             >
-                                {isSubmitting ? "Публикация..." : "📢 Опубликовать"}
+                                {isSubmitting ? "Публикация..." : "Опубликовать"}
                             </button>
 
                             <button
@@ -306,7 +300,7 @@ export default function CreateEvent() {
                                 onClick={handleSaveDraft}
                                 disabled={isSubmitting || loading}
                             >
-                                {isSubmitting ? "Сохранение..." : "💾 Сохранить в черновики"}
+                                {isSubmitting ? "Сохранение..." : "Сохранить в черновики"}
                             </button>
 
                             <button

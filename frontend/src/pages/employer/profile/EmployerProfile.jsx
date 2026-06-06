@@ -25,6 +25,17 @@ export default function EmployerProfile() {
     const [company, setCompany] = useState(null);
     const [companyLoading, setCompanyLoading] = useState(true);
 
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return "/img/default-avatar.jpg";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
+
     // Загрузка профиля компании
     useEffect(() => {
         const loadCompany = async () => {
@@ -94,6 +105,7 @@ export default function EmployerProfile() {
         } catch (err) {
             console.error(err);
             setEvents([]);
+            setInitialLoad(false); // ← ВАЖНО: сбрасываем initialLoad даже при ошибке
         } finally {
             setLoading(false);
         }
@@ -137,13 +149,14 @@ export default function EmployerProfile() {
             id: response.User?.id || response.candidateId,
             responseId: response.id,
             name: response.fullProfile?.fullName || response.User?.fullName || response.User?.name || "Неизвестно",
+            fullName: response.fullProfile?.fullName || response.User?.fullName || response.User?.name || "Неизвестно",
             role: response.fullProfile?.jobTitle || response.User?.role || "Соискатель",
             skills: response.fullProfile?.skills || response.User?.skills || [],
             tags: response.fullProfile?.Tags || [],
             status: response.status || "pending",
             eventTitle: response.eventTitle,
             eventId: response.eventId,
-            avatar: response.fullProfile?.avatar || response.User?.avatar || "/img/default-avatar.jpg"
+            avatar: getFullImageUrl(response.fullProfile?.logoUrl) || getFullImageUrl(response.User?.avatar) || "/img/default-avatar.jpg"
         }));
     }, [latestResponses]);
 
@@ -167,7 +180,11 @@ export default function EmployerProfile() {
 
     const handleViewCandidate = (candidate) => {
         navigate(`/employer/responses/candidate/${candidate.id}`, {
-            state: { responseId: candidate.responseId, status: candidate.status }
+            state: {
+                responseId: candidate.responseId,
+                status: candidate.status,
+                eventId: candidate.eventId // ← передаем eventId
+            }
         });
     };
 
@@ -194,7 +211,7 @@ export default function EmployerProfile() {
                         <div className="company-avatar">
                             {company?.logoUrl ? (
                                 <img
-                                    src={company.logoUrl}
+                                    src={getFullImageUrl(company.logoUrl)}
                                     alt={company.name}
                                     className="company-logo"
                                 />
@@ -203,12 +220,13 @@ export default function EmployerProfile() {
                             )}
                         </div>
                         <div className="company-details">
-                            <h2>{company?.name || "Моя компания"}</h2>
-                            <span className="verified">
-                                {company?.verification_status === 'approved' ? 'Верифицировано ✔' :
-                                    company?.verification_status === 'pending' ? 'На верификации' :
-                                        'Не верифицировано'}
-                            </span>
+                            <div className="company-name-row">
+                                <h2>{company?.name || "Моя компания"}</h2>
+                                {company?.verification_status === 'approved' && <span className="status verified">Верифицировано</span>}
+                                {company?.verification_status === 'pending' && <span className="status pending">На верификации</span>}
+                                {company?.verification_status === 'rejected' && <span className="status no-data">Отклонено</span>}
+                                {!company?.verification_status && <span className="status no-data">Не верифицировано</span>}
+                            </div>
                         </div>
                     </div>
 

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import Header from "../../components/Header/Header.jsx";
 import ChatLayout from "../../components/Chat/ChatLayout.jsx";
 import { useChat } from "../../api/useChat";
@@ -7,24 +7,49 @@ import { useUsers } from "../../api/useUsers";
 import { getSocket, sendMessage, onNewMessage, joinChats } from "../../api/socket";
 import "./ChatPage.css";
 import "../../components/Chat/ChatLayout.css";
+import { useAuth } from "../../context/AuthContext";
+
 
 export default function ChatPage() {
     const { chatId } = useParams();
+    const { user } = useAuth();
+
     const navigate = useNavigate();
+    const location = useLocation();
     const { getChatMessages, getMyChats, loading } = useChat();
     const { getCandidateProfile } = useUsers();
 
+    // Получаем данные из state (при переходе из CandidatePage)
+    const candidateNameFromState = location.state?.candidateName;
+    const candidateRoleFromState = location.state?.candidateRole;
+    const eventTitleFromState = location.state?.eventTitle;
+    const eventIdFromState = location.state?.eventId;
+    const candidateAvatarFromState = location.state?.candidateAvatar;
+
     const [messages, setMessages] = useState([]);
     const [chatInfo, setChatInfo] = useState({
-        title: "Загрузка...",
-        subtitle: "",
-        lastSeen: ""
+        title: candidateNameFromState || "Загрузка...",
+        subtitle: candidateRoleFromState || "",
+        lastSeen: "",
+        eventTitle: eventTitleFromState || null,
+        avatar: candidateAvatarFromState || null
     });
     const [error, setError] = useState(null);
     const [sending, setSending] = useState(false);
     const [socketConnected, setSocketConnected] = useState(false);
     const [currentUserId, setCurrentUserId] = useState(null);
     const messagesEndRef = useRef(null);
+
+    // Функция для получения полного URL изображения
+    const getFullImageUrl = (url) => {
+        if (!url) return "/images/company.png";
+        if (url.startsWith('http')) return url;
+        if (url.startsWith('/uploads')) {
+            const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
+            return `${baseUrl}${url}`;
+        }
+        return url;
+    };
 
     // Получаем userId из localStorage при загрузке
     useEffect(() => {
@@ -54,7 +79,7 @@ export default function ChatPage() {
         }
     }, []);
 
-    // Загружаем информацию о чате (имя собеседника)
+    // Загружаем информацию о чате (имя собеседника) если нет из state
     useEffect(() => {
         const loadChatInfo = async () => {
             try {
@@ -68,16 +93,17 @@ export default function ChatPage() {
                         try {
                             const profile = await getCandidateProfile(partner.id);
                             const fullName = profile?.fullName || partner.name || "Пользователь";
+                            const avatarUrl = profile?.logoUrl ? getFullImageUrl(profile.logoUrl) : null;
                             setChatInfo(prev => ({
                                 ...prev,
-                                title: fullName,
-                                subtitle: profile?.jobTitle || ""
+                                title: prev.title === "Загрузка..." ? fullName : prev.title,
+                                subtitle: prev.subtitle || profile?.jobTitle || "",
+                                avatar: prev.avatar || avatarUrl
                             }));
                         } catch {
                             setChatInfo(prev => ({
                                 ...prev,
-                                title: partner.name || "Пользователь",
-                                subtitle: ""
+                                title: prev.title === "Загрузка..." ? (partner.name || "Пользователь") : prev.title,
                             }));
                         }
                     }
@@ -87,10 +113,10 @@ export default function ChatPage() {
             }
         };
 
-        if (currentUserId && chatId) {
+        if (currentUserId && chatId && !candidateNameFromState) {
             loadChatInfo();
         }
-    }, [chatId, currentUserId, getMyChats, getCandidateProfile]);
+    }, [chatId, currentUserId, getMyChats, getCandidateProfile, candidateNameFromState]);
 
     useEffect(() => {
         if (chatId) {
@@ -193,6 +219,9 @@ export default function ChatPage() {
                     onBack={handleBack}
                     onSendMessage={handleSendMessage}
                     sending={sending}
+                    companyAvatar={chatInfo.avatar}
+                    eventTitle={chatInfo.eventTitle}
+                    userRole={user?.role}  // ← добавляем
                 />
                 <div ref={messagesEndRef} />
             </div>

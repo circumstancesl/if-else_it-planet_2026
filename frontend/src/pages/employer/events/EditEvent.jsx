@@ -181,9 +181,9 @@ export default function EditEvent() {
     const isDraft = form.status === 'draft';
 
     const getStatusText = () => {
-        if (isDraft) return "📝 Черновик";
-        if (isPublished) return "✅ Активно";
-        if (isArchived) return "📦 В архиве";
+        if (isDraft) return " Черновик";
+        if (isPublished) return " Активно";
+        if (isArchived) return " В архиве";
         return "";
     };
 
@@ -319,7 +319,7 @@ export default function EditEvent() {
                                         onClick={handlePublish}
                                         disabled={isSubmitting || loading}
                                     >
-                                        {isSubmitting ? "Публикация..." : "📢 Опубликовать"}
+                                        {isSubmitting ? "Публикация..." : "Опубликовать"}
                                     </button>
 
                                     <button
@@ -327,7 +327,7 @@ export default function EditEvent() {
                                         onClick={handleSaveDraft}
                                         disabled={isSubmitting || loading}
                                     >
-                                        {isSubmitting ? "Сохранение..." : "💾 В черновики"}
+                                        {isSubmitting ? "Сохранение..." : "В черновики"}
                                     </button>
 
                                     {isEditMode && (
@@ -336,7 +336,7 @@ export default function EditEvent() {
                                             onClick={handleArchive}
                                             disabled={isSubmitting || loading}
                                         >
-                                            🔒 Закрыть событие
+                                            Закрыть событие
                                         </button>
                                     )}
                                 </>
@@ -349,7 +349,7 @@ export default function EditEvent() {
                                         onClick={handlePublish}
                                         disabled={isSubmitting || loading}
                                     >
-                                        🔓 Открыть снова
+                                        Открыть снова
                                     </button>
                                 </>
                             )}
@@ -361,7 +361,7 @@ export default function EditEvent() {
                                     onClick={handleDelete}
                                     disabled={isSubmitting}
                                 >
-                                    🗑 Стереть событие
+                                    Стереть событие
                                 </button>
                             )}
 

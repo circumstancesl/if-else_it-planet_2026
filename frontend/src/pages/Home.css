@@ -23,7 +23,7 @@
     gap: 16px;
 }
 
-/* 🔥 нижняя сетка - как в EmployerEvents */
+/* нижняя сетка */
 .bottom-grid {
     margin-top: 24px;
     display: grid;
@@ -31,8 +31,8 @@
     gap: 20px;
 }
 
-/* Модальное окно */
-.filters-modal {
+/* Модальное окно фильтров */
+.filters-modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
@@ -45,46 +45,179 @@
     z-index: 1000;
 }
 
-.filters-content {
+.filters-modal {
     background: white;
-    padding: 24px;
-    border-radius: 16px;
-    min-width: 300px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
-.filters-content h3 {
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.filters-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.close-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: #64748b;
+    transition: color 0.2s;
+}
+
+.close-btn:hover {
+    color: #1e293b;
+}
+
+.filters-body {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+}
+
+.filter-group {
     margin-bottom: 20px;
 }
 
-.filters-content select {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 12px;
-    border: 1px solid #ddd;
-    border-radius: 8px;
-    font-size: 16px;
+.filter-group:last-child {
+    margin-bottom: 0;
 }
 
-.filters-content button {
+.filter-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: #334155;
+}
+
+.filter-group select,
+.filter-group input {
     width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 14px;
+    transition: all 0.2s;
+    background: white;
+}
+
+.filter-group select:hover,
+.filter-group input:hover {
+    border-color: #cbd5e1;
+}
+
+.filter-group select:focus,
+.filter-group input:focus {
+    outline: none;
+    border-color: #1e73e8;
+    box-shadow: 0 0 0 3px rgba(30, 115, 232, 0.1);
+}
+
+.filters-footer {
+    display: flex;
+    gap: 12px;
+    padding: 16px 24px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.filters-footer button {
+    flex: 1;
     padding: 12px;
-    background: #1e73e8;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
-    margin-top: 12px;
+    transition: all 0.2s;
 }
 
-.filters-content button:hover {
+.filters-footer .primary {
+    background: #1e73e8;
+    border: none;
+    color: white;
+}
+
+.filters-footer .primary:hover {
     background: #1557b0;
+}
+
+.filters-footer .secondary {
+    background: #f1f5f9;
+    border: none;
+    color: #475569;
+}
+
+.filters-footer .secondary:hover {
+    background: #e2e8f0;
+}
+
+.load-more-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Пустое состояние */
+.empty-state-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 400px;
+    padding: 20px;
+}
+
+.empty-state-card {
+    text-align: center;
+    padding: 48px 32px;
+    background: #f8fafc;
+    border-radius: 20px;
+    max-width: 480px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.empty-state-card .empty-icon {
+    font-size: 64px;
+    margin-bottom: 20px;
+    opacity: 0.7;
+}
+
+.empty-state-card h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 12px;
+}
+
+.empty-state-card p {
+    font-size: 14px;
+    color: #64748b;
+    margin-bottom: 24px;
+    line-height: 1.5;
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
     .top-section {
         flex-direction: column;
+    }
+
+    .right {
+        width: 100%;
     }
 
     .bottom-grid {
@@ -97,10 +230,41 @@
     .bottom-grid {
         grid-template-columns: 1fr;
     }
+
+    .filters-body {
+        padding: 16px;
+    }
+
+    .filters-header {
+        padding: 16px;
+    }
+
+    .filters-footer {
+        padding: 12px 16px;
+    }
 }
 
 @media (max-width: 480px) {
-    .bottom-grid {
-        grid-template-columns: 1fr;
+    .empty-state-card {
+        padding: 32px 20px;
     }
+
+    .empty-state-card .empty-icon {
+        font-size: 48px;
+    }
+
+    .empty-state-card h3 {
+        font-size: 18px;
+    }
+}
+
+.add-tag {
+    background: #f1f5f9;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 13px;
+    color: #1e73e8;
+    cursor: pointer;
+    transition: background 0.2s;
 }
